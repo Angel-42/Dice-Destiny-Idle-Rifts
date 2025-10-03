@@ -110,11 +110,11 @@ jobs:
           echo "🧪 Exécution des tests Flutter..."
           flutter test
 
-      # - name: Build APK
-      #   id: build_apk
-      #   run: |
-      #     echo "🏗️ Construction de l'APK..."
-      #     flutter build apk --release
+      - name: Build APK
+        id: build_apk
+        run: |
+          echo "🏗️ Construction de l'APK..."
+          flutter build apk --release
 
       - name: Setup SSH and Mirror repository
         id: mirror
@@ -144,21 +144,21 @@ jobs:
           
           echo "✅ Mirror terminé avec succès"
 
-      # - name: Deploy APK
-      #   id: deploy
-      #   if: success() && github.ref == 'refs/heads/main'
-      #   run: |
-      #     echo "� Déploiement de l'APK..."
+      - name: Deploy APK
+        id: deploy
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          echo "� Déploiement de l'APK..."
           
-      #     # Ici tu peux ajouter la logique de déploiement de ton APK
-      #     # Par exemple: upload vers un service de distribution d'apps
-      #     # ou copie vers un serveur de fichiers
+          # Ici tu peux ajouter la logique de déploiement de ton APK
+          # Par exemple: upload vers un service de distribution d'apps
+          # ou copie vers un serveur de fichiers
           
-      #     # Exemple basique: afficher les infos de l'APK généré
-      #     ls -la build/app/outputs/flutter-apk/
-      #     echo "✅ APK généré: build/app/outputs/flutter-apk/app-release.apk"
+          # Exemple basique: afficher les infos de l'APK généré
+          ls -la build/app/outputs/flutter-apk/
+          echo "✅ APK généré: build/app/outputs/flutter-apk/app-release.apk"
           
-      #     echo "Déploiement terminé (logique à implémenter selon tes besoins)."
+          echo "Déploiement terminé (logique à implémenter selon tes besoins)."
       
       - name: Send Discord notification
         if: always()
