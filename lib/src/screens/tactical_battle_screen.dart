@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../models/character.dart';
+import '../models/player.dart';
+import '../services/game_data_service.dart';
 
 class TacticalBattleScreen extends StatefulWidget {
   final Character character;
+  final Player player;
 
-  const TacticalBattleScreen({super.key, required this.character});
+  const TacticalBattleScreen({
+    super.key, 
+    required this.character,
+    required this.player,
+  });
 
   @override
   State<TacticalBattleScreen> createState() => _TacticalBattleScreenState();
@@ -34,6 +41,10 @@ class _TacticalBattleScreenState extends State<TacticalBattleScreen> {
   // Zoom
   double _scale = 1.0;
   
+  // Stats de combat (pour cette aventure)
+  int enemiesDefeatedThisBattle = 0;
+  int goldEarnedThisBattle = 0;
+  
   @override
   void initState() {
     super.initState();
@@ -41,6 +52,68 @@ class _TacticalBattleScreenState extends State<TacticalBattleScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _centerCameraOnPlayer();
     });
+  }
+  
+  // Méthode pour simuler un combat et gagner des récompenses
+  void _simulateCombat() {
+    final random = math.Random();
+    final enemiesKilled = 1 + random.nextInt(3); // 1-3 ennemis
+    final goldEarned = 10 + random.nextInt(20); // 10-30 or
+    
+    setState(() {
+      enemiesDefeatedThisBattle += enemiesKilled;
+      goldEarnedThisBattle += goldEarned;
+    });
+    
+    // Mettre à jour le Player
+    for (int i = 0; i < enemiesKilled; i++) {
+      widget.player.addEnemyDefeated();
+    }
+    widget.player.addGold(goldEarned);
+    widget.player.addGoldCollected(goldEarned);
+    
+    // Sauvegarder
+    GameDataService.savePlayer(widget.player);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('⚔️ +$enemiesKilled ennemis vaincus | 💰 +$goldEarned or'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+  
+  // Terminer l'aventure
+  void _completeAdventure() {
+    widget.player.addAdventureCompleted();
+    widget.player.addBattleWon();
+    GameDataService.savePlayer(widget.player);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('🎉 Aventure Terminée !'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Ennemis vaincus: $enemiesDefeatedThisBattle'),
+            Text('Or gagné: $goldEarnedThisBattle 💰'),
+            const SizedBox(height: 16),
+            const Text('Progression sauvegardée !'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Fermer dialog
+              Navigator.of(context).pop(); // Retour au hub
+            },
+            child: const Text('Retour'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _centerCameraOnPlayer() {
@@ -444,40 +517,21 @@ class _TacticalBattleScreenState extends State<TacticalBattleScreen> {
           ),
           const SizedBox(height: 12),
           
-          // Bouton attaque (à implémenter)
+          // Bouton combat simulé
           _buildActionButton(
-            icon: Icons.local_fire_department,
-            label: 'Attaquer',
+            icon: Icons.flash_on,
+            label: 'Combat',
             color: Colors.red,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Attaque - À implémenter'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            },
+            onTap: _simulateCombat,
           ),
           const SizedBox(height: 12),
           
-          // Bouton terminer le tour
+          // Bouton terminer l'aventure
           _buildActionButton(
             icon: Icons.check_circle,
-            label: 'Fin du tour',
+            label: 'Terminer',
             color: Colors.green,
-            onTap: () {
-              setState(() {
-                isSelectingMove = false;
-                validMoves.clear();
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Tour terminé'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
+            onTap: _completeAdventure,
           ),
         ],
       ),

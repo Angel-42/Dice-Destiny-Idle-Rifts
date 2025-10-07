@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "763865158663",
+    "project_id": "tactical-dice-bpro",
+    "storage_bucket": "tactical-dice-bpro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763865158663:android:0e9b402a2fe5c18013c6a2",
+        "android_client_info": {
+          "package_name": "com.example.dice_destiny_idle_rifts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKy6QFQdebSKXkuYKAHzRgSbQWbd2TcF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

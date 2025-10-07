@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../models/persona.dart';
-import '../services/character_service.dart';
+import '../services/game_data_service.dart';
 import 'game_hub_screen.dart';
 
 class PersonaCreationScreen extends StatefulWidget {
@@ -72,7 +72,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen> {
         characterClass: _selectedClass!,
       );
 
-      const stats = CharacterStats(
+      final stats = CharacterStats(
         maxHp: 100,
         attack: 15,
         defense: 10,
@@ -86,14 +86,29 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen> {
         persona: persona,
         stats: stats,
         appearance: CharacterAppearance.fromRace(_selectedRace!),
+        isInTeam: true,      // Premier personnage dans l'équipe
+        teamPosition: 1,      // Position principale
       );
 
-      await CharacterService.createCharacter(character);
+      // Créer le profil Player si il n'existe pas
+      final hasProfile = await GameDataService.hasProfile();
+      if (!hasProfile) {
+        await GameDataService.createPlayer(_nameController.text.trim());
+      }
 
-      if (mounted) {
+      // Créer le personnage
+      await GameDataService.createCharacter(character);
+      
+      // Récupérer le player pour naviguer
+      final player = await GameDataService.getPlayer();
+
+      if (mounted && player != null) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => GameHubScreen(character: character),
+            builder: (context) => GameHubScreen(
+              player: player,
+              character: character,
+            ),
           ),
         );
       }

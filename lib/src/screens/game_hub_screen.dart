@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../models/character.dart';
+import '../models/player.dart';
+import '../services/game_data_service.dart';
 import 'settings_screen.dart';
 import 'tactical_battle_screen.dart';
 import 'character_detail_screen.dart';
 
 class GameHubScreen extends StatefulWidget {
+  final Player player;
   final Character character;
 
-  const GameHubScreen({super.key, required this.character});
+  const GameHubScreen({
+    super.key,
+    required this.player,
+    required this.character,
+  });
 
   @override
   State<GameHubScreen> createState() => _GameHubScreenState();
@@ -16,8 +23,7 @@ class GameHubScreen extends StatefulWidget {
 
 class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
-  int _gold = 50;
-  int _gems = 50;
+  late Player _player;
   int _idleProgress = 0;
   Timer? _idleTimer;
   late AnimationController _pulseController;
@@ -25,6 +31,7 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
+    _player = widget.player; // Initialiser avec le player passé en paramètre
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -38,10 +45,22 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
         setState(() {
           _idleProgress = (_idleProgress + 1) % 100;
           if (_idleProgress == 0) {
-            _gold += 10;
+            // Ajouter de l'or au joueur (compte pour les missions)
+            final goldEarned = 10;
+            _player.addGold(goldEarned);
+            _player.addGoldCollected(goldEarned);
+            // Sauvegarder automatiquement en arrière-plan
+            _savePlayer();
           }
         });
       }
+    });
+  }
+  
+  // Méthode helper pour sauvegarder le player
+  void _savePlayer() {
+    GameDataService.savePlayer(_player).catchError((e) {
+      debugPrint('⚠️ Erreur sauvegarde auto: $e');
     });
   }
 
@@ -133,9 +152,9 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
             ),
           ),
           // Ressources
-          _buildResource('��', _gems.toString(), Colors.purple),
+          _buildResource('��', _player.gems.toString(), Colors.purple),
           const SizedBox(width: 12),
-          _buildResource('💰', _gold.toString(), Colors.amber),
+          _buildResource('💰', _player.gold.toString(), Colors.amber),
         ],
       ),
     );
@@ -416,6 +435,9 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
   }
 
   Widget _buildDailyMissions() {
+    // Vérifier et reset les missions si nécessaire
+    _player.checkAndResetDailyMissions();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -428,29 +450,91 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
           ),
         ),
         const SizedBox(height: 12),
-        _buildMissionTile('Vaincre 10 ennemis', 3, 10, Colors.red),
+        _buildMissionTile(
+          'Vaincre 10 ennemis', 
+          _player.dailyEnemiesDefeated, 
+          10, 
+          Colors.red,
+          onClaim: _player.dailyEnemiesDefeated >= 10 ? () {
+            setState(() {
+              _player.addGems(10);
+              _savePlayer();
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('🎉 +10 💎 reçu !')),
+            );
+          } : null,
+        ),
         const SizedBox(height: 8),
-        _buildMissionTile('Collecter 500 or', 250, 500, Colors.amber),
+        _buildMissionTile(
+          'Collecter 500 or', 
+          _player.dailyGoldCollected, 
+          500, 
+          Colors.amber,
+          onClaim: _player.dailyGoldCollected >= 500 ? () {
+            setState(() {
+              _player.addGems(15);
+              _savePlayer();
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('🎉 +15 💎 reçu !')),
+            );
+          } : null,
+        ),
         const SizedBox(height: 8),
-        _buildMissionTile('Terminer 5 aventures', 2, 5, Colors.blue),
+        _buildMissionTile(
+          'Terminer 5 aventures', 
+          _player.dailyAdventuresCompleted, 
+          5, 
+          Colors.blue,
+          onClaim: _player.dailyAdventuresCompleted >= 5 ? () {
+            setState(() {
+              _player.addGems(20);
+              _savePlayer();
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('🎉 +20 💎 reçu !')),
+            );
+          } : null,
+        ),
       ],
     );
   }
 
-  Widget _buildMissionTile(String title, int current, int total, Color color) {
-    final progress = current / total;
+  Widget _buildMissionTile(
+    String title, 
+    int current, 
+    int total, 
+    Color color,
+    {VoidCallback? onClaim}
+  ) {
+    final progress = (current / total).clamp(0.0, 1.0);
+    final isCompleted = current >= total;
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: isCompleted 
+            ? color.withOpacity(0.15) 
+            : Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(
+          color: isCompleted 
+              ? color.withOpacity(0.5) 
+              : Colors.white.withOpacity(0.1),
+          width: isCompleted ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              if (isCompleted)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(Icons.check_circle, color: color, size: 20),
+                ),
               Expanded(
                 child: Text(
                   title,
@@ -465,6 +549,21 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              if (isCompleted && onClaim != null) ...[
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: onClaim,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    minimumSize: Size.zero,
+                  ),
+                  child: const Text(
+                    'Claim',
+                    style: TextStyle(fontSize: 12, color: Colors.white),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 8),
@@ -548,9 +647,17 @@ class _GameHubScreenState extends State<GameHubScreen> with TickerProviderStateM
         if (title == 'Aventure') {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => TacticalBattleScreen(character: widget.character),
+              builder: (context) => TacticalBattleScreen(
+                character: widget.character,
+                player: _player,
+              ),
             ),
-          );
+          ).then((_) {
+            // Rafraîchir l'état quand on revient du combat
+            setState(() {
+              _savePlayer();
+            });
+          });
         } else {
           _showComingSoon(title);
         }

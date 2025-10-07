@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
-import '../services/character_service.dart';
+import '../services/game_data_service.dart';
 import 'main_menu_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -540,7 +540,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
 
       // Réinitialiser toutes les données
-      await CharacterService.resetAll();
+      await GameDataService.resetAll();
 
       // Attendre un peu pour l'effet
       await Future.delayed(const Duration(milliseconds: 500));
@@ -587,8 +587,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
 
-      // Supprimer toutes les données
-      await CharacterService.resetAll();
+      // Supprimer toutes les données et le compte
+      await GameDataService.deleteAccount();
 
       // Attendre un peu pour l'effet
       await Future.delayed(const Duration(milliseconds: 500));

@@ -17,7 +17,7 @@ jobs:
 # |       MIRROR FOR NON-MAIN/DEV BRANCHES                                                                             |
 # ----------------------------------------------------------------------------------------------------------------------
   direct-mirror:
-    if: github.event_name == 'push' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev'
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/boosted'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

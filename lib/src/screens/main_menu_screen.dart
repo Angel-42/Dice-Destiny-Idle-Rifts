@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/character_service.dart';
+import '../services/game_data_service.dart';
 import 'intro_screen.dart';
 import 'game_hub_screen.dart';
 
@@ -36,12 +36,16 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   
   Future<void> _checkForCharacters() async {
     try {
-      final hasChars = await CharacterService.hasCharacters();
+      // Vérifier si le joueur a un profil ET des personnages
+      final hasProfile = await GameDataService.hasProfile();
+      final hasChars = await GameDataService.hasCharacters();
+      
       setState(() {
-        _hasCharacters = hasChars;
+        _hasCharacters = hasProfile && hasChars;
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('Erreur lors de la vérification: $e');
       setState(() {
         _hasCharacters = false;
         _isLoading = false;
@@ -219,12 +223,17 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   
   void _handlePlayButtonPressed() async {
     if (_hasCharacters) {
-      // Navigate to game hub with existing character
-      final character = await CharacterService.getActiveCharacter();
-      if (character != null && mounted) {
+      // Navigate to game hub with existing player and main character
+      final player = await GameDataService.getPlayer();
+      final mainCharacter = await GameDataService.getMainCharacter();
+      
+      if (player != null && mainCharacter != null && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => GameHubScreen(character: character),
+            builder: (context) => GameHubScreen(
+              player: player,
+              character: mainCharacter,
+            ),
           ),
         );
       }
