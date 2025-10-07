@@ -45,3 +45,29 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase / mobile secrets
+android/local.properties
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+# Keystore
+*.jks
+keystore.properties
+
+# Flutter / build artefacts
+.dart_tool/
+.packages
+.build/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Native
+android/.gradle/
+ios/Pods/
