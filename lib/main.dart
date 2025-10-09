@@ -1,7 +1,13 @@
+import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:flutter/material.dart';
-import 'src/screens/main_menu_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const TacticalDiceApp());
 }
 
@@ -17,7 +23,7 @@ class TacticalDiceApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         brightness: Brightness.dark,
       ),
-      home: const MainMenuScreen(),
+      home: const GameNavbar(),
       debugShowCheckedModeBanner: false,
     );
   }
