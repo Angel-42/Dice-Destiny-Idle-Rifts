@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dice_destiny_idle_rifts/src/screens/welcome_screen.dart';
 import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:flutter/material.dart';
@@ -25,37 +26,16 @@ class TacticalDiceApp extends StatelessWidget {
     return MaterialApp(
       title: 'Dice Destiny: Idle Rifts',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         brightness: Brightness.dark,
+        colorScheme: ColorScheme.dark(
+          primary: Colors.deepPurple,
+          secondary: Colors.amber,
+        ),
       ),
-      home: const AppInitializer(), // <-- Nouveau widget
+      home: const WelcomeScreen(),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-// Nouveau widget pour gérer le flow
-class AppInitializer extends StatelessWidget {
-  const AppInitializer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: GameDataService.hasProfile(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        // if (!snapshot.data!) {
-        //   return const PersonaCreationScreen();
-        // }
-
-        return const GameNavbar();
-      },
     );
   }
 }
