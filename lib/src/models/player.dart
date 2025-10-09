@@ -157,13 +157,14 @@ class Player {
   }
 
   // Dépenser de l'or
-  bool spendGold(int amount) {
-    if (gold >= amount) {
-      gold -= amount;
-      return true;
-    }
-    return false;
+bool spendGold(int amount) {
+  if (amount < 0) throw ArgumentError('Amount must be positive');
+  if (gold >= amount) {
+    gold -= amount;
+    return true;
   }
+  return false;
+}
 
   // Ajouter des gemmes
   void addGems(int amount) {
@@ -172,6 +173,7 @@ class Player {
 
   // Dépenser des gemmes
   bool spendGems(int amount) {
+    if (amount < 0) throw ArgumentError('Amount must be positive');
     if (gems >= amount) {
       gems -= amount;
       return true;
