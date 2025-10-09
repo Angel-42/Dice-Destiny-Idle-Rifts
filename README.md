@@ -1,13 +1,13 @@
 # 🎲 Dice Destiny: Idle Rifts
 
-[![Flutter CI/CD](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/actions/workflows/ci.yml/badge.svg)](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts)](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/releases/latest)
+[![Flutter CI/CD](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/actions/workflows/ci.yml/badge.svg)](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Angel-42/Dice-Destiny-Idle-Rifts)](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/releases/latest)
 [![Flutter](https://img.shields.io/badge/Flutter-3.35.5-blue)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Un RPG tactique idle où le destin est dicté par les dés cosmiques. Affrontez les Rifts dimensionnels et sauvez l'équilibre des mondes !
 
-![Game Banner](assets/banner.png) <!-- Ajouter une image si tu en as -->
+![Game Banner](assets/banner.png)
 
 ## 🎮 Caractéristiques
 
@@ -23,9 +23,9 @@ Un RPG tactique idle où le destin est dicté par les dés cosmiques. Affrontez 
 ### Android
 
 #### Option 1 : Téléchargement Direct (Recommandé)
-[![Download APK](https://img.shields.io/github/v/release/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts?label=Download%20APK&style=for-the-badge&logo=android)](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/releases/latest/download/dice-destiny-idle-rifts-latest.apk)
+[![Download APK](https://img.shields.io/github/v/release/Angel-42/Dice-Destiny-Idle-Rifts?label=Download%20APK&style=for-the-badge&logo=android)](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/releases/latest/download/dice-destiny-idle-rifts-latest.apk)
 
-1. Téléchargez l'APK depuis la [page des releases](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/releases/latest)
+1. Téléchargez l'APK depuis la [page des releases](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/releases/latest)
 2. Activez "Sources inconnues" dans les paramètres Android
 3. Installez l'APK
 4. Lancez le jeu !
@@ -33,7 +33,7 @@ Un RPG tactique idle où le destin est dicté par les dés cosmiques. Affrontez 
 #### Option 2 : Compilation depuis les sources
 ```bash
 # Cloner le repository
-git clone https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts.git
+git clone https://github.com/Angel-42/Dice-Destiny-Idle-Rifts.git
 cd Dice-Destiny-Idle-Rifts
 
 # Installer les dépendances
@@ -120,7 +120,7 @@ lib/
 ### Setup Local
 ```bash
 # Cloner le projet
-git clone https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts.git
+git clone https://github.com/Angel-42/Dice-Destiny-Idle-Rifts.git
 cd Dice-Destiny-Idle-Rifts
 
 # Installer les dépendances
@@ -171,13 +171,13 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 ## 👥 Équipe
 
-- **Développeur Principal** : [Votre Nom](https://github.com/VOTRE_USERNAME)
+- **Développeur Principal** : [Votre Nom](https://github.com/Angel-42)
 
 ## 📧 Contact
 
 - **Discord** : [Rejoindre notre serveur](https://discord.gg/VOTRE_LIEN)
 - **Email** : votre.email@example.com
-- **Issues** : [GitHub Issues](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/issues)
+- **Issues** : [GitHub Issues](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/issues)
 
 ## 🙏 Remerciements
 
@@ -189,4 +189,4 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 **🎮 Jouez maintenant !** Téléchargez la dernière version et commencez votre aventure !
 
-[![Download](https://img.shields.io/badge/Download-Latest%20Release-brightgreen?style=for-the-badge&logo=android)](https://github.com/VOTRE_USERNAME/Dice-Destiny-Idle-Rifts/releases/latest)
+[![Download](https://img.shields.io/badge/Download-Latest%20Release-brightgreen?style=for-the-badge&logo=android)](https://github.com/Angel-42/Dice-Destiny-Idle-Rifts/releases/latest)
