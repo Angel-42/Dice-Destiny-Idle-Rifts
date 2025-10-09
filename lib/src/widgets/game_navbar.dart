@@ -8,10 +8,10 @@ class GameNavbar extends StatefulWidget {
   const GameNavbar({super.key});
 
   @override
-  _GameNavbarState createState() => _GameNavbarState();
+  State<GameNavbar> createState() => GameNavbarState();
 }
 
-class _GameNavbarState extends State<GameNavbar> {
+class GameNavbarState extends State<GameNavbar> {
   int _selectedIndex = 0;
 
   late final List<Widget> _widgetOptions;
