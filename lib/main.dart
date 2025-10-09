@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dice_destiny_idle_rifts/src/screens/welcome_screen.dart';
-import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
-import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

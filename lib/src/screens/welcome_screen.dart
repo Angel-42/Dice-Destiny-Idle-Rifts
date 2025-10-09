@@ -1,7 +1,7 @@
 import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:flutter/material.dart';
-import 'persona_creation_screen.dart';
+import 'cinematic_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -414,7 +414,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const PersonaCreationScreen(),
+                const CinematicScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
