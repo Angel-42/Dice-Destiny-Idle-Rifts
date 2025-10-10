@@ -402,40 +402,43 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     Future<void> _handleStart() async {
     debugPrint('[DEBUG] Start button pressed');
     setState(() => _isChecking = true);
-
+  
     try {
-      // 🔥 IMPORTANT : Authentifier d'abord (anonyme ou Google)
+      // 🔥 Si l'utilisateur n'est pas connecté, afficher le LoginDialog
       if (!AuthService.isSignedIn) {
-        debugPrint('[DEBUG] User is not signed in, authenticating anonymously...');
+        debugPrint('[DEBUG] User is not signed in, showing LoginDialog...');
         
-        // Option 1 : Auth anonyme automatique (recommandé pour un jeu idle)
-        // await AuthService.signInAnonymously();
-        
-        // Option 2 : Afficher dialog de login (si tu veux forcer Google Sign-In)
+        // Afficher le dialog de connexion
         final result = await showDialog<bool>(
           context: context,
-          barrierDismissible: false,
+          barrierDismissible: false, // Empêcher de fermer en cliquant à côté
           builder: (context) => const LoginDialog(),
         );
+        
+        // Si l'utilisateur annule ou que la connexion échoue
         if (result != true) {
+          debugPrint('[DEBUG] Login cancelled or failed');
           setState(() => _isChecking = false);
           return;
         }
       }
-
-      // Maintenant que l'utilisateur est authentifié, vérifier les données
+  
+      // ✅ Maintenant l'utilisateur est authentifié (anonyme ou Google)
       debugPrint('[DEBUG] User authenticated: ${AuthService.currentUserId}');
       
+      // Vérifier les données du joueur
       final hasProfile = await GameDataService.hasProfile();
       final hasCharacters = await GameDataService.hasCharacters();
       debugPrint('[DEBUG] hasProfile: $hasProfile, hasCharacters: $hasCharacters');
-
+  
       if (!mounted) return;
-
+  
+      // Animation de sortie
       await _controller.reverse();
-
+  
       if (!mounted) return;
-
+  
+      // Navigation selon l'état du joueur
       if (!hasProfile || !hasCharacters) {
         debugPrint('[DEBUG] Navigating to CinematicScreen (new user)');
         Navigator.of(context).pushReplacement(
@@ -446,11 +449,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               const curve = Curves.easeInOutCubic;
-
+  
               var tween = Tween(begin: begin, end: end).chain(
                 CurveTween(curve: curve),
               );
-
+  
               return SlideTransition(
                 position: animation.drive(tween),
                 child: child,
@@ -477,9 +480,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
       }
     } catch (e) {
       if (!mounted) return;
-
+  
       setState(() => _isChecking = false);
-
+  
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(

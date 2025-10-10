@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import '../services/auth_service.dart';
-
-import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
-import 'package:flutter/material.dart';
 
 class LoginDialog extends StatefulWidget {
   const LoginDialog({super.key});
@@ -18,139 +14,378 @@ class _LoginDialogState extends State<LoginDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: const Color(0xFF1a0f2e),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: Colors.deepPurple.withOpacity(0.5),
-          width: 2,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 450),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1a0f2e),
+              const Color(0xFF2d1b4e),
+              const Color(0xFF1a0f2e),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.deepPurple.withOpacity(0.5),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.deepPurple.withOpacity(0.3),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header avec icône et titre
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.amber.withOpacity(0.5),
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.login,
+                        color: Colors.amber.shade400,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Connexion',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          Text(
+                            'Choisissez votre mode',
+                            style: TextStyle(
+                              color: Colors.white60,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Message d'erreur
+                if (_errorMessage != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.red.withOpacity(0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Bouton Email/Password (principal)
+                if (!_isLoading)
+                  _buildPrimaryButton(
+                    icon: Icons.email,
+                    label: 'Email & Mot de passe',
+                    subtitle: 'Compte permanent',
+                    color: Colors.blue,
+                    onTap: () => _showEmailLoginDialog(context),
+                  ),
+
+                const SizedBox(height: 16),
+
+                // Divider avec "OU"
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white.withOpacity(0.3),
+                        thickness: 1,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OU',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white.withOpacity(0.3),
+                        thickness: 1,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Bouton Google
+                if (!_isLoading)
+                  _buildSecondaryButton(
+                    icon: Icons.g_mobiledata,
+                    label: 'Google',
+                    color: Colors.red,
+                    onTap: () => _handleGoogleSignIn(context),
+                  ),
+
+                const SizedBox(height: 12),
+
+                // Bouton Anonyme
+                if (!_isLoading)
+                  _buildSecondaryButton(
+                    icon: Icons.person_outline,
+                    label: 'Continuer sans compte',
+                    color: Colors.amber,
+                    onTap: () => _handleAnonymousSignIn(context),
+                  ),
+
+                // Loading indicator
+                if (_isLoading)
+                  Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      CircularProgressIndicator(
+                        color: Colors.amber.shade400,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Connexion en cours...',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Info footer
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.amber.shade300,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Vous pourrez lier votre compte plus tard dans les paramètres',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      title: Row(
-        children: [
-          Icon(
-            Icons.lock_open,
-            color: Colors.amber.shade400,
-            size: 28,
-          ),
-          const SizedBox(width: 12),
-          const Text(
-            'Connexion',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+    );
+  }
+
+  Widget _buildPrimaryButton({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                color.withOpacity(0.3),
+                color.withOpacity(0.1),
+              ],
             ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Connectez-vous pour sauvegarder votre progression dans les nuages',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 14,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withOpacity(0.6),
+              width: 2,
             ),
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.red.withOpacity(0.5),
-                ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
                         fontSize: 12,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-          if (_isLoading) ...[
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(
-              color: Colors.amber,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Connexion en cours...',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
-                fontSize: 12,
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white.withOpacity(0.5),
+                size: 20,
               ),
-            ),
-          ],
-        ],
+            ],
+          ),
+        ),
       ),
-      actions: [
-        // Bouton Anonyme
-        if (!_isLoading)
-          TextButton(
-            onPressed: () => _handleAnonymousSignIn(context),
-            child: Text(
-              'Continuer sans compte',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
-                fontSize: 14,
-              ),
-            ),
-          ),
-        
-        // Bouton Google
-        if (!_isLoading)
-          ElevatedButton.icon(
-            onPressed: () => _handleGoogleSignIn(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            icon: Image.asset(
-              'assets/google_logo.png',
-              height: 20,
-              width: 20,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.login, size: 20);
-              },
-            ),
-            label: const Text(
-              'Google',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-      ],
     );
+  }
+
+  Widget _buildSecondaryButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: color.withOpacity(0.4),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward,
+                color: Colors.white.withOpacity(0.3),
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEmailLoginDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const EmailLoginDialog(),
+    );
+
+    if (result == true && mounted) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   Future<void> _handleGoogleSignIn(BuildContext context) async {
@@ -209,57 +444,6 @@ class _LoginDialogState extends State<LoginDialog> {
         _errorMessage = 'Erreur de connexion: ${e.toString()}';
       });
     }
-  }
-}
-
-/// Widget pour les boutons de connexion
-class _LoginButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _LoginButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.5), width: 2),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: Colors.white, size: 24),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Icon(Icons.arrow_forward, color: Colors.white.withOpacity(0.5), size: 20),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -507,28 +691,4 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
       ),
     );
   }
-}
-
-/// Painter pour les particules
-class _ParticlesPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final random = Random(42);
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    for (int i = 0; i < 30; i++) {
-      final x = random.nextDouble() * size.width;
-      final y = random.nextDouble() * size.height;
-      final particleSize = 1.0 + random.nextDouble() * 2.0;
-      final opacity = 0.2 + random.nextDouble() * 0.4;
-
-      paint.color = Colors.deepPurple.withOpacity(opacity);
-      paint.maskFilter = MaskFilter.blur(BlurStyle.normal, particleSize);
-
-      canvas.drawCircle(Offset(x, y), particleSize, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ParticlesPainter oldDelegate) => false;
 }
