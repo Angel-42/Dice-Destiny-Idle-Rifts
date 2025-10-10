@@ -142,7 +142,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
         _nameController.text.trim(),
       );
       
-      await GameDataService.ensureAuthenticated();
+      // L'utilisateur est déjà authentifié via le Welcome Screen
       
       final hasProfile = await GameDataService.hasProfile();
       if (!hasProfile) {

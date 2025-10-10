@@ -1,21 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/player.dart';
 import '../models/character.dart';
+import 'auth_service.dart';
 
 /// Service Firebase pour gérer les données du joueur et des personnages
 class GameDataService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Références
   static CollectionReference get _usersCollection => _firestore.collection('users');
   
   static DocumentReference? get _currentUserDoc {
-    final user = _auth.currentUser;
-    if (user == null) return null;
-    return _usersCollection.doc(user.uid);
+    final userId = AuthService.currentUserId;
+    if (userId == null) return null;
+    return _usersCollection.doc(userId);
   }
   
   static CollectionReference? get _charactersCollection {
@@ -23,20 +22,14 @@ class GameDataService {
   }
 
   // ============================================================================
-  // AUTHENTIFICATION
+  // AUTHENTIFICATION (délégué à AuthService)
   // ============================================================================
 
-  /// S'assurer que l'utilisateur est authentifié (anonyme par défaut)
-  static Future<void> ensureAuthenticated() async {
-    if (_auth.currentUser == null) {
-      debugPrint('🔐 Authentification anonyme en cours...');
-      await _auth.signInAnonymously();
-      debugPrint('✅ Authentification réussie: ${_auth.currentUser?.uid}');
-    }
-  }
-
   /// Obtenir l'ID utilisateur actuel
-  static String? get currentUserId => _auth.currentUser?.uid;
+  static String? get currentUserId => AuthService.currentUserId;
+  
+  /// Vérifier si l'utilisateur est connecté
+  static bool get isSignedIn => AuthService.isSignedIn;
 
   // ============================================================================
   // PLAYER (COMPTE JOUEUR)
@@ -45,7 +38,7 @@ class GameDataService {
   /// Récupère le profil du joueur
   static Future<Player?> getPlayer() async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       final doc = await _currentUserDoc?.get();
       
       if (doc == null || !doc.exists) {
@@ -68,7 +61,10 @@ class GameDataService {
   /// Crée un nouveau profil joueur
   static Future<void> createPlayer(String displayName) async {
     try {
-      await ensureAuthenticated();
+      // Vérifier que l'utilisateur est authentifié
+      if (currentUserId == null) {
+        throw Exception('Utilisateur non authentifié');
+      }
       
       final player = Player(
         userId: currentUserId!,
@@ -86,7 +82,7 @@ class GameDataService {
   /// Sauvegarde le profil du joueur
   static Future<void> savePlayer(Player player) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       await _currentUserDoc?.set(player.toJson(), SetOptions(merge: true));
       debugPrint('💾 Profil joueur sauvegardé');
     } catch (e) {
@@ -102,7 +98,7 @@ class GameDataService {
     int? summonTokens,
   }) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       final updates = <String, dynamic>{};
       
       if (gold != null) updates['gold'] = FieldValue.increment(gold);
@@ -124,7 +120,7 @@ class GameDataService {
   /// Récupère tous les personnages du joueur
   static Future<List<Character>> getAllCharacters() async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       final snapshot = await _charactersCollection?.get();
       
       if (snapshot == null || snapshot.docs.isEmpty) {
@@ -147,7 +143,7 @@ class GameDataService {
   /// Récupère un personnage spécifique
   static Future<Character?> getCharacter(String characterId) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       final doc = await _charactersCollection?.doc(characterId).get();
       
       if (doc == null || !doc.exists) {
@@ -167,7 +163,7 @@ class GameDataService {
   /// Récupère les personnages de l'équipe
   static Future<List<Character>> getTeamCharacters() async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       final snapshot = await _charactersCollection
           ?.where('isInTeam', isEqualTo: true)
           .orderBy('teamPosition')
@@ -213,7 +209,7 @@ class GameDataService {
   /// Crée un nouveau personnage
   static Future<void> createCharacter(Character character) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       
       // Si c'est le premier personnage, le mettre en position 1
       final existingChars = await getAllCharacters();
@@ -233,7 +229,7 @@ class GameDataService {
   /// Sauvegarde un personnage
   static Future<void> saveCharacter(Character character) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       await _charactersCollection?.doc(character.id).set(
         character.toJson(),
         SetOptions(merge: true),
@@ -248,7 +244,7 @@ class GameDataService {
   /// Supprime un personnage
   static Future<void> deleteCharacter(String characterId) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       await _charactersCollection?.doc(characterId).delete();
       debugPrint('🗑️ Personnage supprimé: $characterId');
     } catch (e) {
@@ -260,7 +256,7 @@ class GameDataService {
   /// Met à jour l'équipe
   static Future<void> updateTeam(List<String> characterIds) async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       
       // Retirer tous les personnages de l'équipe
       final allChars = await getAllCharacters();
@@ -294,7 +290,7 @@ class GameDataService {
   /// Vérifie si le joueur a un profil
   static Future<bool> hasProfile() async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       final doc = await _currentUserDoc?.get();
       return doc != null && doc.exists;
     } catch (e) {
@@ -317,7 +313,7 @@ class GameDataService {
   /// Réinitialise toutes les données du joueur
   static Future<void> resetAll() async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       
       // Supprimer tous les personnages
       final characters = await getAllCharacters();
@@ -338,13 +334,13 @@ class GameDataService {
   /// Supprime le compte utilisateur
   static Future<void> deleteAccount() async {
     try {
-      await ensureAuthenticated();
+      // Les méthodes assument que l'utilisateur est authentifié
       
       // Supprimer toutes les données
       await resetAll();
       
-      // Supprimer l'authentification
-      await _auth.currentUser?.delete();
+      // Supprimer l'authentification via AuthService
+      await AuthService.currentUser?.delete();
       
       debugPrint('🗑️ Compte supprimé');
     } catch (e) {
@@ -359,7 +355,7 @@ class GameDataService {
 
   /// Stream du profil joueur
   static Stream<Player?> watchPlayer() {
-    return _auth.authStateChanges().asyncExpand((user) {
+    return AuthService.authStateChanges.asyncExpand((user) {
       if (user == null) return Stream.value(null);
       
       return _usersCollection.doc(user.uid).snapshots().map((doc) {
@@ -371,7 +367,7 @@ class GameDataService {
 
   /// Stream des personnages
   static Stream<List<Character>> watchCharacters() {
-    return _auth.authStateChanges().asyncExpand((user) {
+    return AuthService.authStateChanges.asyncExpand((user) {
       if (user == null) return Stream.value([]);
       
       return _usersCollection

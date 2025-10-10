@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Règles pour les utilisateurs
+    match /users/{userId} {
+      // Permettre la lecture et l'écriture uniquement si l'utilisateur est authentifié
+      // et si l'UID correspond à celui de l'utilisateur actuel
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Règles pour les personnages (sous-collection)
+      match /characters/{characterId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Bloquer tout autre accès
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
