@@ -1,5 +1,7 @@
+import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
+import 'package:dice_destiny_idle_rifts/src/widgets/login_dialog.dart';
 import 'package:flutter/material.dart';
 import 'cinematic_screen.dart';
 
@@ -397,12 +399,36 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     );
   }
 
-  Future<void> _handleStart() async {
+    Future<void> _handleStart() async {
+    debugPrint('[DEBUG] Start button pressed');
     setState(() => _isChecking = true);
 
     try {
+      // 🔥 IMPORTANT : Authentifier d'abord (anonyme ou Google)
+      if (!AuthService.isSignedIn) {
+        debugPrint('[DEBUG] User is not signed in, authenticating anonymously...');
+        
+        // Option 1 : Auth anonyme automatique (recommandé pour un jeu idle)
+        // await AuthService.signInAnonymously();
+        
+        // Option 2 : Afficher dialog de login (si tu veux forcer Google Sign-In)
+        final result = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const LoginDialog(),
+        );
+        if (result != true) {
+          setState(() => _isChecking = false);
+          return;
+        }
+      }
+
+      // Maintenant que l'utilisateur est authentifié, vérifier les données
+      debugPrint('[DEBUG] User authenticated: ${AuthService.currentUserId}');
+      
       final hasProfile = await GameDataService.hasProfile();
       final hasCharacters = await GameDataService.hasCharacters();
+      debugPrint('[DEBUG] hasProfile: $hasProfile, hasCharacters: $hasCharacters');
 
       if (!mounted) return;
 
@@ -411,6 +437,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
       if (!mounted) return;
 
       if (!hasProfile || !hasCharacters) {
+        debugPrint('[DEBUG] Navigating to CinematicScreen (new user)');
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -433,6 +460,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           ),
         );
       } else {
+        debugPrint('[DEBUG] Navigating to GameNavbar (existing user)');
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -506,9 +534,8 @@ class _TacticalGridPainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    const gridSize = 40.0; // Taille des cases de la grille
+    const gridSize = 40.0;
 
-    // Lignes verticales
     for (double x = 0; x < size.width; x += gridSize) {
       canvas.drawLine(
         Offset(x, 0),
@@ -517,7 +544,6 @@ class _TacticalGridPainter extends CustomPainter {
       );
     }
 
-    // Lignes horizontales
     for (double y = 0; y < size.height; y += gridSize) {
       canvas.drawLine(
         Offset(0, y),
@@ -526,12 +552,10 @@ class _TacticalGridPainter extends CustomPainter {
       );
     }
 
-    // Ajouter quelques cases mises en surbrillance (effet "cases atteignables")
     final highlightPaint = Paint()
       ..color = const Color(0xFF7c5fa8).withOpacity(0.1)
       ..style = PaintingStyle.fill;
 
-    // Placer quelques carrés aléatoires mais cohérents
     final highlights = [
       const Offset(2, 3),
       const Offset(5, 2),
@@ -564,7 +588,6 @@ class _ParticlesPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.fill;
 
-    // Créer des "étoiles" / particules à positions fixes
     final particles = [
       _Particle(size.width * 0.1, size.height * 0.15, 2.0, const Color(0xFFffd700)),
       _Particle(size.width * 0.85, size.height * 0.25, 1.5, const Color(0xFFb19cd9)),
@@ -579,7 +602,6 @@ class _ParticlesPainter extends CustomPainter {
     ];
 
     for (final particle in particles) {
-      // Glow effect (halo)
       paint.color = particle.color.withOpacity(0.3);
       canvas.drawCircle(
         Offset(particle.x, particle.y),
@@ -587,7 +609,6 @@ class _ParticlesPainter extends CustomPainter {
         paint,
       );
 
-      // Particule principale
       paint.color = particle.color.withOpacity(0.8);
       canvas.drawCircle(
         Offset(particle.x, particle.y),
