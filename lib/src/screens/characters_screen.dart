@@ -3,37 +3,10 @@ import '../models/character.dart';
 import '../services/game_data_service.dart';
 import 'character_detail_screen.dart';
 
-class CharactersScreen extends StatefulWidget {
+class CharactersScreen extends StatelessWidget {
   const CharactersScreen({super.key});
 
-  @override
-  State<CharactersScreen> createState() => _CharactersScreenState();
-}
-
-class _CharactersScreenState extends State<CharactersScreen> {
-  List<Character> _characters = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCharacters();
-  }
-
-  Future<void> _loadCharacters() async {
-    try {
-      final characters = await GameDataService.getAllCharacters();
-      setState(() {
-        _characters = characters;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('❌ Erreur chargement personnages: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _showCharacterDetail(Character character) {
+  void _showCharacterDetail(BuildContext context, Character character) {
     showDialog(
       context: context,
       barrierColor: Colors.black87,
@@ -79,26 +52,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                         letterSpacing: 2,
                       ),
                     ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black45,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.amber),
-                      ),
-                      child: Text(
-                        '${_characters.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -109,33 +62,92 @@ class _CharactersScreenState extends State<CharactersScreen> {
                 height: 2,
               ),
 
-              // Liste des personnages
+              // Liste des personnages (StreamBuilder pour temps réel)
               Expanded(
-                child: _isLoading
-                    ? const Center(
+                child: StreamBuilder<List<Character>>(
+                  stream: GameDataService.watchCharacters(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
                         child: CircularProgressIndicator(color: Colors.amber),
-                      )
-                    : _characters.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  '📭',
-                                  style: TextStyle(fontSize: 80),
-                                ),
-                                const SizedBox(height: 24),
-                                Text(
-                                  'Aucun personnage',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              '❌',
+                              style: TextStyle(fontSize: 80),
                             ),
-                          )
-                        : GridView.builder(
+                            const SizedBox(height: 24),
+                            Text(
+                              'Erreur: ${snapshot.error}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final characters = snapshot.data ?? [];
+
+                    if (characters.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              '📭',
+                              style: TextStyle(fontSize: 80),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Aucun personnage\nAllez dans Summon pour en invoquer !',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        // Compteur de personnages
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.amber),
+                            ),
+                            child: Text(
+                              '${characters.length} personnage(s)',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GridView.builder(
                             padding: const EdgeInsets.all(16),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
@@ -143,12 +155,17 @@ class _CharactersScreenState extends State<CharactersScreen> {
                               mainAxisSpacing: 16,
                               childAspectRatio: 0.75,
                             ),
-                            itemCount: _characters.length,
+                            itemCount: characters.length,
                             itemBuilder: (context, index) {
-                              final character = _characters[index];
-                              return _buildCharacterCard(character);
+                              final character = characters[index];
+                              return _buildCharacterCard(context, character);
                             },
                           ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -157,9 +174,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  Widget _buildCharacterCard(Character character) {
+  Widget _buildCharacterCard(BuildContext context, Character character) {
     return GestureDetector(
-      onTap: () => _showCharacterDetail(character),
+      onTap: () => _showCharacterDetail(context, character),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
