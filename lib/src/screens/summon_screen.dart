@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
 class SummonScreen extends StatelessWidget {
-  const SummonScreen({Key? key}) : super(key: key);
+  const SummonScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Summon'),
-      ),
       body: Center(
         child: const Text(
           'Summon Screen',

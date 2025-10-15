@@ -1,8 +1,15 @@
+import 'package:dice_destiny_idle_rifts/src/screens/campaign_screen.dart';
+import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
+import '../models/character.dart';
 import 'package:flutter/material.dart';
-
-class BattleScreen extends StatelessWidget {
+class BattleScreen extends StatefulWidget {
   const BattleScreen({super.key});
 
+  @override
+  State<BattleScreen> createState() => _BattleScreenState();
+}
+
+class _BattleScreenState extends State<BattleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,23 +105,35 @@ class BattleScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
-
-                      const Text(
-                        'Coming Soon',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white70,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 25),
 
                       // Bouton Campaign
                       ElevatedButton.icon(
-                        onPressed: () {
-                          // TODO: Navigate to Campaign
+                        onPressed: () async {
+                          try {
+                            final team = await GameDataService.getTeamCharacters();
+                            if (team.isEmpty) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Vous devez créer un personnage d\'abord !')),
+                              );
+                              return;
+                            }
+                            if (!mounted) return;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CampaignScreen(team: team),
+                              ),
+                            );
+                          } catch (e) {
+                            debugPrint('❌ Erreur ouverture campagne depuis Battle: $e');
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Impossible d\'ouvrir la campagne')),
+                              );
+                            }
+                          }
                         },
                         icon: const Icon(Icons.campaign),
                         label: const Text(
@@ -134,7 +153,57 @@ class BattleScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 11),
+
+                      // Bouton Rifts
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // TODO: Navigate to Rifts
+                        },
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text(
+                          'Rifts',
+                          style: TextStyle(fontSize: 18),
+                      ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 11),
+
+                      // Bouton Dungeons
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // TODO: Navigate to Dungeons
+                        },
+                        icon: const Icon(Icons.door_front_door),
+                        label: const Text(
+                          'Dungeons',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 14, 85, 17),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 11),
 
                       // Bouton Arena
                       ElevatedButton.icon(

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/map_data.dart';
 import '../widgets/tactical_map_widget.dart';
+import '../models/character.dart';
 
 /// Écran de campagne avec map tactique et déplacement
 class CampaignScreen extends StatefulWidget {
-  final String characterId;
-  final String characterName;
+  final List<Character> team;
 
   const CampaignScreen({
     super.key,
-    required this.characterId,
-    required this.characterName,
+    required this.team,
   });
 
   @override
@@ -33,36 +32,28 @@ class _CampaignScreenState extends State<CampaignScreen> {
     // Créer la map
     mapData = TacticalMapData.createTestMap();
 
-    // Placer le joueur en position de départ (bas gauche)
-    final playerUnit = UnitPosition(
-      unitId: widget.characterId,
-      x: 2,
-      y: 6,
-      name: widget.characterName,
-      color: Colors.blue,
-      isPlayer: true,
-    );
+    final team = widget.team;
+    final baseY = mapData.height - 2;
+    final startX = 1;
+    units = [];
 
-    // Ajouter quelques ennemis de test (optionnel)
-    final enemy1 = UnitPosition(
-      unitId: 'enemy_1',
-      x: 5,
-      y: 2,
-      name: 'Goblin',
-      color: Colors.red,
-      isPlayer: false,
-    );
+    for (var i = 0; i < team.length && i < 4; i++) {
+      final c = team[i];
+      units.add(UnitPosition(
+        unitId: c.id,
+        x: startX + i,
+        y: baseY,
+        name: c.name,
+        color: Color(c.appearance.colorValue),
+        isPlayer: true,
+      ));
+    }
 
-    final enemy2 = UnitPosition(
-      unitId: 'enemy_2',
-      x: 6,
-      y: 3,
-      name: 'Orc',
-      color: Colors.red,
-      isPlayer: false,
-    );
-
-    units = [playerUnit, enemy1, enemy2];
+    // Quelques ennemis de test (hardcode)
+    units.addAll([
+      UnitPosition(unitId: 'enemy_1', x: 5, y: 2, name: 'Goblin', color: Colors.red, isPlayer: false),
+      UnitPosition(unitId: 'enemy_2', x: 6, y: 3, name: 'Orc', color: Colors.red, isPlayer: false),
+    ]);
   }
 
   void _onUnitTap(UnitPosition unit) {
