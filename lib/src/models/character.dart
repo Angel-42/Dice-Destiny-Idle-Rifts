@@ -1,4 +1,7 @@
 import '../models/persona.dart';
+import '../models/equipment.dart';
+import '../models/skill.dart';
+import '../models/weapon_mastery.dart';
 
 class Character {     // est un personnage jouable (pas le player)
   final String id;
@@ -17,13 +20,16 @@ class Character {     // est un personnage jouable (pas le player)
 
   int currentHp;
 
-  // équipement (IDs items)
-  String? weaponId;
-  String? armorId;
-  String? accessoryId;
+  // équipement
+  Equipment? weapon;
+  Equipment? armor;
+  Equipment? accessory;
 
-  // compétences débloquées
-  List<String> unlockedSkills;
+  // compétences équipées (max 5)
+  List<Skill> equippedSkills;
+  
+  // maîtrises d'armes
+  List<WeaponMastery> weaponMasteries;
 
   // méta-data
   CharacterRarity basedRarity;
@@ -42,10 +48,11 @@ class Character {     // est un personnage jouable (pas le player)
     this.xp = 0,
     this.x = 0,
     this.y = 0,
-    this.weaponId,
-    this.armorId,
-    this.accessoryId,
-    List<String>? unlockedSkills,
+    this.weapon,
+    this.armor,
+    this.accessory,
+    List<Skill>? equippedSkills,
+    List<WeaponMastery>? weaponMasteries,
     this.basedRarity = CharacterRarity.common,
     this.currentRarity = CharacterRarity.common,
     this.isInTeam = false,
@@ -53,8 +60,26 @@ class Character {     // est un personnage jouable (pas le player)
     DateTime? obtainedAt,
   })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         currentHp = stats.maxHp,
-        unlockedSkills = unlockedSkills ?? [],
-        obtainedAt = obtainedAt ?? DateTime.now();
+        equippedSkills = equippedSkills ?? [],
+        weaponMasteries = weaponMasteries ?? [],
+        obtainedAt = obtainedAt ?? DateTime.now() {
+    // Si pas d'arme, ajouter l'arme de départ
+    weapon ??= DefaultWeapons.getForClass(persona.characterClass.name);
+    
+    // Si pas de compétences, ajouter les compétences de départ
+    if (this.equippedSkills.isEmpty) {
+      this.equippedSkills = DefaultSkills.getStartingSkills(
+        persona.characterClass,
+        persona.race,
+        persona.origin,
+      );
+    }
+    
+    // Si pas de maîtrises, ajouter les maîtrises de départ
+    if (this.weaponMasteries.isEmpty) {
+      this.weaponMasteries = DefaultWeaponMasteries.getForClass(persona.characterClass);
+    }
+  }
 
   // Convert to/from JSON for storage
   Map<String, dynamic> toJson() => {
@@ -67,10 +92,11 @@ class Character {     // est un personnage jouable (pas le player)
         'x': x,
         'y': y,
         'currentHp': currentHp,
-        'weaponId': weaponId,
-        'armorId': armorId,
-        'accessoryId': accessoryId,
-        'unlockedSkills': unlockedSkills,
+        'weapon': weapon?.toJson(),
+        'armor': armor?.toJson(),
+        'accessory': accessory?.toJson(),
+        'equippedSkills': equippedSkills.map((s) => s.toJson()).toList(),
+        'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
         'basedRarity': basedRarity.name,
         'currentRarity': currentRarity.name,
         'isInTeam': isInTeam,
@@ -90,10 +116,15 @@ class Character {     // est un personnage jouable (pas le player)
       xp: json['xp'] ?? 0,
       x: json['x'] ?? 0,
       y: json['y'] ?? 0,
-      weaponId: json['weaponId'],
-      armorId: json['armorId'],
-      accessoryId: json['accessoryId'],
-      unlockedSkills: (json['unlockedSkills'] as List?)?.cast<String>() ?? [],
+      weapon: json['weapon'] != null ? Equipment.fromJson(json['weapon']) : null,
+      armor: json['armor'] != null ? Equipment.fromJson(json['armor']) : null,
+      accessory: json['accessory'] != null ? Equipment.fromJson(json['accessory']) : null,
+      equippedSkills: (json['equippedSkills'] as List?)
+          ?.map((s) => Skill.fromJson(s))
+          .toList(),
+      weaponMasteries: (json['weaponMasteries'] as List?)
+          ?.map((w) => WeaponMastery.fromJson(w))
+          .toList(),
       basedRarity: CharacterRarity.values.firstWhere(
         (r) => r.name == json['basedRarity'],
         orElse: () => CharacterRarity.common,
@@ -119,6 +150,154 @@ class Character {     // est un personnage jouable (pas le player)
 
   // Progression vers le niveau suivant
   double get levelProgress => xp / xpForNextLevel;
+
+  // ============================================================================
+  // STATS CALCULÉES (stats de base + bonus d'équipement + bonus de compétences)
+  // ============================================================================
+
+  /// Calcule les bonus d'équipement pour une stat donnée
+  int _getEquipmentBonus(String statKey) {
+    int bonus = 0;
+    
+    // Bonus de l'arme
+    if (weapon != null && weapon!.bonuses.containsKey(statKey)) {
+      bonus += weapon!.bonuses[statKey]!;
+    }
+    
+    // Bonus de l'armure
+    if (armor != null && armor!.bonuses.containsKey(statKey)) {
+      bonus += armor!.bonuses[statKey]!;
+    }
+    
+    // Bonus de l'accessoire
+    if (accessory != null && accessory!.bonuses.containsKey(statKey)) {
+      bonus += accessory!.bonuses[statKey]!;
+    }
+    
+    return bonus;
+  }
+
+  /// Calcule les bonus de compétences passives (en % multiplicatif)
+  double _getSkillBonusMultiplier(String statKey) {
+    double multiplier = 1.0;
+    
+    for (final skill in equippedSkills) {
+      if (skill.type == SkillType.passive && skill.statBonuses.containsKey(statKey)) {
+        multiplier += skill.statBonuses[statKey]!;
+      }
+    }
+    
+    return multiplier;
+  }
+
+  /// Attaque totale (base + équipement) * compétences
+  int get totalAttack {
+    final base = stats.attack + _getEquipmentBonus('attack');
+    return (base * _getSkillBonusMultiplier('attack')).round();
+  }
+
+  /// Défense totale (base + équipement) * compétences
+  int get totalDefense {
+    final base = stats.defense + _getEquipmentBonus('defense');
+    return (base * _getSkillBonusMultiplier('defense')).round();
+  }
+
+  /// Magie totale (base + équipement) * compétences
+  int get totalMagic {
+    final base = stats.magic + _getEquipmentBonus('magic');
+    return (base * _getSkillBonusMultiplier('magic')).round();
+  }
+
+  /// Vitesse totale (base + équipement) * compétences
+  int get totalSpeed {
+    final base = stats.speed + _getEquipmentBonus('speed');
+    return (base * _getSkillBonusMultiplier('speed')).round();
+  }
+
+  /// Chance totale (base + équipement) * compétences
+  int get totalLuck {
+    final base = stats.luck + _getEquipmentBonus('luck');
+    return (base * _getSkillBonusMultiplier('luck')).round();
+  }
+
+  /// HP max total (base + équipement) * compétences
+  int get totalMaxHp {
+    final base = stats.maxHp + _getEquipmentBonus('maxHp');
+    return (base * _getSkillBonusMultiplier('maxHp')).round();
+  }
+
+  // ============================================================================
+  // SYSTÈME DE COMBAT
+  // ============================================================================
+
+  /// Calcule les dégâts physiques infligés à un adversaire
+  /// Formule: (Attaque * Maîtrise d'arme * Skill multiplicateur) - (Défense adversaire * 0.5)
+  int calculatePhysicalDamage(Character target, {Skill? activeSkill}) {
+    // Attaque de base (avec équipement et passives)
+    double damage = totalAttack.toDouble();
+    
+    // Bonus de maîtrise d'arme (si équipé d'une arme)
+    if (weapon != null) {
+      final weaponType = _getWeaponType(weapon!);
+      final mastery = weaponMasteries.firstWhere(
+        (m) => m.type == weaponType,
+        orElse: () => WeaponMastery(type: weaponType, level: 0),
+      );
+      // +5% par niveau de maîtrise (E=0%, D=5%, C=10%, B=15%, A=20%, S=25%)
+      damage *= (1.0 + (mastery.level * 0.05));
+    }
+    
+    // Bonus de compétence active utilisée
+    if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
+      damage *= (1.0 + activeSkill.statBonuses['damageMultiplier']!);
+    }
+    
+    // Réduction selon la défense de la cible
+    final defense = target.totalDefense * 0.5;
+    damage -= defense;
+    
+    // Dégâts minimum de 1
+    return damage.round().clamp(1, 9999);
+  }
+
+  /// Calcule les dégâts magiques infligés à un adversaire
+  /// Formule: (Magie * Skill multiplicateur) - (Résistance adversaire * 0.3)
+  int calculateMagicDamage(Character target, {Skill? activeSkill}) {
+    // Magie de base (avec équipement et passives)
+    double damage = totalMagic.toDouble();
+    
+    // Bonus de compétence active
+    if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
+      damage *= (1.0 + activeSkill.statBonuses['damageMultiplier']!);
+    }
+    
+    // Réduction selon la résistance magique de la cible
+    final resistance = target.totalMagic * 0.3;
+    damage -= resistance;
+    
+    // Dégâts minimum de 1
+    return damage.round().clamp(1, 9999);
+  }
+
+  /// Détermine le type d'arme équipée
+  WeaponType _getWeaponType(Equipment weapon) {
+    // Mapping basé sur l'ID ou le nom de l'arme
+    switch (weapon.id) {
+      case 'iron_sword':
+      case 'steel_sword':
+        return WeaponType.sword;
+      case 'wooden_staff':
+      case 'mage_staff':
+        return WeaponType.staff;
+      case 'iron_dagger':
+      case 'steel_dagger':
+        return WeaponType.dagger;
+      case 'healing_rod':
+        return WeaponType.rod;
+      default:
+        return WeaponType.sword; // Par défaut
+    }
+  }
 
   // Ajouter de l'XP et gérer les montées de niveau
   void addXP(int amount) {
@@ -172,8 +351,9 @@ class Character {     // est un personnage jouable (pas le player)
     }
     currentHp = stats.maxHp;
   }
-  // Puissance globale du personnage
-  int get power => stats.attack + stats.defense + stats.magic + stats.speed + stats.luck + (level * 10);
+  
+  // Puissance globale du personnage (avec bonus d'équipement)
+  int get power => totalAttack + totalDefense + totalMagic + totalSpeed + totalLuck + (level * 10);
 }
 
 enum CharacterRarity {

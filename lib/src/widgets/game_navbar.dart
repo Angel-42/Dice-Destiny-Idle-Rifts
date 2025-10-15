@@ -12,7 +12,7 @@ class GameNavbar extends StatefulWidget {
 }
 
 class GameNavbarState extends State<GameNavbar> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   late final List<Widget> _widgetOptions;
 
