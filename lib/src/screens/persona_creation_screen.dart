@@ -443,7 +443,6 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                     ),
                     border: InputBorder.none,
                   ),
-                  maxLength: 11,
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -481,15 +480,6 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
             ),
             child: Column(
               children: [
-                Text(
-                  hint,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
                 Text(
                   'Minimum 3 caractères',
                   style: TextStyle(
