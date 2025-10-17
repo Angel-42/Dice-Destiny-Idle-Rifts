@@ -8,8 +8,8 @@ class CharacterFactory {
     // Calculate base stats from persona choices
     final stats = _calculateStats(persona);
     
-    // Create appearance based on race
-    final appearance = CharacterAppearance.fromRace(persona.race);
+    // Create appearance based on class with sprites
+    final appearance = _createAppearanceFromClass(persona);
     
     return Character(
       name: name,
@@ -19,6 +19,65 @@ class CharacterFactory {
       basedRarity: CharacterRarity.legendary,
       currentRarity: CharacterRarity.legendary,
     );
+  }
+  
+  /// Get sprite folder name based on character class
+  static String _getSpriteFolder(PersonaClass characterClass) {
+    switch (characterClass) {
+      case PersonaClass.mage:
+        return 'MCM';
+      case PersonaClass.rogue:
+        return 'MCA';
+      case PersonaClass.warrior:
+        return 'MCS';
+      case PersonaClass.cleric:
+        return 'MCC';
+    }
+  }
+  
+  /// Create appearance with class-specific sprites
+  static CharacterAppearance _createAppearanceFromClass(Persona persona) {
+    final folder = _getSpriteFolder(persona.characterClass);
+    
+    // Get color based on race
+    int colorValue;
+    switch (persona.race) {
+      case PersonaRace.human:
+        colorValue = 0xFF2196F3;
+        break;
+      case PersonaRace.elf:
+        colorValue = 0xFF4CAF50;
+        break;
+      case PersonaRace.dwarf:
+        colorValue = 0xFF795548;
+        break;
+      case PersonaRace.orc:
+        colorValue = 0xFFFF5722;
+        break;
+    }
+    
+    return CharacterAppearance(
+      headshot: 'assets/characters/$folder/headshot.png',
+      lheadshot: 'assets/characters/$folder/lheadshot.png',
+      pixel: 'assets/characters/$folder/pixel.png',
+      fullsize: 'assets/characters/$folder/fullsize.png',
+      colorValue: colorValue,
+      description: _getClassDescription(persona.characterClass),
+    );
+  }
+  
+  /// Get description based on character class
+  static String _getClassDescription(PersonaClass characterClass) {
+    switch (characterClass) {
+      case PersonaClass.warrior:
+        return 'Guerrier puissant et résistant';
+      case PersonaClass.mage:
+        return 'Mage aux puissants sorts';
+      case PersonaClass.rogue:
+        return 'Voleur agile et chanceux';
+      case PersonaClass.cleric:
+        return 'Clerc soigneur et protecteur';
+    }
   }
   
   static CharacterStats _calculateStats(Persona persona) {
