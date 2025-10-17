@@ -17,11 +17,13 @@ class _SummonScreenState extends State<SummonScreen> {
 
   /// Helper pour afficher soit un emoji, soit une image sprite
   Widget _buildCharacterSprite(String sprite, double size) {
-    // Si le sprite commence par ~ ou contient .png/.jpg, c'est un chemin d'image
-    if (sprite.contains('.png') || sprite.contains('.jpg') || sprite.contains('.jpeg') || sprite.startsWith('~/')) {
-      final imagePath = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
+    // Nettoyer le chemin d'abord si nécessaire
+    final cleanSprite = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
+    
+    // Si le sprite contient une extension d'image, c'est un chemin d'asset
+    if (cleanSprite.contains('.png') || cleanSprite.contains('.jpg') || cleanSprite.contains('.jpeg')) {
       return Image.asset(
-        imagePath,
+        cleanSprite,
         width: size,
         height: size,
         fit: BoxFit.cover,
@@ -195,8 +197,8 @@ class _SummonScreenState extends State<SummonScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Sprite du personnage
-                _buildCharacterSprite(preset.sprite, 72),
+                // Sprite du personnage (utiliser lheadshot si disponible, sinon headshot)
+                _buildCharacterSprite(preset.lheadshot ?? preset.headshot, 72),
                 const SizedBox(height: 16),
                 
                 // Nom

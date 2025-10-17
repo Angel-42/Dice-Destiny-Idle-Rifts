@@ -13,7 +13,7 @@ class CharacterDatabase {
     id: 'chrom_001',
     name: 'Chrom',
     title: 'Le Prince Exalté',
-    sprite: '👑',
+    headshot: '👑',
     colorValue: 0xFF1E88E5,
     rarity: CharacterRarity.legendary,
     description: 'Prince héritier d\'Ylisse, il manie Falchion avec bravoure.',
@@ -64,7 +64,10 @@ Il porte l'épée sacrée Falchion, transmise de génération en génération.
     id: 'envia_001',
     name: 'Envia',
     title: 'Sabreuse des Ombres',
-    sprite: '~/assets/characters/Envia/headshot.png',
+    headshot: '~/assets/characters/Envia/headshot.png',
+    lheadshot: '~/assets/characters/Envia/lheadshot.png',
+    pixel: '~/assets/characters/Envia/pixel.png',
+    fullsize: '~/assets/characters/Envia/fullsize.png',
     colorValue: 0xFF1E88E5,
     rarity: CharacterRarity.epic,
     description: 'Sabreuse d\'une triste renommée, elle cherche la rédemption.',
@@ -111,6 +114,55 @@ et protège les innocents contre les oppresseurs.
   // RARES (3★) - 25% de drop
   // ============================================================================
 
+  static const PresetCharacter elio = PresetCharacter(
+    id: 'elio_001',
+    name: 'Elio',
+    title: 'Défenseur du Soleil',
+    headshot: '~/assets/characters/Elio/headshot.png',
+    lheadshot: '~/assets/characters/Elio/lheadshot.png',
+    pixel: '~/assets/characters/Elio/pixel.png',
+    fullsize: '~/assets/characters/Elio/fullsize.png',
+    colorValue: 0xFF1E88E5,
+    rarity: CharacterRarity.rare,
+    description: 'Chevalier solaire, il protège les faibles avec bravoure.',
+    backstory: '''
+Elio est un chevalier dévoué au service du royaume solaire.
+Armé de son épée flamboyante, il combat les forces des ténèbres
+et protège les innocents. Sa foi inébranlable dans la justice
+et son courage font de lui un leader respecté parmi ses pairs.
+Il aspire à ramener la paix dans un monde en proie au chaos.
+''',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.noble,
+      characterClass: PersonaClass.warrior,
+    ),
+    baseStats: {
+      'maxHp': 140,
+      'attack': 28,
+      'defense': 20,
+      'speed': 18,
+      'magic': 5,
+      'range': 1,
+      'luck': 22,
+    },
+    starterWeapon: Equipment(
+      id: 'falchion',
+      name: 'Falchion',
+      emoji: '⚔️',
+      type: EquipmentType.weapon,
+      rarity: EquipmentRarity.legendary,
+      bonuses: {'attack': 15, 'luck': 5},
+    ),
+    voiceLines: [
+      'Tout le monde mérite une seconde chance !',
+      'Je protégerai mes alliés, quoi qu\'il arrive.',
+      'Pour Ylisse !',
+    ],
+    tags: ['DPS', 'Physique'],
+  );
+
   // ============================================================================
   // COMMUNS (2★) - 60% de drop
   // ============================================================================
@@ -127,6 +179,7 @@ et protège les innocents contre les oppresseurs.
     envia,
     
     // Rares
+    elio,
     
     // Communs
   ];

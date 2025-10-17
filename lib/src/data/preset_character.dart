@@ -48,7 +48,7 @@ class PresetCharacter {
     );
 
     final appearance = CharacterAppearance(
-      emoji: sprite,
+      headshot: sprite,
       colorValue: colorValue,
       description: description,
     );

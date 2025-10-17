@@ -407,17 +407,23 @@ class GameDataService {
           continue;
         }
         
-        if (preset.sprite != character.appearance.emoji) {
-          print('🔄 Migration ${character.name}: "${character.appearance.emoji}" -> "${preset.sprite}"');
+        if (preset.headshot != character.appearance.headshot ||
+            preset.lheadshot != character.appearance.lheadshot ||
+            preset.pixel != character.appearance.pixel ||
+            preset.fullsize != character.appearance.fullsize) {
+          print('🔄 Migration sprites pour ${character.name}');
           
-          // Créer un nouveau Character avec le bon sprite
+          // Créer un nouveau Character avec tous les sprites
           final updatedCharacter = Character(
             id: character.id,
             name: character.name,
             persona: character.persona,
             stats: character.stats,
             appearance: CharacterAppearance(
-              emoji: preset.sprite, // ✅ Sprite corrigé depuis la database
+              headshot: preset.headshot,
+              lheadshot: preset.lheadshot,
+              pixel: preset.pixel,
+              fullsize: preset.fullsize,
               colorValue: preset.colorValue,
               description: character.appearance.description,
             ),

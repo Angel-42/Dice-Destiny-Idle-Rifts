@@ -88,7 +88,10 @@ class Character {     // est un personnage jouable (pas le player)
         'persona': persona.toJson(),
         'stats': stats.toJson(),
         'appearance': {
-          'emoji': appearance.emoji,
+          'headshot': appearance.headshot,
+          'lheadshot': appearance.lheadshot,
+          'pixel': appearance.pixel,
+          'fullsize': appearance.fullsize,
           'colorValue': appearance.colorValue,
           'description': appearance.description,
         },
@@ -115,7 +118,11 @@ class Character {     // est un personnage jouable (pas le player)
     // Lire appearance depuis Firestore, sinon fallback sur race
     final appearance = json['appearance'] != null
         ? CharacterAppearance(
-            emoji: json['appearance']['emoji'] ?? '👤',
+            // Support ancien format (emoji) et nouveau (headshot)
+            headshot: json['appearance']['headshot'] ?? json['appearance']['emoji'] ?? '👤',
+            lheadshot: json['appearance']['lheadshot'],
+            pixel: json['appearance']['pixel'],
+            fullsize: json['appearance']['fullsize'],
             colorValue: json['appearance']['colorValue'] ?? 0xFF2196F3,
             description: json['appearance']['description'] ?? '',
           )
@@ -465,39 +472,51 @@ class CharacterStats {
 
 /// Visual appearance and UI elements for character
 class CharacterAppearance {
-  final String emoji;
+  // Sprites pour différents contextes
+  final String headshot;      // Icône dans la liste des alliés
+  final String? lheadshot;    // Image longue dans les détails (optionnel)
+  final String? pixel;        // Spritesheet pour les combats (optionnel)
+  final String? fullsize;     // Image plein écran (optionnel)
+  
+  // Autres propriétés d'apparence
   final int colorValue;
   final String description;
   
   const CharacterAppearance({
-    required this.emoji,
+    required this.headshot,
+    this.lheadshot,
+    this.pixel,
+    this.fullsize,
     required this.colorValue,
     required this.description,
   });
+  
+  // Getter pour compatibilité avec l'ancien système
+  String get emoji => headshot;
   
   factory CharacterAppearance.fromRace(PersonaRace race) {
     switch (race) {
       case PersonaRace.human:
         return const CharacterAppearance(
-          emoji: '👤',
+          headshot: '👤',
           colorValue: 0xFF2196F3,
           description: 'Polyvalent et équilibré',
         );
       case PersonaRace.elf:
         return const CharacterAppearance(
-          emoji: '🧝',
+          headshot: '🧝',
           colorValue: 0xFF4CAF50,
           description: 'Agile et magique',
         );
       case PersonaRace.dwarf:
         return const CharacterAppearance(
-          emoji: '🛡️',
+          headshot: '🛡️',
           colorValue: 0xFF795548,
           description: 'Robuste et résistant',
         );
       case PersonaRace.orc:
         return const CharacterAppearance(
-          emoji: '👹',
+          headshot: '👹',
           colorValue: 0xFFFF5722,
           description: 'Puissant et féroce',
         );

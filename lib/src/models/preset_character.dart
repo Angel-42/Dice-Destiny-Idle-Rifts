@@ -7,7 +7,13 @@ class PresetCharacter {
   final String id;
   final String name;
   final String title; // "Le Conquérant", "La Sage"...
-  final String sprite; // Emoji ou path vers l'image
+  
+  // Sprites pour différents contextes
+  final String headshot;      // Icône dans la liste
+  final String? lheadshot;    // Image longue pour les détails
+  final String? pixel;        // Spritesheet pour les combats
+  final String? fullsize;     // Image plein écran
+  
   final int colorValue;
   final String description;
   final String backstory;
@@ -22,7 +28,10 @@ class PresetCharacter {
     required this.id,
     required this.name,
     required this.title,
-    required this.sprite,
+    required this.headshot,
+    this.lheadshot,
+    this.pixel,
+    this.fullsize,
     required this.colorValue,
     required this.description,
     required this.backstory,
@@ -48,7 +57,10 @@ class PresetCharacter {
     );
 
     final appearance = CharacterAppearance(
-      emoji: sprite,
+      headshot: headshot,
+      lheadshot: lheadshot,
+      pixel: pixel,
+      fullsize: fullsize,
       colorValue: colorValue,
       description: description,
     );
