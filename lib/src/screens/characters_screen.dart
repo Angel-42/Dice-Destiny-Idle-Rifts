@@ -13,6 +13,25 @@ class CharactersScreen extends StatefulWidget {
 class _CharactersScreenState extends State<CharactersScreen> {
   Character? _selectedCharacter;
 
+  void _showFullsizeImage(String? fullsizeSprite) {
+    if (fullsizeSprite == null) return;
+    
+    // Nettoyer le préfixe ~/ si présent
+    final cleanPath = fullsizeSprite.startsWith('~/') 
+        ? fullsizeSprite.substring(2) 
+        : fullsizeSprite;
+    
+    showDialog(
+      context: context,
+      builder: (context) => GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: InteractiveViewer(
+          child: Image.asset(cleanPath),
+        ),
+      ),
+    );
+  }
+
   void _selectCharacter(Character character) {
     setState(() {
       _selectedCharacter = character;
@@ -21,11 +40,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
   /// Helper pour afficher soit un emoji, soit une image sprite
   Widget _buildCharacterSprite(String sprite, double size) {
-    // Si le sprite commence par ~ ou contient .png/.jpg, c'est un chemin d'image
-    if (sprite.contains('.png') || sprite.contains('.jpg') || sprite.contains('.jpeg') || sprite.startsWith('~/')) {
-      final imagePath = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
+    // Nettoyer le chemin d'abord si nécessaire
+    final cleanSprite = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
+    
+    // Si le sprite contient une extension d'image, c'est un chemin d'asset
+    if (cleanSprite.contains('.png') || cleanSprite.contains('.jpg') || cleanSprite.contains('.jpeg')) {
       return Image.asset(
-        imagePath,
+        cleanSprite,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           // Si l'image ne charge pas, afficher un emoji par défaut
@@ -323,9 +344,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
   }
 
   Widget _buildSelectedCharacterDetail(Character character) {
+    final String image = character.appearance.lheadshot ?? character.appearance.headshot;
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.only(left: 0, right: 6, top: 6, bottom: 0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -338,33 +359,27 @@ class _CharactersScreenState extends State<CharactersScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.amber.withOpacity(0.5), width: 2),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image carrée à gauche
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Color(character.appearance.colorValue),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.amber, width: 3),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: Center(
-                child: _buildCharacterSprite(character.appearance.emoji, 100),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+          GestureDetector(
+            onTap: () => _showFullsizeImage(character.appearance.fullsize),
+            child: SizedBox(
+              width: 80,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: _buildCharacterSprite(image, 120),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          // Colonne du milieu : Infos + HP + Stats
-          Expanded(
+          Flexible(
+            flex: 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nom
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.4),
@@ -373,6 +388,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   ),
                   child: Text(
                     character.name,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -380,24 +396,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                // Level
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                  ),
-                  child: Text(
-                    'Lv. ${character.level}',
-                    style: const TextStyle(
-                      color: Colors.amber,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -471,65 +469,192 @@ class _CharactersScreenState extends State<CharactersScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                // Stats en grille 2x2
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildCharDetailStatBox(character.offensiveStatName, character.totalOffensive.toString()),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: _buildCharDetailStatBox('Spd', character.totalSpeed.toString()),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildCharDetailStatBox('Def', character.totalDefense.toString()),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: _buildCharDetailStatBox('Lck', character.totalLuck.toString()),
-                    ),
-                  ],
+                const SizedBox(height: 2),
+                // Stats style FEH (2 lignes, label + valeur)
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                  ),
+                  child: Column(
+                    children: [
+                      // Ligne 1: Atk + Spd
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  character.offensiveStatName,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  character.totalOffensive.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Spd',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  character.totalSpeed.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Ligne 2: Def + Res (Lck)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Def',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  character.totalDefense.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Lck',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  character.totalLuck.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Colonne de droite : Passives + Équipement
-          Column(
-            children: [
-              // Passives (3 skills côte à côte)
-              Row(
-                children: () {
-                  final passives = character.equippedSkills
-                      .where((s) => s.type == SkillType.passive)
-                      .take(3)
-                      .toList();
-                  
-                  return List.generate(3, (index) {
-                    if (index < passives.length) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 4),
-                        child: _buildCharDetailPassiveIcon(passives[index].emoji),
-                      );
-                    }
-                    // Espace vide pour les slots non remplis
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: _buildCharDetailEmptyPassiveSlot(),
-                    );
-                  });
-                }(),
-              ),
-              const SizedBox(height: 8),
+          const SizedBox(width: 7),
+          // Colonne de droite : Level + Passives + Équipement (taille équitable)
+          Flexible(
+            flex: 1,
+            child: Column(
+              children: [
+                // const SizedBox(height: 6),
+                // Niveau + Passives sur la même ligne
+                Row(
+                  children: [
+                    // Level avec taille fixe pour Lv. 999
+                    Container(
+                      width: 68, // Taille fixe pour "Lv. 999"
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                      ),
+                      child:Text(
+                          'Lv. ${character.level}',
+                          style: const TextStyle(
+                            color: Colors.amber,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                    ),
+                    const SizedBox(width: 4),
+                    // Passives (3 skills côte à côte) - réduites
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: () {
+                          final passives = character.equippedSkills
+                              .where((s) => s.type == SkillType.passive)
+                              .take(3)
+                              .toList();
+                          
+                          return List.generate(3, (index) {
+                            if (index < passives.length) {
+                              return Flexible(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 2),
+                                  child: _buildCharDetailPassiveIcon(passives[index].emoji),
+                                ),
+                              );
+                            }
+                            return Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 2),
+                                child: _buildCharDetailEmptyPassiveSlot(),
+                              ),
+                            );
+                          });
+                        }(),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
               // Arme
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
                   character.weapon?.emoji ?? '⚔️',
                   character.weapon?.name ?? '-',
@@ -538,7 +663,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
               ),
               // Armure
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
                   character.armor?.emoji ?? '🛡️',
                   character.armor?.name ?? '-',
@@ -559,47 +684,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
               }(),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  // Boîte de stat pour le détail
-  Widget _buildCharDetailStatBox(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.amber.withOpacity(0.5)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Colors.white70,
-              ),
-            ),
-          ),
-          const SizedBox(height: 2),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.amber,
-              ),
-            ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -607,17 +694,17 @@ class _CharactersScreenState extends State<CharactersScreen> {
   // Icône de passive pour le détail du personnage (circulaire)
   Widget _buildCharDetailPassiveIcon(String emoji) {
     return Container(
-      width: 32,
-      height: 32,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.4),
-        border: Border.all(color: Colors.amber.withOpacity(0.5), width: 2),
+        border: Border.all(color: Colors.amber.withOpacity(0.5), width: 1.5),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: Text(
           emoji,
-          style: const TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 14),
         ),
       ),
     );
@@ -626,11 +713,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
   // Slot vide pour passive (circulaire)
   Widget _buildCharDetailEmptyPassiveSlot() {
     return Container(
-      width: 32,
-      height: 32,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.2),
-        border: Border.all(color: Colors.grey.withOpacity(0.3), width: 2),
+        border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1.5),
         shape: BoxShape.circle,
       ),
     );
@@ -639,8 +726,8 @@ class _CharactersScreenState extends State<CharactersScreen> {
   // Slot d'équipement pour le détail
   Widget _buildCharDetailEquipmentSlot(String icon, String name, bool hasItem) {
     return Container(
-      width: 100,
-      height: 36,
+      // Prend toute la largeur disponible
+      height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: hasItem ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.2),
@@ -651,24 +738,19 @@ class _CharactersScreenState extends State<CharactersScreen> {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 18)),
+          Text(icon, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 4),
           Expanded(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                name,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: hasItem ? Colors.white : Colors.grey,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.clip,
+            child: Text(
+              name,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: hasItem ? Colors.white : Colors.grey,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -682,6 +764,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: 6),
           Row(
             children: [
               const Icon(Icons.groups, color: Colors.amber, size: 24),
