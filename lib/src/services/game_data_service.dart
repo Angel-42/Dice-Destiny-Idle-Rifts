@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/player.dart';
 import '../models/character.dart';
+import '../models/preset_character.dart';
+import '../data/character_database.dart';
 import 'auth_service.dart';
 
 /// Service Firebase pour gérer les données du joueur et des personnages
@@ -380,5 +382,70 @@ class GameDataService {
             .toList();
       });
     });
+  }
+
+  // ============================================================================
+  // MIGRATION / MAINTENANCE
+  // ============================================================================
+
+  /// Migre les personnages existants pour utiliser les sprites de la database
+  static Future<void> migrateCharacterSprites() async {
+    try {
+      final characters = await getAllCharacters();
+      print('🔄 Début migration des sprites pour ${characters.length} personnages');
+      
+      int migrated = 0;
+      for (final character in characters) {
+        // Chercher le preset correspondant par nom dans CharacterDatabase
+        PresetCharacter? preset;
+        try {
+          preset = CharacterDatabase.allCharacters.firstWhere(
+            (p) => p.name == character.name,
+          );
+        } catch (e) {
+          // Pas de preset trouvé pour ce personnage
+          continue;
+        }
+        
+        if (preset.sprite != character.appearance.emoji) {
+          print('🔄 Migration ${character.name}: "${character.appearance.emoji}" -> "${preset.sprite}"');
+          
+          // Créer un nouveau Character avec le bon sprite
+          final updatedCharacter = Character(
+            id: character.id,
+            name: character.name,
+            persona: character.persona,
+            stats: character.stats,
+            appearance: CharacterAppearance(
+              emoji: preset.sprite, // ✅ Sprite corrigé depuis la database
+              colorValue: preset.colorValue,
+              description: character.appearance.description,
+            ),
+            level: character.level,
+            xp: character.xp,
+            x: character.x,
+            y: character.y,
+            weapon: character.weapon,
+            armor: character.armor,
+            accessory: character.accessory,
+            equippedSkills: character.equippedSkills,
+            weaponMasteries: character.weaponMasteries,
+            basedRarity: character.basedRarity,
+            currentRarity: character.currentRarity,
+            isInTeam: character.isInTeam,
+            teamPosition: character.teamPosition,
+            obtainedAt: character.obtainedAt,
+          );
+          updatedCharacter.currentHp = character.currentHp;
+          
+          await saveCharacter(updatedCharacter);
+          migrated++;
+        }
+      }
+      
+      print('✅ Migration terminée: $migrated/${characters.length} personnages migrés');
+    } catch (e) {
+      print('❌ Erreur lors de la migration: $e');
+    }
   }
 }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../services/game_data_service.dart';
 import '../models/character.dart';
-import '../models/persona.dart';
+import '../models/preset_character.dart';
+import '../data/character_database.dart';
 
 class SummonScreen extends StatefulWidget {
   const SummonScreen({super.key});
@@ -13,90 +14,87 @@ class SummonScreen extends StatefulWidget {
 
 class _SummonScreenState extends State<SummonScreen> {
   bool _isSummoning = false;
-  Character? _lastSummonedCharacter;
 
-  // Générateur de noms aléatoires
-  final List<String> _namePool = [
-    'Aric', 'Bran', 'Cedric', 'Darius', 'Erin', 'Fiona', 'Garen', 'Helena',
-    'Ivan', 'Jade', 'Kael', 'Luna', 'Marcus', 'Nina', 'Owen', 'Petra',
-    'Quinn', 'Raven', 'Soren', 'Talia', 'Ulric', 'Vera', 'Wade', 'Xara',
-    'Yara', 'Zane', 'Aria', 'Brom', 'Celia', 'Drake', 'Elara', 'Finn',
-  ];
+  /// Helper pour afficher soit un emoji, soit une image sprite
+  Widget _buildCharacterSprite(String sprite, double size) {
+    // Si le sprite commence par ~ ou contient .png/.jpg, c'est un chemin d'image
+    if (sprite.contains('.png') || sprite.contains('.jpg') || sprite.contains('.jpeg') || sprite.startsWith('~/')) {
+      final imagePath = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
+      return Image.asset(
+        imagePath,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Si l'image ne charge pas, afficher un emoji par défaut
+          return Text(
+            '❓',
+            style: TextStyle(fontSize: size * 0.8),
+          );
+        },
+      );
+    } else {
+      // C'est un emoji
+      return Text(
+        sprite,
+        style: TextStyle(fontSize: size * 0.8),
+      );
+    }
+  }
 
   Future<void> _performSummon() async {
     if (_isSummoning) return;
 
     setState(() {
       _isSummoning = true;
-      _lastSummonedCharacter = null;
     });
 
     try {
-      // Générer un personnage aléatoire
+      // 🎲 Système de gacha avec vraies chances
       final random = Random();
-      final name = _namePool[random.nextInt(_namePool.length)];
-      
-      final races = PersonaRace.values;
-      final race = races[random.nextInt(races.length)];
-      
-      final classes = PersonaClass.values;
-      final characterClass = classes[random.nextInt(classes.length)];
-      
-      final regions = PersonaRegion.values;
-      final region = regions[random.nextInt(regions.length)];
-      
-      final origins = PersonaOrigin.values;
-      final origin = origins[random.nextInt(origins.length)];
+      final roll = random.nextDouble(); // 0.0 - 1.0
 
-      // Créer le persona
-      final persona = Persona(
-        race: race,
-        characterClass: characterClass,
-        region: region,
-        origin: origin,
-      );
+      PresetCharacter? preset;
 
-      // Générer des stats de base (entre 10 et 15)
-      final baseStats = CharacterStats(
-        maxHp: 80 + random.nextInt(41), // 80-120
-        attack: 10 + random.nextInt(6),  // 10-15
-        defense: 10 + random.nextInt(6), // 10-15
-        magic: 10 + random.nextInt(6),   // 10-15
-        speed: 10 + random.nextInt(6),   // 10-15
-        luck: 10 + random.nextInt(6),    // 10-15
-        range: 1,                         // Mêlée par défaut
-      );
+      if (roll <= 0.03) {
+        // 3% Légendaire
+        final legendaries = CharacterDatabase.getByRarity(CharacterRarity.legendary);
+        preset = legendaries[random.nextInt(legendaries.length)];
+      } else if (roll <= 0.15) {
+        // 12% Épique (3% + 12% = 15%)
+        final epics = CharacterDatabase.getByRarity(CharacterRarity.epic);
+        preset = epics[random.nextInt(epics.length)];
+      } else if (roll <= 0.40) {
+        // 25% Rare (15% + 25% = 40%)
+        final rares = CharacterDatabase.getByRarity(CharacterRarity.rare);
+        preset = rares[random.nextInt(rares.length)];
+      } else {
+        // 60% Commun (le reste)
+        final commons = CharacterDatabase.getByRarity(CharacterRarity.common);
+        preset = commons[random.nextInt(commons.length)];
+      }
 
-      // Apparence aléatoire
-      final appearance = CharacterAppearance.fromRace(race);
+      // Créer le personnage à partir du preset
+      final character = preset.toCharacter();
 
       // Vérifier la taille de l'équipe actuelle
       final team = await GameDataService.getTeamCharacters();
       final isTeamFull = team.length >= 4;
 
-      // Créer le personnage avec l'équipe configurée
-      final character = Character(
-        name: name,
-        persona: persona,
-        stats: baseStats,
-        appearance: appearance,
-        level: 1,
-        xp: 0,
-        isInTeam: !isTeamFull,
-        teamPosition: isTeamFull ? 999 : team.length, // Position à la fin de la team
-      );
+      // Configurer l'équipe
+      character.isInTeam = !isTeamFull;
+      character.teamPosition = isTeamFull ? 999 : team.length;
 
       // Sauvegarder dans Firestore
       await GameDataService.createCharacter(character);
 
       if (mounted) {
         setState(() {
-          _lastSummonedCharacter = character;
           _isSummoning = false;
         });
 
-        // Animation de succès
-        _showSummonSuccessDialog(character, isTeamFull);
+        // Animation de succès avec rareté
+        _showSummonSuccessDialog(character, preset, isTeamFull);
       }
     } catch (e) {
       debugPrint('❌ Erreur summon: $e');
@@ -114,114 +112,242 @@ class _SummonScreenState extends State<SummonScreen> {
     }
   }
 
-  void _showSummonSuccessDialog(Character character, bool isTeamFull) {
+  void _showSummonSuccessDialog(Character character, PresetCharacter preset, bool isTeamFull) {
+    // Obtenir la couleur basée sur la rareté
+    Color rarityColor;
+    String rarityText;
+    String rarityStars;
+    
+    switch (preset.rarity) {
+      case CharacterRarity.legendary:
+        rarityColor = Colors.amber;
+        rarityText = 'LÉGENDAIRE';
+        rarityStars = '⭐⭐⭐⭐⭐';
+        break;
+      case CharacterRarity.epic:
+        rarityColor = Colors.purple;
+        rarityText = 'ÉPIQUE';
+        rarityStars = '⭐⭐⭐⭐';
+        break;
+      case CharacterRarity.rare:
+        rarityColor = Colors.blue;
+        rarityText = 'RARE';
+        rarityStars = '⭐⭐⭐';
+        break;
+      case CharacterRarity.common:
+        rarityColor = Colors.grey;
+        rarityText = 'COMMUN';
+        rarityStars = '⭐⭐';
+        break;
+    }
+    
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.purple.shade900,
-                Colors.purple.shade700,
-              ],
+        child: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  rarityColor.withOpacity(0.3),
+                  Colors.black,
+                  Colors.black,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: rarityColor, width: 3),
             ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.amber, width: 3),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.auto_awesome,
-                color: Colors.amber,
-                size: 64,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'HERO SUMMONED!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amber,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                character.name,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${character.persona.race.name} ${character.persona.characterClass.name}',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.8),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildStatDisplay('HP', character.stats.maxHp.toString()),
-                    const SizedBox(width: 16),
-                    _buildStatDisplay('ATK', character.stats.attack.toString()),
-                    const SizedBox(width: 16),
-                    _buildStatDisplay('DEF', character.stats.defense.toString()),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (!isTeamFull)
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Badge de rareté
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green, width: 2),
+                    color: rarityColor.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: rarityColor, width: 2),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Column(
                     children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 20),
-                      SizedBox(width: 8),
                       Text(
-                        'Added to Team!',
+                        rarityStars,
                         style: TextStyle(
-                          color: Colors.white,
+                          fontSize: 20,
+                          color: rarityColor,
+                        ),
+                      ),
+                      Text(
+                        rarityText,
+                        style: TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: rarityColor,
                         ),
                       ),
                     ],
                   ),
                 ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                const SizedBox(height: 16),
+                
+                // Sprite du personnage
+                _buildCharacterSprite(preset.sprite, 72),
+                const SizedBox(height: 16),
+                
+                // Nom
+                Text(
+                  character.name,
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: rarityColor,
+                    shadows: [
+                      Shadow(
+                        color: rarityColor.withOpacity(0.5),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
                 ),
-                child: const Text(
-                  'OK',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 8),
+                
+                // Titre
+                Text(
+                  preset.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                
+                // Classe et race
+                Text(
+                  '${character.persona.race.name} ${character.persona.characterClass.name}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Description
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: rarityColor.withOpacity(0.3), width: 1),
+                  ),
+                  child: Text(
+                    preset.description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Voice line
+                if (preset.voiceLines.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: rarityColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: rarityColor.withOpacity(0.5), width: 2),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.format_quote, color: rarityColor, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            preset.voiceLines.first,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                              color: rarityColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Icon(Icons.format_quote, color: rarityColor, size: 20),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                
+                // Stats
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildStatDisplay('HP', character.stats.maxHp.toString()),
+                      const SizedBox(width: 16),
+                      _buildStatDisplay(character.offensiveStatName, character.totalOffensive.toString()),
+                      const SizedBox(width: 16),
+                      _buildStatDisplay('DEF', character.stats.defense.toString()),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Badge "Ajouté à l'équipe"
+                if (!isTeamFull)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green, width: 2),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Ajouté à l\'équipe!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                
+                // Bouton OK
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: rarityColor,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
