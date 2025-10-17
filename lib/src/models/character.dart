@@ -87,6 +87,11 @@ class Character {     // est un personnage jouable (pas le player)
         'name': name,
         'persona': persona.toJson(),
         'stats': stats.toJson(),
+        'appearance': {
+          'emoji': appearance.emoji,
+          'colorValue': appearance.colorValue,
+          'description': appearance.description,
+        },
         'level': level,
         'xp': xp,
         'x': x,
@@ -106,12 +111,22 @@ class Character {     // est un personnage jouable (pas le player)
   
   factory Character.fromJson(Map<String, dynamic> json) {
     final persona = Persona.fromJson(json['persona']);
+    
+    // Lire appearance depuis Firestore, sinon fallback sur race
+    final appearance = json['appearance'] != null
+        ? CharacterAppearance(
+            emoji: json['appearance']['emoji'] ?? '👤',
+            colorValue: json['appearance']['colorValue'] ?? 0xFF2196F3,
+            description: json['appearance']['description'] ?? '',
+          )
+        : CharacterAppearance.fromRace(persona.race);
+    
     return Character(
       id: json['id'],
       name: json['name'],
       persona: persona,
       stats: CharacterStats.fromJson(json['stats']),
-      appearance: CharacterAppearance.fromRace(persona.race),
+      appearance: appearance,
       level: json['level'] ?? 1,
       xp: json['xp'] ?? 0,
       x: json['x'] ?? 0,
@@ -206,6 +221,21 @@ class Character {     // est un personnage jouable (pas le player)
   int get totalMagic {
     final base = stats.magic + _getEquipmentBonus('magic');
     return (base * _getSkillBonusMultiplier('magic')).round();
+  }
+
+  /// Stat offensive principale selon la classe (attack OU magic)
+  int get totalOffensive {
+    return persona.characterClass.isMagical ? totalMagic : totalAttack;
+  }
+
+  /// Nom de la stat offensive ("ATK" ou "MAG")
+  String get offensiveStatName {
+    return persona.characterClass.isMagical ? 'MAG' : 'ATK';
+  }
+
+  /// Icône de la stat offensive
+  String get offensiveStatIcon {
+    return persona.characterClass.isMagical ? '✨' : '⚔️';
   }
 
   /// Vitesse totale (base + équipement) * compétences

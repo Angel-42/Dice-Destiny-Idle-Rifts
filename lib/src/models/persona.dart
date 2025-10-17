@@ -68,13 +68,14 @@ enum PersonaRegion {
 }
 
 enum PersonaClass {
-  warrior('Guerrier', 'Combattant au corps à corps, spécialisé dans l\'attaque et la défense physique.', '⚔️'),
-  mage('Mage', 'Maître des arcanes, capable de lancer des sorts dévastateurs à distance.', '🧙‍♂️'),
-  rogue('Voleur', 'Expert en discrétion, excelle dans les attaques surprises et les mouvements tactiques.', '🗡️'),
-  cleric('Clerc', 'Guérisseur divin, capable de soigner ses alliés et de repousser les forces du mal.', '⚕️');
+  warrior('Guerrier', 'Combattant au corps à corps, spécialisé dans l\'attaque et la défense physique.', '⚔️', false),
+  mage('Mage', 'Maître des arcanes, capable de lancer des sorts dévastateurs à distance.', '🧙‍♂️', true),
+  rogue('Voleur', 'Expert en discrétion, excelle dans les attaques surprises et les mouvements tactiques.', '🗡️', false),
+  cleric('Clerc', 'Guérisseur divin, capable de soigner ses alliés et de repousser les forces du mal.', '⚕️', true);
   
-  const PersonaClass(this.displayName, this.description, this.emoji);
+  const PersonaClass(this.displayName, this.description, this.emoji, this.isMagical);
   final String displayName;
   final String description;
   final String emoji;
+  final bool isMagical; // true = utilise magic, false = utilise attack
 }
