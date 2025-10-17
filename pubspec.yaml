@@ -69,6 +69,9 @@ flutter:
   assets:
     - assets/welcome.jpeg
     - assets/logo/
+    - assets/characters/Envia/
+    - assets/characters/Elio/
+    - assets/characters/Ragor/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
