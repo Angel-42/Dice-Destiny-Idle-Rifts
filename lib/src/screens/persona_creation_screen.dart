@@ -110,7 +110,19 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
   bool _canProceed() {
     switch (_currentStep) {
       case 0:
-        return _nameController.text.trim().length >= 3;
+        final name = _nameController.text.trim();
+        if (name.length < 3) return false;
+        int uppercase = name.replaceAll(RegExp(r'[^A-Z]'), '').length;
+        int lowercase = name.replaceAll(RegExp(r'[^a-z]'), '').length;
+        int total = name.length;
+        if (uppercase == 0 && lowercase == total) {
+          return total <= 11;
+        }
+        if (lowercase == 0 && uppercase == total) {
+          return total <= 8;
+        }
+        final maxAllowed = 11 - (uppercase * 0.375).round();
+        return total <= maxAllowed;
       case 1:
         return _selectedRace != null;
       case 2:
@@ -361,6 +373,26 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
   }
 
   Widget _buildNameStep(Color stepColor) {
+    // Calculer la limite dynamique
+    final name = _nameController.text.trim();
+    int uppercase = name.replaceAll(RegExp(r'[^A-Z]'), '').length;
+    int lowercase = name.replaceAll(RegExp(r'[^a-z]'), '').length;
+    int total = name.length;
+    int maxAllowed;
+    String hint;
+    if (uppercase == 0 && lowercase == total) {
+      maxAllowed = 11;
+      hint = 'Minuscules uniquement : max 11 caractères';
+    } else if (lowercase == 0 && uppercase == total) {
+      maxAllowed = 8;
+      hint = 'Majuscules uniquement : max 8 caractères';
+    } else {
+      maxAllowed = 11 - (uppercase * 0.375).round();
+      hint = 'Mélange : max $maxAllowed caractères';
+    }
+    final isValid = total >= 3 && total <= maxAllowed;
+    final counterColor = isValid ? Colors.green : Colors.red;
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -391,32 +423,81 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                 width: 2,
               ),
             ),
-            child: TextField(
-              controller: _nameController,
-              onChanged: (_) => setState(() {}),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-              ),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: 'Votre nom',
-                hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
-                  fontWeight: FontWeight.normal,
+            child: Column(
+              children: [
+                TextField(
+                  controller: _nameController,
+                  onChanged: (_) => setState(() {}),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    hintText: 'Votre nom',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.3),
+                      fontWeight: FontWeight.normal,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  maxLength: 11,
                 ),
-                border: InputBorder.none,
-              ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isValid ? Icons.check_circle : Icons.error,
+                      color: counterColor,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$total / $maxAllowed',
+                      style: TextStyle(
+                        color: counterColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+          
           const SizedBox(height: 16),
-          Text(
-            'Minimum 3 caractères',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 14,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  hint,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Minimum 3 caractères',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
