@@ -12,6 +12,8 @@ class CharactersScreen extends StatefulWidget {
 
 class _CharactersScreenState extends State<CharactersScreen> {
   Character? _selectedCharacter;
+  Character? _selectedCharacterForSwap; // Personnage sélectionné pour l'échange
+  bool _selectedFromTeam = false; // true = sélectionné depuis EDIT TEAM, false = depuis ALL HEROES
 
   void _showFullsizeImage(String? fullsizeSprite) {
     if (fullsizeSprite == null) return;
@@ -88,7 +90,8 @@ class _CharactersScreenState extends State<CharactersScreen> {
           child: StreamBuilder<List<Character>>(
             stream: GameDataService.watchCharacters(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+              // Ne pas afficher de loading après le premier chargement
+              if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
                 return const Center(
                   child: CircularProgressIndicator(color: Colors.amber),
                 );
@@ -111,11 +114,30 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
               return CustomScrollView(
                 slivers: [
-                  // Section 1: Character Detail (si sélectionné)
-                  if (_selectedCharacter != null)
-                    SliverToBoxAdapter(
-                      child: _buildSelectedCharacterDetail(_selectedCharacter!),
+                  // Section 1: Character Detail (si sélectionné) avec animation
+                  SliverToBoxAdapter(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, -0.1),
+                              end: Offset.zero,
+                            ).animate(CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            )),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: _selectedCharacter != null
+                          ? _buildSelectedCharacterDetail(_selectedCharacter!)
+                          : const SizedBox.shrink(),
                     ),
+                  ),
                   // Section 2: Edit Team
                   SliverToBoxAdapter(
                     child: _buildEditTeamSection(context, teamCharacters),
@@ -147,192 +169,105 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  void _showTeamEditDialog(
-    BuildContext context,
-    Character character,
+  /// Gère la sélection/échange de personnages dans la team
+  /// [fromTeamSlot] = true si le clic vient de EDIT TEAM, false si de ALL HEROES
+  Future<void> _handleCharacterSelection(
+    Character character, 
     List<Character> teamCharacters,
-    List<Character> allCharacters,
-  ) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1E2A47),
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Color(character.appearance.colorValue),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: ClipOval(
-                  child: _buildCharacterSprite(character.appearance.emoji, 40),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                character.name,
-                style: const TextStyle(color: Colors.amber),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Niveau ${character.level} • ${character.persona.characterClass.displayName}',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              character.isInTeam 
-                  ? 'Ce héros est dans votre team\nVoulez-vous le retirer ?' 
-                  : 'Ajouter ce héros à votre team ?',
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            if (!character.isInTeam && teamCharacters.length >= 4)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  '⚠️ Team complète (4/4)\nRetirez un héros d\'abord',
-                  style: TextStyle(color: Colors.orange, fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: (!character.isInTeam && teamCharacters.length >= 4)
-                ? null
-                : () async {
-                    Navigator.pop(dialogContext);
-                    await _toggleTeamMembership(
-                      context, 
-                      character, 
-                      teamCharacters,
-                      allCharacters,
-                    );
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: character.isInTeam ? Colors.red : Colors.green,
-              disabledBackgroundColor: Colors.grey.withOpacity(0.3),
-            ),
-            child: Text(
-              character.isInTeam ? '❌ Retirer' : '✅ Ajouter',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
+    {required bool fromTeamSlot}
+  ) async {
+    // D'abord, sélectionner le personnage pour afficher ses détails
+    _selectCharacter(character);
+    
+    // Si aucun personnage n'est sélectionné pour swap, sélectionner celui-ci
+    if (_selectedCharacterForSwap == null) {
+      setState(() {
+        _selectedCharacterForSwap = character;
+        _selectedFromTeam = fromTeamSlot;
+      });
+      return;
+    }
+
+    // Si on clique sur le même personnage, le désélectionner pour swap
+    if (_selectedCharacterForSwap!.id == character.id) {
+      setState(() {
+        _selectedCharacterForSwap = null;
+        _selectedFromTeam = false;
+      });
+      return;
+    }
+
+    // CAS 1: Les deux clics viennent de EDIT TEAM → échanger les positions
+    if (_selectedFromTeam && fromTeamSlot) {
+      setState(() {
+        _selectedCharacterForSwap = character;
+        _selectedFromTeam = fromTeamSlot;
+      });
+      return;
+    }
+
+    // CAS 2: Les deux clics viennent de ALL HEROES → changer juste la sélection
+    if (!_selectedFromTeam && !fromTeamSlot) {
+      setState(() {
+        _selectedCharacterForSwap = character;
+        _selectedFromTeam = fromTeamSlot;
+      });
+      return;
+    }
+
+    // Cas spécial: même si l'un des clics provient de la grille ALL HEROES,
+    // si les DEUX personnages sont marqués comme "isInTeam", il s'agit
+    // d'un échange de positions dans la team — traiter comme CAS 1.
+    if (_selectedCharacterForSwap!.isInTeam && character.isInTeam) {
+      await _swapTeamPositions(_selectedCharacterForSwap!, character);
+      setState(() {
+        _selectedCharacterForSwap = null;
+        _selectedFromTeam = false;
+      });
+      return;
+    }
+
+    // CAS 3: Zones différentes (team ↔ all) → remplacer
+    await _swapCharacters(_selectedCharacterForSwap!, character, teamCharacters);
+    
+    // Désélectionner après l'échange
+    setState(() {
+      _selectedCharacterForSwap = null;
+      _selectedFromTeam = false;
+    });
   }
 
-  Future<void> _toggleTeamMembership(
-    BuildContext context,
-    Character character,
-    List<Character> teamCharacters,
-    List<Character> allCharacters,
-  ) async {
+  /// Échange les positions de deux héros dans la team
+  Future<void> _swapTeamPositions(Character char1, Character char2) async {
     try {
-      if (character.isInTeam) {
-        // Retirer de la team - recréer le personnage avec isInTeam = false
-        final updatedCharacter = Character(
-          id: character.id,
-          name: character.name,
-          persona: character.persona,
-          stats: character.stats,
-          appearance: character.appearance,
-          level: character.level,
-          xp: character.xp,
-          x: character.x,
-          y: character.y,
-          weapon: character.weapon,
-          armor: character.armor,
-          accessory: character.accessory,
-          equippedSkills: character.equippedSkills,
-          weaponMasteries: character.weaponMasteries,
-          basedRarity: character.basedRarity,
-          currentRarity: character.currentRarity,
-          isInTeam: false,
-          teamPosition: 999,
-          obtainedAt: character.obtainedAt,
-        );
-        updatedCharacter.currentHp = character.currentHp;
-        
-        await GameDataService.saveCharacter(updatedCharacter);
-        
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${character.name} retiré de la team'),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      } else {
-        if (teamCharacters.length >= 4) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('❌ Team complète ! Retirez un héros d\'abord.'),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
-          return;
-        }
+      final pos1 = char1.teamPosition;
+      final pos2 = char2.teamPosition;
+      
+      final updatedChar1 = _createUpdatedCharacter(
+        char1,
+        isInTeam: true,
+        teamPosition: pos2,
+      );
+      
+      final updatedChar2 = _createUpdatedCharacter(
+        char2,
+        isInTeam: true,
+        teamPosition: pos1,
+      );
 
-        // Ajouter à la team
-        final updatedCharacter = Character(
-          id: character.id,
-          name: character.name,
-          persona: character.persona,
-          stats: character.stats,
-          appearance: character.appearance,
-          level: character.level,
-          xp: character.xp,
-          x: character.x,
-          y: character.y,
-          weapon: character.weapon,
-          armor: character.armor,
-          accessory: character.accessory,
-          equippedSkills: character.equippedSkills,
-          weaponMasteries: character.weaponMasteries,
-          basedRarity: character.basedRarity,
-          currentRarity: character.currentRarity,
-          isInTeam: true,
-          teamPosition: teamCharacters.length,
-          obtainedAt: character.obtainedAt,
+  await GameDataService.saveCharactersBatch([updatedChar1, updatedChar2]);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🔄 ${char1.name} ↔ ${char2.name} (positions ${pos1 + 1} ↔ ${pos2 + 1})'),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 2),
+          ),
         );
-        updatedCharacter.currentHp = character.currentHp;
-        
-        await GameDataService.saveCharacter(updatedCharacter);
-        
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('✅ ${character.name} ajouté à la team !'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
@@ -341,6 +276,96 @@ class _CharactersScreenState extends State<CharactersScreen> {
         );
       }
     }
+  }
+
+  /// Échange deux personnages (team ↔ all uniquement)
+  Future<void> _swapCharacters(
+    Character char1,
+    Character char2,
+    List<Character> teamCharacters,
+  ) async {
+    try {
+      
+      Character charInTeam;
+      Character charOutTeam;
+      
+      if (char1.isInTeam) {
+        charInTeam = char1;
+        charOutTeam = char2;
+      } else {
+        charInTeam = char2;
+        charOutTeam = char1;
+      }
+      
+      // Récupérer la position du héros dans la team
+      final position = charInTeam.teamPosition;
+      
+      // Créer les versions mises à jour
+      final updatedCharInTeam = _createUpdatedCharacter(
+        charInTeam,
+        isInTeam: false,
+        teamPosition: 999,
+      );
+      
+      final updatedCharOutTeam = _createUpdatedCharacter(
+        charOutTeam,
+        isInTeam: true,
+        teamPosition: position,
+      );
+
+  // Sauvegarder les deux atomiquement
+  await GameDataService.saveCharactersBatch([updatedCharInTeam, updatedCharOutTeam]);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ ${updatedCharOutTeam.name} remplace ${updatedCharInTeam.name} (Position ${position + 1})'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Helper pour créer un personnage mis à jour avec nouvelles valeurs team
+  Character _createUpdatedCharacter(
+    Character character, {
+    required bool isInTeam,
+    required int teamPosition,
+  }) {
+    final updated = Character(
+      id: character.id,
+      name: character.name,
+      persona: character.persona,
+      stats: character.stats,
+      appearance: character.appearance,
+      level: character.level,
+      xp: character.xp,
+      x: character.x,
+      y: character.y,
+      weapon: character.weapon,
+      armor: character.armor,
+      accessory: character.accessory,
+      equippedSkills: character.equippedSkills,
+      weaponMasteries: character.weaponMasteries,
+      basedRarity: character.basedRarity,
+      currentRarity: character.currentRarity,
+      isInTeam: isInTeam,
+      teamPosition: teamPosition,
+      obtainedAt: character.obtainedAt,
+    );
+    updated.currentHp = character.currentHp;
+    return updated;
   }
 
   Widget _buildSelectedCharacterDetail(Character character) {
@@ -809,9 +834,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
               children: List.generate(4, (index) {
                 if (index < teamCharacters.length) {
                   final character = teamCharacters[index];
-                  return _buildTeamSlot(context, character, index + 1);
+                  return _buildTeamSlot(context, character, index + 1, teamCharacters);
                 } else {
-                  return _buildEmptyTeamSlot(index + 1);
+                  return _buildEmptyTeamSlot(index + 1, teamCharacters);
                 }
               }),
             ),
@@ -838,7 +863,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  Widget _buildTeamSlot(BuildContext context, Character character, int position) {
+  Widget _buildTeamSlot(BuildContext context, Character character, int position, List<Character> teamCharacters) {
     // Couleur de fond selon la rareté
     Color rarityColor;
     Color rarityDarkColor;
@@ -862,16 +887,32 @@ class _CharactersScreenState extends State<CharactersScreen> {
         break;
     }
 
+    // Vérifier si ce personnage est sélectionné pour swap ET que la sélection vient de EDIT TEAM
+    final bool isSelected = _selectedCharacterForSwap?.id == character.id && _selectedFromTeam;
+
     return GestureDetector(
-      onTap: () => _selectCharacter(character),
-      child: Container(
+      onTap: () => _handleCharacterSelection(character, teamCharacters, fromTeamSlot: true),
+      onLongPress: () => _showFullsizeImage(character.appearance.fullsize),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         width: 70,
         height: 90,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.amber, width: 3),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.amber, 
+            width: isSelected ? 4 : 3,
+          ),
           boxShadow: [
-            BoxShadow(
+            if (isSelected)
+              const BoxShadow(
+                color: Colors.blue,
+                blurRadius: 15,
+                spreadRadius: 3,
+              )
+            else
+              BoxShadow(
               color: rarityColor.withOpacity(0.6),
               blurRadius: 10,
               spreadRadius: 2,
@@ -893,7 +934,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
             child: Stack(
               children: [
-                // Sprite du personnage centré (remplit tout l'espace)
                 Positioned.fill(
                   child: _buildCharacterSprite(character.appearance.emoji, 45),
                 ),
@@ -948,38 +988,138 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  Widget _buildEmptyTeamSlot(int position) {
-    return Container(
-      width: 70,
-      child: Column(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.add,
-                color: Colors.grey.withOpacity(0.5),
-                size: 32,
+  Widget _buildEmptyTeamSlot(int position, List<Character> teamCharacters) {
+    return GestureDetector(
+      onTap: () => _handleEmptySlotClick(position, teamCharacters),
+      child: Container(
+        width: 70,
+        child: Column(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _selectedCharacterForSwap != null && !_selectedFromTeam
+                      ? Colors.blue.withOpacity(0.8)
+                      : Colors.grey.withOpacity(0.5),
+                  width: _selectedCharacterForSwap != null && !_selectedFromTeam ? 3 : 2,
+                ),
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.add,
+                  color: _selectedCharacterForSwap != null && !_selectedFromTeam
+                      ? Colors.blue
+                      : Colors.grey.withOpacity(0.5),
+                  size: 32,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Slot $position',
-            style: TextStyle(
-              color: Colors.grey.withOpacity(0.5),
-              fontSize: 10,
+            const SizedBox(height: 4),
+            Text(
+              'Slot $position',
+              style: TextStyle(
+                color: Colors.grey.withOpacity(0.5),
+                fontSize: 10,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Gère le clic sur un slot vide
+  Future<void> _handleEmptySlotClick(int position, List<Character> teamCharacters) async {
+    // Si aucun héros n'est sélectionné, ne rien faire
+    if (_selectedCharacterForSwap == null) {
+      return;
+    }
+
+    // Si le héros sélectionné vient de ALL HEROES, l'ajouter à ce slot
+    if (!_selectedFromTeam) {
+      await _addToTeamSlot(_selectedCharacterForSwap!, position);
+      setState(() {
+        _selectedCharacterForSwap = null;
+        _selectedFromTeam = false;
+      });
+    }
+    // Si le héros vient de EDIT TEAM, déplacer vers ce slot
+    else {
+      await _moveToEmptySlot(_selectedCharacterForSwap!, position);
+      setState(() {
+        _selectedCharacterForSwap = null;
+        _selectedFromTeam = false;
+      });
+    }
+  }
+
+  /// Ajoute un héros de ALL HEROES à un slot vide
+  Future<void> _addToTeamSlot(Character character, int position) async {
+    try {
+      final updatedChar = _createUpdatedCharacter(
+        character,
+        isInTeam: true,
+        teamPosition: position,
+      );
+
+      await GameDataService.saveCharacter(updatedChar);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ ${character.name} ajouté au slot $position !'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Déplace un héros de la team vers un slot vide
+  Future<void> _moveToEmptySlot(Character character, int position) async {
+    try {
+      final updatedChar = _createUpdatedCharacter(
+        character,
+        isInTeam: true,
+        teamPosition: position,
+      );
+
+      await GameDataService.saveCharacter(updatedChar);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ ${character.name} déplacé au slot $position !'),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildCharacterIcon(
@@ -1011,24 +1151,38 @@ class _CharactersScreenState extends State<CharactersScreen> {
         break;
     }
 
+    // Vérifier si ce personnage est sélectionné pour swap ET que la sélection vient de ALL HEROES
+    final bool isSelected = _selectedCharacterForSwap?.id == character.id && !_selectedFromTeam;
+
     return GestureDetector(
-      onTap: () => _selectCharacter(character),
-      onLongPress: () => _showTeamEditDialog(context, character, teamCharacters, allCharacters),
-      child: Container(
+      onTap: () => _handleCharacterSelection(character, teamCharacters, fromTeamSlot: false),
+      onLongPress: () => _showFullsizeImage(character.appearance.fullsize),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: character.isInTeam 
-                ? Colors.white
-                : Colors.black.withOpacity(0.3),
-            width: character.isInTeam ? 3 : 1,
+            color: isSelected 
+                ? Colors.blue 
+                : (character.isInTeam 
+                    ? Colors.white
+                    : Colors.black.withOpacity(0.3)),
+            width: isSelected ? 4 : (character.isInTeam ? 3 : 1),
           ),
           boxShadow: [
-            BoxShadow(
-              color: rarityColor.withOpacity(0.5),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
+            if (isSelected)
+              const BoxShadow(
+                color: Colors.blue,
+                blurRadius: 12,
+                spreadRadius: 2,
+              )
+            else
+              BoxShadow(
+                color: rarityColor.withOpacity(0.5),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
           ],
         ),
         child: ClipRRect(

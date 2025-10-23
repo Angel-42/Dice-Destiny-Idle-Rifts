@@ -16,8 +16,8 @@ class CharacterFactory {
       persona: persona,
       stats: stats,
       appearance: appearance,
-      basedRarity: CharacterRarity.legendary,
-      currentRarity: CharacterRarity.legendary,
+      basedRarity: CharacterRarity.epic,
+      currentRarity: CharacterRarity.epic,
     );
   }
   

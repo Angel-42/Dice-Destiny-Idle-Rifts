@@ -243,6 +243,30 @@ class GameDataService {
     }
   }
 
+  /// Sauvegarde plusieurs personnages en une seule opération atomique (batch)
+  static Future<void> saveCharactersBatch(List<Character> characters) async {
+    try {
+      final userDoc = _currentUserDoc;
+      if (userDoc == null) {
+        throw Exception('Utilisateur non authentifié');
+      }
+
+      final batch = _firestore.batch();
+      final col = userDoc.collection('characters');
+
+      for (final c in characters) {
+        final docRef = col.doc(c.id);
+        batch.set(docRef, c.toJson(), SetOptions(merge: true));
+      }
+
+      await batch.commit();
+      debugPrint('💾 Batch sauvegarde ${characters.length} personnages');
+    } catch (e) {
+      debugPrint('❌ Erreur saveCharactersBatch: $e');
+      rethrow;
+    }
+  }
+
   /// Supprime un personnage
   static Future<void> deleteCharacter(String characterId) async {
     try {
