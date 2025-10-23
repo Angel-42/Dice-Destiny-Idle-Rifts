@@ -512,6 +512,456 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @epicUniverseTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Dive into an epic universe'**
+  String get epicUniverseTagline;
+
+  /// No description provided for @epicUniverseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'where destiny is ruled by cosmic dice.\nFace the Rifts and save the worlds!'**
+  String get epicUniverseDescription;
+
+  /// No description provided for @initializingPortal.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing portal...'**
+  String get initializingPortal;
+
+  /// No description provided for @startAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the adventure'**
+  String get startAdventure;
+
+  /// No description provided for @versionInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Version 1.0.0 • Made with Flutter'**
+  String get versionInfo;
+
+  /// No description provided for @connectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection error: {error}'**
+  String connectionError(String error);
+
+  /// No description provided for @stepYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR NAME'**
+  String get stepYourName;
+
+  /// No description provided for @stepYourRace.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR RACE'**
+  String get stepYourRace;
+
+  /// No description provided for @stepYourRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR REGION'**
+  String get stepYourRegion;
+
+  /// No description provided for @stepYourOrigin.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR ORIGIN'**
+  String get stepYourOrigin;
+
+  /// No description provided for @stepYourClass.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR CLASS'**
+  String get stepYourClass;
+
+  /// No description provided for @stepConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRMATION'**
+  String get stepConfirmation;
+
+  /// No description provided for @choicesShapeDestiny.
+  ///
+  /// In en, this message translates to:
+  /// **'Your choices will shape your destiny'**
+  String get choicesShapeDestiny;
+
+  /// No description provided for @lowercaseOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowercase only: max 11 characters'**
+  String get lowercaseOnly;
+
+  /// No description provided for @uppercaseOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Uppercase only: max 8 characters'**
+  String get uppercaseOnly;
+
+  /// No description provided for @mixedCase.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed: max {max} characters'**
+  String mixedCase(int max);
+
+  /// No description provided for @nameInLegends.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you known in legends?'**
+  String get nameInLegends;
+
+  /// No description provided for @yourNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get yourNameHint;
+
+  /// No description provided for @minimumCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum 3 characters'**
+  String get minimumCharacters;
+
+  /// No description provided for @whatIsYourNature.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your nature?'**
+  String get whatIsYourNature;
+
+  /// No description provided for @whereAreYouFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Where are you from?'**
+  String get whereAreYouFrom;
+
+  /// No description provided for @whatIsYourStory.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your story?'**
+  String get whatIsYourStory;
+
+  /// No description provided for @whatPathDoYouTake.
+  ///
+  /// In en, this message translates to:
+  /// **'What path do you take?'**
+  String get whatPathDoYouTake;
+
+  /// No description provided for @legendReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your legend is ready to be written'**
+  String get legendReady;
+
+  /// No description provided for @nameSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameSummary;
+
+  /// No description provided for @raceSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Race'**
+  String get raceSummary;
+
+  /// No description provided for @regionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get regionSummary;
+
+  /// No description provided for @originSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Origin'**
+  String get originSummary;
+
+  /// No description provided for @classSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get classSummary;
+
+  /// No description provided for @choicesFinal.
+  ///
+  /// In en, this message translates to:
+  /// **'These choices are final and will influence your journey through the Rifts'**
+  String get choicesFinal;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @forgeDestiny.
+  ///
+  /// In en, this message translates to:
+  /// **'Forge my destiny'**
+  String get forgeDestiny;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// No description provided for @cinematicTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'IN THE BEGINNING'**
+  String get cinematicTitle1;
+
+  /// No description provided for @cinematicText1.
+  ///
+  /// In en, this message translates to:
+  /// **'There was the Void.\nAn infinite emptiness where nothing existed.'**
+  String get cinematicText1;
+
+  /// No description provided for @cinematicSubtitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Then the Cosmic Dice appeared...'**
+  String get cinematicSubtitle1;
+
+  /// No description provided for @cinematicTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'THE DICE OF FATE'**
+  String get cinematicTitle2;
+
+  /// No description provided for @cinematicText2.
+  ///
+  /// In en, this message translates to:
+  /// **'These divine artifacts shaped\nreality itself.'**
+  String get cinematicText2;
+
+  /// No description provided for @cinematicSubtitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Each face, each roll created worlds.'**
+  String get cinematicSubtitle2;
+
+  /// No description provided for @cinematicTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'BROKEN BALANCE'**
+  String get cinematicTitle3;
+
+  /// No description provided for @cinematicText3.
+  ///
+  /// In en, this message translates to:
+  /// **'For eons, balance reigned.'**
+  String get cinematicText3;
+
+  /// No description provided for @cinematicSubtitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'But a dark force coveted their power.\nThe Rifts opened.'**
+  String get cinematicSubtitle3;
+
+  /// No description provided for @cinematicTitle4.
+  ///
+  /// In en, this message translates to:
+  /// **'THE RIFTS'**
+  String get cinematicTitle4;
+
+  /// No description provided for @cinematicText4.
+  ///
+  /// In en, this message translates to:
+  /// **'Cracks in reality,\ndevouring everything in their path.'**
+  String get cinematicText4;
+
+  /// No description provided for @cinematicSubtitle4.
+  ///
+  /// In en, this message translates to:
+  /// **'Worlds collapse. Civilizations are dying.'**
+  String get cinematicSubtitle4;
+
+  /// No description provided for @cinematicTitle5.
+  ///
+  /// In en, this message translates to:
+  /// **'A LAST HOPE'**
+  String get cinematicTitle5;
+
+  /// No description provided for @cinematicText5.
+  ///
+  /// In en, this message translates to:
+  /// **'The Cosmic Dice seek\nChampions.'**
+  String get cinematicText5;
+
+  /// No description provided for @cinematicSubtitle5.
+  ///
+  /// In en, this message translates to:
+  /// **'Souls capable of wielding their power.'**
+  String get cinematicSubtitle5;
+
+  /// No description provided for @cinematicTitle6.
+  ///
+  /// In en, this message translates to:
+  /// **'WHO ARE YOU?'**
+  String get cinematicTitle6;
+
+  /// No description provided for @cinematicText6.
+  ///
+  /// In en, this message translates to:
+  /// **'Destiny calls you.\nThe power of the Dice flows through you.'**
+  String get cinematicText6;
+
+  /// No description provided for @cinematicSubtitle6.
+  ///
+  /// In en, this message translates to:
+  /// **'Your story begins now...'**
+  String get cinematicSubtitle6;
+
+  /// No description provided for @skipCinematic.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skipCinematic;
+
+  /// No description provided for @nextScene.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextScene;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginTitle;
+
+  /// No description provided for @chooseYourMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your method'**
+  String get chooseYourMode;
+
+  /// No description provided for @emailAndPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Email & Password'**
+  String get emailAndPassword;
+
+  /// No description provided for @permanentAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent account'**
+  String get permanentAccount;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// No description provided for @google.
+  ///
+  /// In en, this message translates to:
+  /// **'Google'**
+  String get google;
+
+  /// No description provided for @continueWithoutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without account'**
+  String get continueWithoutAccount;
+
+  /// No description provided for @connectingInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting...'**
+  String get connectingInProgress;
+
+  /// No description provided for @linkAccountLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can link your account later in settings'**
+  String get linkAccountLater;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE AN ACCOUNT'**
+  String get createAccount;
+
+  /// No description provided for @emailLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'EMAIL LOGIN'**
+  String get emailLogin;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email required'**
+  String get emailRequired;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email'**
+  String get invalidEmail;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @passwordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password required'**
+  String get passwordRequired;
+
+  /// No description provided for @minimumSixCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum 6 characters'**
+  String get minimumSixCharacters;
+
+  /// No description provided for @createAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get createAccountButton;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @noAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'No account? Sign up'**
+  String get noAccount;
+
+  /// No description provided for @backToOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'← Back to options'**
+  String get backToOptions;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -30,6 +30,7 @@ class TacticalDiceApp extends StatelessWidget {
       title: 'Dice Destiny: Idle Rifts',
       localizationsDelegates: S.localizationsDelegates,
       supportedLocales: S.supportedLocales,
+      locale: const Locale('en'),
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,

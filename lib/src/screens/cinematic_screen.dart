@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import 'persona_creation_screen.dart';
+import '../../l10n/app_localizations.dart';
 
 class CinematicScreen extends StatefulWidget {
   const CinematicScreen({super.key});
@@ -21,51 +22,51 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
   Timer? _sceneTimer;
   
   // Les scènes du lore (texte + durée)
-  final List<Map<String, dynamic>> _scenes = [
+  List<Map<String, dynamic>> get _scenes => [
     {
-      'title': 'AU COMMENCEMENT',
-      'text': 'Il y avait le Néant.\nUn vide infini où rien n\'existait.',
-      'subtitle': 'Puis les Dés Cosmiques apparurent...',
+      'title': S.of(context)!.cinematicTitle1,
+      'text': S.of(context)!.cinematicText1,
+      'subtitle': S.of(context)!.cinematicSubtitle1,
       'duration': 4,
       'color': const Color(0xFF1a0f2e),
       'particles': 20,
     },
     {
-      'title': 'LES DÉS DU DESTIN',
-      'text': 'Ces artefacts divins façonnèrent\nla réalité elle-même.',
-      'subtitle': 'Chaque face, chaque lancer créait des mondes.',
+      'title': S.of(context)!.cinematicTitle2,
+      'text': S.of(context)!.cinematicText2,
+      'subtitle': S.of(context)!.cinematicSubtitle2,
       'duration': 5,
       'color': const Color(0xFF4a3a7a),
       'particles': 30,
     },
     {
-      'title': 'L\'ÉQUILIBRE BRISÉ',
-      'text': 'Pendant des éons, l\'équilibre régna.',
-      'subtitle': 'Mais une force obscure convoita leur pouvoir.\nLes Rifts s\'ouvrirent.',
+      'title': S.of(context)!.cinematicTitle3,
+      'text': S.of(context)!.cinematicText3,
+      'subtitle': S.of(context)!.cinematicSubtitle3,
       'duration': 5,
       'color': const Color(0xFF8B0000),
       'particles': 40,
     },
     {
-      'title': 'LES RIFTS',
-      'text': 'Des fissures dans la réalité,\ndévorant tout sur leur passage.',
-      'subtitle': 'Les mondes s\'effondrent. Les civilisations agonisent.',
+      'title': S.of(context)!.cinematicTitle4,
+      'text': S.of(context)!.cinematicText4,
+      'subtitle': S.of(context)!.cinematicSubtitle4,
       'duration': 5,
       'color': const Color(0xFF2d1b4e),
       'particles': 50,
     },
     {
-      'title': 'UN DERNIER ESPOIR',
-      'text': 'Les Dés Cosmiques recherchent\ndes Champions.',
-      'subtitle': 'Des âmes capables de manier leur pouvoir.',
+      'title': S.of(context)!.cinematicTitle5,
+      'text': S.of(context)!.cinematicText5,
+      'subtitle': S.of(context)!.cinematicSubtitle5,
       'duration': 5,
       'color': const Color(0xFF7c5fa8),
       'particles': 35,
     },
     {
-      'title': 'QUI ÊTES-VOUS ?',
-      'text': 'Le destin vous appelle.\nLe pouvoir des Dés coule en vous.',
-      'subtitle': 'Votre histoire commence maintenant...',
+      'title': S.of(context)!.cinematicTitle6,
+      'text': S.of(context)!.cinematicText6,
+      'subtitle': S.of(context)!.cinematicSubtitle6,
       'duration': 6,
       'color': const Color(0xFFFFD700),
       'particles': 60,
@@ -243,9 +244,9 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                               color: Colors.white54,
                               size: 20,
                             ),
-                            label: const Text(
-                              'Passer',
-                              style: TextStyle(
+                            label: Text(
+                              S.of(context)!.skipCinematic,
+                              style: const TextStyle(
                                 color: Colors.white54,
                                 fontSize: 14,
                               ),

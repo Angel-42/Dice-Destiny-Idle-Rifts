@@ -12,11 +12,11 @@ class SEs extends S {
   String get appTitle => 'Dice Destiny: Idle Rifts';
 
   @override
-  String get welcome => 'Welcome';
+  String get welcome => 'Bienvenido';
 
   @override
   String get welcomeMessage =>
-      'Welcome! Use the navigation bar below to explore.';
+      '¡Bienvenido! Use la barra de navegación a continuación para explorar.';
 
   @override
   String get diceDestiny => 'DICE DESTINY';
@@ -25,34 +25,34 @@ class SEs extends S {
   String get idleRifts => 'IDLE RIFTS';
 
   @override
-  String get navHome => 'Home';
+  String get navHome => 'Inicio';
 
   @override
-  String get navBattle => 'Battle';
+  String get navBattle => 'Batalla';
 
   @override
-  String get navAllies => 'Allies';
+  String get navAllies => 'Aliados';
 
   @override
-  String get navSummon => 'Summon';
+  String get navSummon => 'Invocar';
 
   @override
-  String get navShop => 'Shop';
+  String get navShop => 'Tienda';
 
   @override
   String get navMisc => 'Misc.';
 
   @override
-  String get editTeam => 'EDIT TEAM';
+  String get editTeam => 'EDITAR EQUIPO';
 
   @override
-  String get allHeroes => 'ALL HEROES';
+  String get allHeroes => 'TODOS LOS HÉROES';
 
   @override
-  String get slot => 'Slot';
+  String get slot => 'Ranura';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Cancelar';
 
   @override
   String error(String message) {
@@ -60,167 +60,405 @@ class SEs extends S {
   }
 
   @override
-  String get level => 'Lv.';
+  String get level => 'Nv.';
 
   @override
-  String get hp => 'HP';
+  String get hp => 'PV';
 
   @override
-  String get atk => 'Atk';
+  String get atk => 'Atq';
 
   @override
   String get mag => 'Mag';
 
   @override
-  String get spd => 'Spd';
+  String get spd => 'Vel';
 
   @override
   String get def => 'Def';
 
   @override
-  String get lck => 'Lck';
+  String get lck => 'Sue';
 
   @override
   String get res => 'Res';
 
   @override
-  String get rarityCommon => 'Common';
+  String get rarityCommon => 'Común';
 
   @override
-  String get rarityRare => 'Rare';
+  String get rarityRare => 'Raro';
 
   @override
-  String get rarityEpic => 'Epic';
+  String get rarityEpic => 'Épico';
 
   @override
-  String get rarityLegendary => 'Legendary';
+  String get rarityLegendary => 'Legendario';
 
   @override
-  String get equipmentWeapon => 'Weapon';
+  String get equipmentWeapon => 'Arma';
 
   @override
-  String get equipmentArmor => 'Armor';
+  String get equipmentArmor => 'Armadura';
 
   @override
-  String get equipmentAccessory => 'Accessory';
+  String get equipmentAccessory => 'Accesorio';
 
   @override
-  String get equipmentSkill => 'Skill';
+  String get equipmentSkill => 'Habilidad';
 
   @override
-  String get warrior => 'Warrior';
+  String get warrior => 'Guerrero';
 
   @override
-  String get mage => 'Mage';
+  String get mage => 'Mago';
 
   @override
-  String get rogue => 'Rogue';
+  String get rogue => 'Pícaro';
 
   @override
-  String get cleric => 'Cleric';
+  String get cleric => 'Clérigo';
 
   @override
-  String get ironSword => 'Iron Sword';
+  String get ironSword => 'Espada de Hierro';
 
   @override
-  String get woodenStaff => 'Wooden Staff';
+  String get woodenStaff => 'Bastón de Madera';
 
   @override
-  String get ironDagger => 'Iron Dagger';
+  String get ironDagger => 'Daga de Hierro';
 
   @override
-  String get healingRod => 'Healing Rod';
+  String get healingRod => 'Vara de Curación';
 
   @override
-  String get noPlayerData => 'No player data';
+  String get noPlayerData => 'Sin datos de jugador';
 
   @override
-  String get loading => 'Loading...';
+  String get loading => 'Cargando...';
 
   @override
-  String get gold => 'Gold';
+  String get gold => 'Oro';
 
   @override
-  String get gems => 'Gems';
+  String get gems => 'Gemas';
 
   @override
-  String get summonTokens => 'Summon Tokens';
+  String get summonTokens => 'Fichas de Invocación';
 
   @override
   String idleIncomeOnline(int amount) {
-    return '+$amount gold (idle income)';
+    return '+$amount oro (ingreso pasivo)';
   }
 
   @override
   String idleIncomeOffline(int amount, String hours) {
-    return 'Offline income: +$amount gold (${hours}h absence)';
+    return 'Ingreso sin conexión: +$amount oro (${hours}h de ausencia)';
   }
 
   @override
-  String get firstConnection => 'First connection, no offline income';
+  String get firstConnection => 'Primera conexión, sin ingreso sin conexión';
 
   @override
   String noOfflineIncome(int seconds) {
-    return 'No offline income (last connection: ${seconds}s)';
+    return 'Sin ingreso sin conexión (última conexión: ${seconds}s)';
   }
 
   @override
-  String get stamina => 'Stamina';
+  String get stamina => 'Resistencia';
 
   @override
-  String get battleTitle => 'BATTLE';
+  String get battleTitle => 'BATALLA';
 
   @override
-  String get battleSystem => 'Battle System';
+  String get battleSystem => 'Sistema de Batalla';
 
   @override
-  String get campaignMode => 'Campaign Mode';
+  String get campaignMode => 'Modo Campaña';
 
   @override
-  String get rifts => 'Rifts';
+  String get rifts => 'Fisuras';
 
   @override
-  String get dungeons => 'Dungeons';
+  String get dungeons => 'Mazmorras';
 
   @override
   String get arena => 'Arena';
 
   @override
-  String get needCharacterFirst => 'You must create a character first!';
+  String get needCharacterFirst => '¡Primero debes crear un personaje!';
 
   @override
-  String get cannotOpenCampaign => 'Cannot open campaign';
+  String get cannotOpenCampaign => 'No se puede abrir la campaña';
 
   @override
   String get miscTitle => 'MISC.';
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Configuración';
 
   @override
-  String get gifts => 'Gifts';
+  String get gifts => 'Regalos';
 
   @override
-  String get events => 'Events';
+  String get events => 'Eventos';
 
   @override
-  String get logout => 'Logout';
+  String get logout => 'Cerrar sesión';
 
   @override
-  String get rankings => 'Rankings';
+  String get rankings => 'Clasificaciones';
 
   @override
-  String get news => 'News';
+  String get news => 'Noticias';
 
   @override
-  String get help => 'Help';
+  String get help => 'Ayuda';
 
   @override
-  String get friends => 'Friends';
+  String get friends => 'Amigos';
 
   @override
-  String get logoutConfirm => 'Are you sure you want to logout?';
+  String get logoutConfirm => '¿Está seguro de que desea cerrar sesión?';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'Confirmar';
+
+  @override
+  String get epicUniverseTagline => 'Sumérgete en un universo épico';
+
+  @override
+  String get epicUniverseDescription =>
+      'donde el destino está gobernado por dados cósmicos.\n¡Enfrenta las Fisuras y salva los mundos!';
+
+  @override
+  String get initializingPortal => 'Inicializando portal...';
+
+  @override
+  String get startAdventure => 'Comenzar la aventura';
+
+  @override
+  String get versionInfo => 'Versión 1.0.0 • Hecho con Flutter';
+
+  @override
+  String connectionError(String error) {
+    return 'Error de conexión: $error';
+  }
+
+  @override
+  String get stepYourName => 'TU NOMBRE';
+
+  @override
+  String get stepYourRace => 'TU RAZA';
+
+  @override
+  String get stepYourRegion => 'TU REGIÓN';
+
+  @override
+  String get stepYourOrigin => 'TU ORIGEN';
+
+  @override
+  String get stepYourClass => 'TU CLASE';
+
+  @override
+  String get stepConfirmation => 'CONFIRMACIÓN';
+
+  @override
+  String get choicesShapeDestiny => 'Tus elecciones darán forma a tu destino';
+
+  @override
+  String get lowercaseOnly => 'Solo minúsculas: máx. 11 caracteres';
+
+  @override
+  String get uppercaseOnly => 'Solo mayúsculas: máx. 8 caracteres';
+
+  @override
+  String mixedCase(int max) {
+    return 'Mixto: máx. $max caracteres';
+  }
+
+  @override
+  String get nameInLegends => '¿Cómo eres conocido en las leyendas?';
+
+  @override
+  String get yourNameHint => 'Tu nombre';
+
+  @override
+  String get minimumCharacters => 'Mínimo 3 caracteres';
+
+  @override
+  String get whatIsYourNature => '¿Cuál es tu naturaleza?';
+
+  @override
+  String get whereAreYouFrom => '¿De dónde eres?';
+
+  @override
+  String get whatIsYourStory => '¿Cuál es tu historia?';
+
+  @override
+  String get whatPathDoYouTake => '¿Qué camino tomas?';
+
+  @override
+  String get legendReady => 'Tu leyenda está lista para ser escrita';
+
+  @override
+  String get nameSummary => 'Nombre';
+
+  @override
+  String get raceSummary => 'Raza';
+
+  @override
+  String get regionSummary => 'Región';
+
+  @override
+  String get originSummary => 'Origen';
+
+  @override
+  String get classSummary => 'Clase';
+
+  @override
+  String get choicesFinal =>
+      'Estas elecciones son definitivas e influirán en tu viaje a través de las Fisuras';
+
+  @override
+  String get back => 'Atrás';
+
+  @override
+  String get forgeDestiny => 'Forjar mi destino';
+
+  @override
+  String get continueButton => 'Continuar';
+
+  @override
+  String get cinematicTitle1 => 'EN EL PRINCIPIO';
+
+  @override
+  String get cinematicText1 =>
+      'Existía el Vacío.\nUn vacío infinito donde nada existía.';
+
+  @override
+  String get cinematicSubtitle1 => 'Entonces aparecieron los Dados Cósmicos...';
+
+  @override
+  String get cinematicTitle2 => 'LOS DADOS DEL DESTINO';
+
+  @override
+  String get cinematicText2 =>
+      'Estos artefactos divinos moldearon\nla realidad misma.';
+
+  @override
+  String get cinematicSubtitle2 => 'Cada cara, cada tirada creó mundos.';
+
+  @override
+  String get cinematicTitle3 => 'EQUILIBRIO ROTO';
+
+  @override
+  String get cinematicText3 => 'Durante eones, reinó el equilibrio.';
+
+  @override
+  String get cinematicSubtitle3 =>
+      'Pero una fuerza oscura codició su poder.\nLas Fisuras se abrieron.';
+
+  @override
+  String get cinematicTitle4 => 'LAS FISURAS';
+
+  @override
+  String get cinematicText4 =>
+      'Grietas en la realidad,\ndevorando todo a su paso.';
+
+  @override
+  String get cinematicSubtitle4 =>
+      'Los mundos colapsan. Las civilizaciones mueren.';
+
+  @override
+  String get cinematicTitle5 => 'UNA ÚLTIMA ESPERANZA';
+
+  @override
+  String get cinematicText5 => 'Los Dados Cósmicos buscan\nCampeones.';
+
+  @override
+  String get cinematicSubtitle5 => 'Almas capaces de empuñar su poder.';
+
+  @override
+  String get cinematicTitle6 => '¿QUIÉN ERES TÚ?';
+
+  @override
+  String get cinematicText6 =>
+      'El destino te llama.\nEl poder de los Dados fluye a través de ti.';
+
+  @override
+  String get cinematicSubtitle6 => 'Tu historia comienza ahora...';
+
+  @override
+  String get skipCinematic => 'Saltar';
+
+  @override
+  String get nextScene => 'Siguiente';
+
+  @override
+  String get loginTitle => 'Iniciar sesión';
+
+  @override
+  String get chooseYourMode => 'Elige tu método';
+
+  @override
+  String get emailAndPassword => 'Correo y Contraseña';
+
+  @override
+  String get permanentAccount => 'Cuenta permanente';
+
+  @override
+  String get or => 'O';
+
+  @override
+  String get google => 'Google';
+
+  @override
+  String get continueWithoutAccount => 'Continuar sin cuenta';
+
+  @override
+  String get connectingInProgress => 'Conectando...';
+
+  @override
+  String get linkAccountLater =>
+      'Puedes vincular tu cuenta más tarde en la configuración';
+
+  @override
+  String get createAccount => 'CREAR UNA CUENTA';
+
+  @override
+  String get emailLogin => 'INICIO CON CORREO';
+
+  @override
+  String get email => 'Correo electrónico';
+
+  @override
+  String get emailRequired => 'Correo requerido';
+
+  @override
+  String get invalidEmail => 'Correo inválido';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get passwordRequired => 'Contraseña requerida';
+
+  @override
+  String get minimumSixCharacters => 'Mínimo 6 caracteres';
+
+  @override
+  String get createAccountButton => 'Crear cuenta';
+
+  @override
+  String get signIn => 'Iniciar sesión';
+
+  @override
+  String get alreadyHaveAccount => '¿Ya tienes una cuenta? Iniciar sesión';
+
+  @override
+  String get noAccount => '¿Sin cuenta? Registrarse';
+
+  @override
+  String get backToOptions => '← Volver a opciones';
 }
