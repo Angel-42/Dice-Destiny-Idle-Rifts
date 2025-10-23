@@ -12,8 +12,20 @@ class CharactersScreen extends StatefulWidget {
 
 class _CharactersScreenState extends State<CharactersScreen> {
   Character? _selectedCharacter;
-  Character? _selectedCharacterForSwap; // Personnage sélectionné pour l'échange
-  bool _selectedFromTeam = false; // true = sélectionné depuis EDIT TEAM, false = depuis ALL HEROES
+
+  @override
+  void initState() {
+    super.initState();
+    GameDataService.watchCharacters().first.then((characters) {
+      if (characters.isNotEmpty && mounted) {
+        setState(() {
+          _selectedCharacter = characters.first;
+        });
+      }
+    });
+  }
+  Character? _selectedCharacterForSwap;
+  bool _selectedFromTeam = false;
 
   void _showFullsizeImage(String? fullsizeSprite) {
     if (fullsizeSprite == null) return;
@@ -133,9 +145,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
                           ),
                         );
                       },
-                      child: _selectedCharacter != null
-                          ? _buildSelectedCharacterDetail(_selectedCharacter!)
-                          : const SizedBox.shrink(),
+                      child: _buildSelectedCharacterDetail(_selectedCharacter!),
                     ),
                   ),
                   // Section 2: Edit Team
