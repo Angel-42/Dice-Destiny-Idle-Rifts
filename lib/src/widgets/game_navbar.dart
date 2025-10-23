@@ -5,6 +5,7 @@ import '../screens/battle_screen.dart';
 import '../screens/summon_screen.dart';
 import '../screens/shop_screen.dart';
 import '../screens/misc_screen.dart';
+import '../services/idle_income_service.dart';
 
 class GameNavbar extends StatefulWidget {
   const GameNavbar({super.key});
@@ -13,7 +14,7 @@ class GameNavbar extends StatefulWidget {
   State<GameNavbar> createState() => GameNavbarState();
 }
 
-class GameNavbarState extends State<GameNavbar> {
+class GameNavbarState extends State<GameNavbar> with WidgetsBindingObserver {
   int _selectedIndex = 0; // 👈 Home par défaut
 
   late final List<Widget> _widgetOptions;
@@ -21,6 +22,8 @@ class GameNavbarState extends State<GameNavbar> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    
     _widgetOptions = <Widget>[
       const MainMenuScreen(),    // Home
       const BattleScreen(),      // Battle
@@ -29,6 +32,33 @@ class GameNavbarState extends State<GameNavbar> {
       const ShopScreen(),        // Shop
       const MiscScreen(),        // Misc.
     ];
+
+    // Démarrer le service de revenus passifs
+    IdleIncomeService.start();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // Arrêter le service quand l'app se ferme (ne peut pas être await dans dispose)
+    IdleIncomeService.stop();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    // Gérer quand l'app passe en background/foreground
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      // App en background ou fermée
+      debugPrint('📱 App en background/fermée');
+      IdleIncomeService.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      // App de retour en foreground
+      debugPrint('📱 App de retour en foreground');
+      IdleIncomeService.start();
+    }
   }
 
   void _onItemTapped(int index) {
