@@ -1,0 +1,111 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "Dice Destiny: Idle Rifts",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "welcome": "Welcome",
+  "welcomeMessage": "Welcome! Use the navigation bar below to explore.",
+  "diceDestiny": "DICE DESTINY",
+  "idleRifts": "IDLE RIFTS",
+
+  "navHome": "Home",
+  "navBattle": "Battle",
+  "navAllies": "Allies",
+  "navSummon": "Summon",
+  "navShop": "Shop",
+  "navMisc": "Misc.",
+
+  "editTeam": "EDIT TEAM",
+  "allHeroes": "ALL HEROES",
+  "slot": "Slot",
+  "cancel": "Cancel",
+  "error": "Error: {message}",
+  "@error": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "level": "Lv.",
+  "hp": "HP",
+  "atk": "Atk",
+  "mag": "Mag",
+  "spd": "Spd",
+  "def": "Def",
+  "lck": "Lck",
+  "res": "Res",
+
+  "rarityCommon": "Common",
+  "rarityRare": "Rare",
+  "rarityEpic": "Epic",
+  "rarityLegendary": "Legendary",
+
+  "equipmentWeapon": "Weapon",
+  "equipmentArmor": "Armor",
+  "equipmentAccessory": "Accessory",
+  "equipmentSkill": "Skill",
+
+  "warrior": "Warrior",
+  "mage": "Mage",
+  "rogue": "Rogue",
+  "cleric": "Cleric",
+
+  "ironSword": "Iron Sword",
+  "woodenStaff": "Wooden Staff",
+  "ironDagger": "Iron Dagger",
+  "healingRod": "Healing Rod",
+
+  "noPlayerData": "No player data",
+  "loading": "Loading...",
+
+  "gold": "Gold",
+  "gems": "Gems",
+  "summonTokens": "Summon Tokens",
+
+  "idleIncomeOnline": "+{amount} gold (idle income)",
+  "@idleIncomeOnline": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "idleIncomeOffline": "Offline income: +{amount} gold ({hours}h absence)",
+  "@idleIncomeOffline": {
+    "placeholders": {
+      "amount": {"type": "int"},
+      "hours": {"type": "String"}
+    }
+  },
+  "firstConnection": "First connection, no offline income",
+  "noOfflineIncome": "No offline income (last connection: {seconds}s)",
+  "@noOfflineIncome": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+
+  "stamina": "Stamina",
+
+  "battleTitle": "BATTLE",
+  "battleSystem": "Battle System",
+  "campaignMode": "Campaign Mode",
+  "rifts": "Rifts",
+  "dungeons": "Dungeons",
+  "arena": "Arena",
+  "needCharacterFirst": "You must create a character first!",
+  "cannotOpenCampaign": "Cannot open campaign",
+
+  "miscTitle": "MISC.",
+  "settings": "Settings",
+  "gifts": "Gifts",
+  "events": "Events",
+  "logout": "Logout",
+  "rankings": "Rankings",
+  "news": "News",
+  "help": "Help",
+  "friends": "Friends",
+  "logoutConfirm": "Are you sure you want to logout?",
+  "confirm": "Confirm"
+}

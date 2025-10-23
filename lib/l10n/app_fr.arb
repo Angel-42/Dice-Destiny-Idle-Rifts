@@ -1,0 +1,87 @@
+{
+  "@@locale": "fr",
+  
+  "appTitle": "Dice Destiny: Idle Rifts",
+  
+  "welcome": "Bienvenue",
+  "welcomeMessage": "Bienvenue ! Utilisez la barre de navigation ci-dessous pour explorer.",
+  "diceDestiny": "DICE DESTINY",
+  "idleRifts": "IDLE RIFTS",
+
+  "navHome": "Accueil",
+  "navBattle": "Combat",
+  "navAllies": "Alliés",
+  "navSummon": "Invocation",
+  "navShop": "Boutique",
+  "navMisc": "Divers",
+
+  "editTeam": "MODIFIER L'ÉQUIPE",
+  "allHeroes": "TOUS LES HÉROS",
+  "slot": "Emplacement",
+  "cancel": "Annuler",
+  "error": "Erreur : {message}",
+
+  "level": "Niv.",
+  "hp": "PV",
+  "atk": "Att",
+  "mag": "Mag",
+  "spd": "Vit",
+  "def": "Déf",
+  "lck": "Cha",
+  "res": "Rés",
+
+  "rarityCommon": "Commun",
+  "rarityRare": "Rare",
+  "rarityEpic": "Épique",
+  "rarityLegendary": "Légendaire",
+
+  "equipmentWeapon": "Arme",
+  "equipmentArmor": "Armure",
+  "equipmentAccessory": "Accessoire",
+  "equipmentSkill": "Compétence",
+
+  "warrior": "Guerrier",
+  "mage": "Mage",
+  "rogue": "Voleur",
+  "cleric": "Clerc",
+
+  "ironSword": "Épée de Fer",
+  "woodenStaff": "Bâton de Bois",
+  "ironDagger": "Dague de Fer",
+  "healingRod": "Bâton de Soin",
+
+  "noPlayerData": "Aucune donnée joueur",
+  "loading": "Chargement...",
+
+  "gold": "Or",
+  "gems": "Gemmes",
+  "summonTokens": "Jetons d'Invocation",
+
+  "idleIncomeOnline": "+{amount} or (revenu passif)",
+  "idleIncomeOffline": "Revenus offline : +{amount} or ({hours}h d'absence)",
+  "firstConnection": "Première connexion, pas de revenus offline",
+  "noOfflineIncome": "Pas de revenus offline (dernière connexion : {seconds}s)",
+
+  "stamina": "Endurance",
+
+  "battleTitle": "COMBAT",
+  "battleSystem": "Système de Combat",
+  "campaignMode": "Mode Campagne",
+  "rifts": "Failles",
+  "dungeons": "Donjons",
+  "arena": "Arène",
+  "needCharacterFirst": "Vous devez créer un personnage d'abord !",
+  "cannotOpenCampaign": "Impossible d'ouvrir la campagne",
+
+  "miscTitle": "DIVERS",
+  "settings": "Paramètres",
+  "gifts": "Cadeaux",
+  "events": "Événements",
+  "logout": "Déconnexion",
+  "rankings": "Classements",
+  "news": "Actualités",
+  "help": "Aide",
+  "friends": "Amis",
+  "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "confirm": "Confirmer"
+}
