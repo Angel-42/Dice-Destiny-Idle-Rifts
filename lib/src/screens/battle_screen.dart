@@ -1,6 +1,6 @@
 import 'package:dice_destiny_idle_rifts/src/screens/campaign_screen.dart';
 import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
-import '../models/character.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 class BattleScreen extends StatefulWidget {
   const BattleScreen({super.key});
@@ -47,9 +47,9 @@ class _BattleScreenState extends State<BattleScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'BATTLE',
-                      style: TextStyle(
+                    Text(
+                      S.of(context)!.battleTitle,
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -96,9 +96,9 @@ class _BattleScreenState extends State<BattleScreen> {
                       const SizedBox(height: 32),
 
                       // Texte
-                      const Text(
-                        'Battle System',
-                        style: TextStyle(
+                      Text(
+                        S.of(context)!.battleSystem,
+                        style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -115,7 +115,7 @@ class _BattleScreenState extends State<BattleScreen> {
                             if (team.isEmpty) {
                               if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Vous devez créer un personnage d\'abord !')),
+                                SnackBar(content: Text(S.of(context)!.needCharacterFirst)),
                               );
                               return;
                             }
@@ -130,15 +130,15 @@ class _BattleScreenState extends State<BattleScreen> {
                             debugPrint('❌ Erreur ouverture campagne depuis Battle: $e');
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Impossible d\'ouvrir la campagne')),
+                                SnackBar(content: Text(S.of(context)!.cannotOpenCampaign)),
                               );
                             }
                           }
                         },
                         icon: const Icon(Icons.campaign),
-                        label: const Text(
-                          'Campaign Mode',
-                          style: TextStyle(fontSize: 18),
+                        label: Text(
+                          S.of(context)!.campaignMode,
+                          style: const TextStyle(fontSize: 18),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
@@ -161,9 +161,9 @@ class _BattleScreenState extends State<BattleScreen> {
                           // TODO: Navigate to Rifts
                         },
                         icon: const Icon(Icons.auto_awesome),
-                        label: const Text(
-                          'Rifts',
-                          style: TextStyle(fontSize: 18),
+                        label: Text(
+                          S.of(context)!.rifts,
+                          style: const TextStyle(fontSize: 18),
                       ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple,
@@ -186,9 +186,9 @@ class _BattleScreenState extends State<BattleScreen> {
                           // TODO: Navigate to Dungeons
                         },
                         icon: const Icon(Icons.door_front_door),
-                        label: const Text(
-                          'Dungeons',
-                          style: TextStyle(fontSize: 18),
+                        label: Text(
+                          S.of(context)!.dungeons,
+                          style: const TextStyle(fontSize: 18),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color.fromARGB(255, 14, 85, 17),
@@ -211,9 +211,9 @@ class _BattleScreenState extends State<BattleScreen> {
                           // TODO: Navigate to Arena
                         },
                         icon: const Icon(Icons.shield),
-                        label: const Text(
-                          'Arena',
-                          style: TextStyle(fontSize: 18),
+                        label: Text(
+                          S.of(context)!.arena,
+                          style: const TextStyle(fontSize: 18),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,

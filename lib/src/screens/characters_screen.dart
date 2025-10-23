@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
 import '../services/game_data_service.dart';
@@ -268,13 +269,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
   await GameDataService.saveCharactersBatch([updatedChar1, updatedChar2]);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('🔄 ${char1.name} ↔ ${char2.name} (positions ${pos1 + 1} ↔ ${pos2 + 1})'),
-            backgroundColor: Colors.blue,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        // Message supprimé - pas besoin d'afficher de notification
       }
     } catch (e) {
       if (mounted) {
@@ -323,18 +318,10 @@ class _CharactersScreenState extends State<CharactersScreen> {
         teamPosition: position,
       );
 
-  // Sauvegarder les deux atomiquement
-  await GameDataService.saveCharactersBatch([updatedCharInTeam, updatedCharOutTeam]);
+      // Sauvegarder les deux atomiquement
+      await GameDataService.saveCharactersBatch([updatedCharInTeam, updatedCharOutTeam]);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ ${updatedCharOutTeam.name} remplace ${updatedCharInTeam.name} (Position ${position + 1})'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      // Message supprimé - pas besoin d'afficher de notification
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -444,9 +431,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Text(
-                        'HP',
-                        style: TextStyle(
+                      Text(
+                        S.of(context)!.hp,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.amber,
@@ -546,9 +533,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Spd',
-                                  style: TextStyle(
+                                Text(
+                                  S.of(context)!.spd,
+                                  style: const TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -575,9 +562,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Def',
-                                  style: TextStyle(
+                                Text(
+                                  S.of(context)!.def,
+                                  style: const TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -599,9 +586,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Lck',
-                                  style: TextStyle(
+                                Text(
+                                  S.of(context)!.lck,
+                                  style: const TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -804,9 +791,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
             children: [
               const Icon(Icons.groups, color: Colors.amber, size: 24),
               const SizedBox(width: 8),
-              const Text(
-                'EDIT TEAM',
-                style: TextStyle(
+              Text(
+                S.of(context)!.editTeam,
+                style: const TextStyle(
                   color: Colors.amber,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -852,13 +839,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.list, color: Colors.amber, size: 24),
-              SizedBox(width: 8),
+              const Icon(Icons.list, color: Colors.amber, size: 24),
+              const SizedBox(width: 8),
               Text(
-                'ALL HEROES',
-                style: TextStyle(
+                S.of(context)!.allHeroes,
+                style: const TextStyle(
                   color: Colors.amber,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1079,15 +1066,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
       await GameDataService.saveCharacter(updatedChar);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ ${character.name} ajouté au slot $position !'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      // Message supprimé - pas besoin d'afficher de notification
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1111,15 +1090,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
       await GameDataService.saveCharacter(updatedChar);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ ${character.name} déplacé au slot $position !'),
-            backgroundColor: Colors.blue,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      // Message supprimé - pas besoin d'afficher de notification
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

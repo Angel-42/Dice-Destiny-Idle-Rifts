@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import 'settings_screen.dart';
 import 'welcome_screen.dart'; // 👈 AJOUTER
@@ -43,9 +44,9 @@ class MiscScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'MISC.',
-                      style: TextStyle(
+                    Text(
+                      S.of(context)!.miscTitle,
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.cyan,
@@ -74,8 +75,9 @@ class MiscScreen extends StatelessWidget {
                     crossAxisSpacing: 16,
                     children: [
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.settings,
-                        label: 'Settings',
+                        label: S.of(context)!.settings,
                         color: Colors.blue,
                         onTap: () {
                           Navigator.push(
@@ -87,74 +89,81 @@ class MiscScreen extends StatelessWidget {
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.card_giftcard,
-                        label: 'Gifts',
+                        label: S.of(context)!.gifts,
                         color: Colors.pink,
                         onTap: () {
                           // TODO: Gifts screen
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.emoji_events,
-                        label: 'Events',
+                        label: S.of(context)!.events,
                         color: Colors.orange,
                         onTap: () {
                           // TODO: Events screen
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.leaderboard,
-                        label: 'Rankings',
+                        label: S.of(context)!.rankings,
                         color: Colors.purple,
                         onTap: () {
                           // TODO: Rankings screen
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.description,
-                        label: 'News',
+                        label: S.of(context)!.news,
                         color: Colors.teal,
                         onTap: () {
                           // TODO: News screen
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.help_outline,
-                        label: 'Help',
+                        label: S.of(context)!.help,
                         color: Colors.green,
                         onTap: () {
                           // TODO: Help screen
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.group,
-                        label: 'Friends',
+                        label: S.of(context)!.friends,
                         color: Colors.cyan,
                         onTap: () {
                           // TODO: Friends screen
                         },
                       ),
                       _buildMiscCard(
+                        context: context,
                         icon: Icons.logout,
-                        label: 'Logout',
+                        label: S.of(context)!.logout,
                         color: Colors.red,
                         onTap: () async {
                           final confirm = await showDialog<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
+                            builder: (dialogContext) => AlertDialog(
                               backgroundColor: Colors.blueGrey.shade900,
-                              title: const Text('Logout'),
-                              content: const Text('Are you sure you want to logout?'),
+                              title: Text(S.of(context)!.logout),
+                              content: Text(S.of(context)!.logoutConfirm),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: const Text('Cancel'),
+                                  onPressed: () => Navigator.pop(dialogContext, false),
+                                  child: Text(S.of(context)!.cancel),
                                 ),
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text(
-                                    'Logout',
-                                    style: TextStyle(color: Colors.red),
+                                  onPressed: () => Navigator.pop(dialogContext, true),
+                                  child: Text(
+                                    S.of(context)!.logout,
+                                    style: const TextStyle(color: Colors.red),
                                   ),
                                 ),
                               ],
@@ -188,6 +197,7 @@ class MiscScreen extends StatelessWidget {
   }
 
   Widget _buildMiscCard({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required Color color,

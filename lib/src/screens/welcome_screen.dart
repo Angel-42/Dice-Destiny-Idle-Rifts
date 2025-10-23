@@ -3,6 +3,7 @@ import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/login_dialog.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'cinematic_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -151,9 +152,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   Colors.amber.shade300,
                                 ],
                               ).createShader(bounds),
-                              child: const Text(
-                                'Dice Destiny',
-                                style: TextStyle(
+                              child: Text(
+                                S.of(context)!.diceDestiny,
+                                style: const TextStyle(
                                   fontSize: 48,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -191,7 +192,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 ],
                               ),
                               child: Text(
-                                'I D L E  R I F T S',
+                                S.of(context)!.idleRifts,
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.deepPurple.shade100,

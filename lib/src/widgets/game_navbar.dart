@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../screens/characters_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/battle_screen.dart';
@@ -106,37 +107,37 @@ class GameNavbarState extends State<GameNavbar> with WidgetsBindingObserver {
               children: [
                 _buildNavItem(
                   icon: Icons.home,
-                  label: 'Home',
+                  label: S.of(context)!.navHome,
                   index: 0,
                   color: const Color(0xFF4FC3F7),
                 ),
                 _buildNavItem(
                   icon: Icons.local_fire_department,
-                  label: 'Battle',
+                  label: S.of(context)!.navBattle,
                   index: 1,
                   color: const Color(0xFFFF6B6B),
                 ),
                 _buildNavItem(
                   icon: Icons.groups,
-                  label: 'Allies',
+                  label: S.of(context)!.navAllies,
                   index: 2,
                   color: const Color(0xFF9C27B0),
                 ),
                 _buildNavItem(
                   icon: Icons.auto_awesome,
-                  label: 'Summon',
+                  label: S.of(context)!.navSummon,
                   index: 3,
                   color: const Color(0xFFFFA726),
                 ),
                 _buildNavItem(
                   icon: Icons.shopping_bag,
-                  label: 'Shop',
+                  label: S.of(context)!.navShop,
                   index: 4,
                   color: const Color(0xFF66BB6A),
                 ),
                 _buildNavItem(
                   icon: Icons.apps,
-                  label: 'Misc.',
+                  label: S.of(context)!.navMisc,
                   index: 5,
                   color: const Color(0xFF78909C),
                 ),

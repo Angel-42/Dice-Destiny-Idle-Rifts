@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../services/game_data_service.dart';
 import '../models/player.dart';
 import '../widgets/player_bar.dart';
@@ -97,7 +98,7 @@ class MainMenuScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(32),
                       child: Text(
-                        'Welcome! Use the navigation bar below to explore.',
+                        S.of(context)!.welcomeMessage,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
