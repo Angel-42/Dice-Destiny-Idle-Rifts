@@ -30,7 +30,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
   void _showFullsizeImage(String? fullsizeSprite) {
     if (fullsizeSprite == null) return;
     
-    // Nettoyer le préfixe ~/ si présent
     final cleanPath = fullsizeSprite.startsWith('~/') 
         ? fullsizeSprite.substring(2) 
         : fullsizeSprite;
@@ -54,16 +53,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
   /// Helper pour afficher soit un emoji, soit une image sprite
   Widget _buildCharacterSprite(String sprite, double size) {
-    // Nettoyer le chemin d'abord si nécessaire
     final cleanSprite = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
     
-    // Si le sprite contient une extension d'image, c'est un chemin d'asset
     if (cleanSprite.contains('.png') || cleanSprite.contains('.jpg') || cleanSprite.contains('.jpeg')) {
       return Image.asset(
         cleanSprite,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          // Si l'image ne charge pas, afficher un emoji par défaut
           return Center(
             child: Text(
               '❓',
@@ -73,7 +69,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
         },
       );
     } else {
-      // C'est un emoji - le centrer
       return Center(
         child: Text(
           sprite,
@@ -102,7 +97,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
           child: StreamBuilder<List<Character>>(
             stream: GameDataService.watchCharacters(),
             builder: (context, snapshot) {
-              // Ne pas afficher de loading après le premier chargement
               if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
                 return const Center(
                   child: CircularProgressIndicator(color: Colors.amber),
@@ -126,7 +120,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
               return CustomScrollView(
                 slivers: [
-                  // Section 1: Character Detail (si sélectionné) avec animation
                   SliverToBoxAdapter(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -148,7 +141,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                       child: _buildSelectedCharacterDetail(_selectedCharacter!),
                     ),
                   ),
-                  // Section 2: Edit Team
                   SliverToBoxAdapter(
                     child: _buildEditTeamSection(context, teamCharacters),
                   ),
@@ -186,10 +178,8 @@ class _CharactersScreenState extends State<CharactersScreen> {
     List<Character> teamCharacters,
     {required bool fromTeamSlot}
   ) async {
-    // D'abord, sélectionner le personnage pour afficher ses détails
     _selectCharacter(character);
     
-    // Si aucun personnage n'est sélectionné pour swap, sélectionner celui-ci
     if (_selectedCharacterForSwap == null) {
       setState(() {
         _selectedCharacterForSwap = character;
@@ -198,7 +188,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
       return;
     }
 
-    // Si on clique sur le même personnage, le désélectionner pour swap
     if (_selectedCharacterForSwap!.id == character.id) {
       setState(() {
         _selectedCharacterForSwap = null;
@@ -216,7 +205,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
       return;
     }
 
-    // CAS 2: Les deux clics viennent de ALL HEROES → changer juste la sélection
     if (!_selectedFromTeam && !fromTeamSlot) {
       setState(() {
         _selectedCharacterForSwap = character;
@@ -225,9 +213,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
       return;
     }
 
-    // Cas spécial: même si l'un des clics provient de la grille ALL HEROES,
-    // si les DEUX personnages sont marqués comme "isInTeam", il s'agit
-    // d'un échange de positions dans la team — traiter comme CAS 1.
     if (_selectedCharacterForSwap!.isInTeam && character.isInTeam) {
       await _swapTeamPositions(_selectedCharacterForSwap!, character);
       setState(() {
@@ -237,10 +222,8 @@ class _CharactersScreenState extends State<CharactersScreen> {
       return;
     }
 
-    // CAS 3: Zones différentes (team ↔ all) → remplacer
     await _swapCharacters(_selectedCharacterForSwap!, character, teamCharacters);
     
-    // Désélectionner après l'échange
     setState(() {
       _selectedCharacterForSwap = null;
       _selectedFromTeam = false;
@@ -307,10 +290,8 @@ class _CharactersScreenState extends State<CharactersScreen> {
         charOutTeam = char1;
       }
       
-      // Récupérer la position du héros dans la team
       final position = charInTeam.teamPosition;
       
-      // Créer les versions mises à jour
       final updatedCharInTeam = _createUpdatedCharacter(
         charInTeam,
         isInTeam: false,
@@ -434,7 +415,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                // HP Bar
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -505,7 +485,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                // Stats style FEH (2 lignes, label + valeur)
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
@@ -515,7 +494,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Ligne 1: Atk + Spd
                       Row(
                         children: [
                           Expanded(
@@ -568,7 +546,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      // Ligne 2: Def + Res (Lck)
                       Row(
                         children: [
                           Expanded(
@@ -627,18 +604,14 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
           ),
           const SizedBox(width: 7),
-          // Colonne de droite : Level + Passives + Équipement (taille équitable)
           Flexible(
             flex: 1,
             child: Column(
               children: [
-                // const SizedBox(height: 6),
-                // Niveau + Passives sur la même ligne
                 Row(
                   children: [
-                    // Level avec taille fixe pour Lv. 999
                     Container(
-                      width: 68, // Taille fixe pour "Lv. 999"
+                      width: 68,
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.4),
@@ -654,8 +627,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
                           ),
                         ),
                     ),
-                    const SizedBox(width: 4),
-                    // Passives (3 skills côte à côte) - réduites
+                    const SizedBox(width: 4),  // passives
                     Expanded(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -686,8 +658,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-              // Arme
+                const SizedBox(height: 8), // stuff équipement
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
@@ -696,7 +667,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   character.weapon != null,
                 ),
               ),
-              // Armure
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
@@ -705,7 +675,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   character.armor != null,
                 ),
               ),
-              // Compétence active
               () {
                 final activeSkill = character.equippedSkills
                     .where((s) => s.type == SkillType.active)
@@ -761,7 +730,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
   // Slot d'équipement pour le détail
   Widget _buildCharDetailEquipmentSlot(String icon, String name, bool hasItem) {
     return Container(
-      // Prend toute la largeur disponible
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
@@ -897,7 +865,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
         break;
     }
 
-    // Vérifier si ce personnage est sélectionné pour swap ET que la sélection vient de EDIT TEAM
     final bool isSelected = _selectedCharacterForSwap?.id == character.id && _selectedFromTeam;
 
     return GestureDetector(
@@ -948,7 +915,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   child: _buildCharacterSprite(character.appearance.emoji, 45),
                 ),
                 
-                // Niveau en bas avec ombre noire autour du texte
                 Positioned(
                   bottom: 4,
                   left: 0,
@@ -1045,12 +1011,10 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
   /// Gère le clic sur un slot vide
   Future<void> _handleEmptySlotClick(int position, List<Character> teamCharacters) async {
-    // Si aucun héros n'est sélectionné, ne rien faire
     if (_selectedCharacterForSwap == null) {
       return;
     }
 
-    // Si le héros sélectionné vient de ALL HEROES, l'ajouter à ce slot
     if (!_selectedFromTeam) {
       await _addToTeamSlot(_selectedCharacterForSwap!, position);
       setState(() {
@@ -1058,7 +1022,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
         _selectedFromTeam = false;
       });
     }
-    // Si le héros vient de EDIT TEAM, déplacer vers ce slot
     else {
       await _moveToEmptySlot(_selectedCharacterForSwap!, position);
       setState(() {
@@ -1138,7 +1101,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
     List<Character> teamCharacters,
     List<Character> allCharacters,
   ) {
-    // Couleur de fond selon la rareté
     Color rarityColor;
     Color rarityDarkColor;
     
@@ -1161,7 +1123,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
         break;
     }
 
-    // Vérifier si ce personnage est sélectionné pour swap ET que la sélection vient de ALL HEROES
     final bool isSelected = _selectedCharacterForSwap?.id == character.id && !_selectedFromTeam;
 
     return GestureDetector(
@@ -1210,12 +1171,10 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
             child: Stack(
               children: [
-                // Sprite du personnage (remplit tout l'espace)
                 Positioned.fill(
                   child: _buildCharacterSprite(character.appearance.emoji, 50),
                 ),
                 
-                // Niveau en bas avec ombre noire autour du texte
                 Positioned(
                   bottom: 4,
                   left: 0,
@@ -1258,7 +1217,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
                   ),
                 ),
                 
-                // Étoile en haut à droite si dans la team
                 if (character.isInTeam)
                   Positioned(
                     top: 4,

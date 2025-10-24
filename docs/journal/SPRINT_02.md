@@ -16,7 +16,7 @@
 - [x] Amélioration UI/UX (validation nom, compteurs, etc.)
 - [ ] Système de vidéos .mp4 pour création de personnage → **En discussion**
 - [ ] Localisation multilingue (FR/EN) → **En discussion**
-- [ ] Un début de système d'IDLE (background progressif)
+- [x] Un début de système d'IDLE (background progressif)
 
 ---
 
@@ -110,7 +110,7 @@
 
 ---
 
-### Phase 4 : Système de Rareté Dynamique
+<!-- ### Phase 4 : Système de Rareté Dynamique -->
 
 <!-- #### ✅ Calcul de rareté pour personnages créés manuellement
 - Méthode `_calculateRarity()` dans `CharacterFactory`
