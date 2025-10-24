@@ -2,21 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dice_destiny_idle_rifts/src/screens/welcome_screen.dart';
 import 'package:dice_destiny_idle_rifts/src/services/data_migration_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
+import 'package:dice_destiny_idle_rifts/src/services/locale_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
+  await LocaleProvider.instance.load();     // Charger la locale sauvegardée (pour langue)
+
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
-  
+
   DataMigrationService.migrateSkillsToV2();
   runApp(const TacticalDiceApp());
 }
@@ -26,22 +29,27 @@ class TacticalDiceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Dice Destiny: Idle Rifts',
-      localizationsDelegates: S.localizationsDelegates,
-      supportedLocales: S.supportedLocales,
-      locale: const Locale('en'),
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.dark(
-          primary: Colors.deepPurple,
-          secondary: Colors.amber,
-        ),
-      ),
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
+    return AnimatedBuilder(
+      animation: LocaleProvider.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Dice Destiny: Idle Rifts',
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          locale: LocaleProvider.instance.locale,
+          theme: ThemeData(
+            primarySwatch: Colors.deepPurple,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.dark(
+              primary: Colors.deepPurple,
+              secondary: Colors.amber,
+            ),
+          ),
+          home: const AuthWrapper(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
