@@ -2,6 +2,7 @@ import '../models/persona.dart';
 import '../models/equipment.dart';
 import '../models/skill.dart';
 import '../models/weapon_mastery.dart';
+import '../models/class_tree.dart';
 
 class Character {     // est un personnage jouable (pas le player)
   final String id;
@@ -31,6 +32,13 @@ class Character {     // est un personnage jouable (pas le player)
   // maîtrises d'armes
   List<WeaponMastery> weaponMasteries;
 
+  // --- Nouveau: système de classes (ids référencés depuis ClassTree)
+  // Ensemble d'ids de classes possédées par le personnage
+  Set<String> ownedClassIds;
+
+  // Id de la classe active (peut être l'un des ownedClassIds)
+  String? activeClassId;
+
   // méta-data
   CharacterRarity basedRarity;
   CharacterRarity currentRarity;
@@ -51,8 +59,10 @@ class Character {     // est un personnage jouable (pas le player)
     this.weapon,
     this.armor,
     this.accessory,
-    List<Skill>? equippedSkills,
-    List<WeaponMastery>? weaponMasteries,
+  List<Skill>? equippedSkills,
+  List<WeaponMastery>? weaponMasteries,
+  Set<String>? initialOwnedClassIds,
+  this.activeClassId,
     this.basedRarity = CharacterRarity.common,
     this.currentRarity = CharacterRarity.common,
     this.isInTeam = false,
@@ -62,6 +72,7 @@ class Character {     // est un personnage jouable (pas le player)
         currentHp = stats.maxHp,
         equippedSkills = equippedSkills ?? [],
         weaponMasteries = weaponMasteries ?? [],
+  ownedClassIds = initialOwnedClassIds ?? {},
         obtainedAt = obtainedAt ?? DateTime.now() {
     // Si pas d'arme, ajouter l'arme de départ
     weapon ??= DefaultWeapons.getForClass(persona.characterClass.name);
@@ -78,6 +89,30 @@ class Character {     // est un personnage jouable (pas le player)
     // Si pas de maîtrises, ajouter les maîtrises de départ
     if (this.weaponMasteries.isEmpty) {
       this.weaponMasteries = DefaultWeaponMasteries.getForClass(persona.characterClass);
+    }
+
+  // --- Initialisation du système de classes
+  // Si aucune classe fournie, assigner la classe novice correspondant au persona.
+    if (this.ownedClassIds.isEmpty) {
+  final tree = ClassTree.instance;
+      final noviceId = persona.characterClass.noviceId;
+
+      // Par défaut, tout le monde commence avec la classe novice
+      this.ownedClassIds.add(noviceId);
+
+      // Sauf si c'est un héros épique: on lui donne aussi une classe avancée (choisie par défaut)
+      if (basedRarity == CharacterRarity.epic) {
+        final noviceNode = tree.get(noviceId);
+        if (noviceNode != null && noviceNode.children.isNotEmpty) {
+          final advId = noviceNode.children.first;
+          this.ownedClassIds.add(advId);
+          // définir la classe active sur l'advanced
+          activeClassId ??= advId;
+        }
+      }
+
+      // Si activeClassId toujours null, mettre la novice
+      activeClassId ??= noviceId;
     }
   }
 
@@ -104,7 +139,10 @@ class Character {     // est un personnage jouable (pas le player)
         'armor': armor?.toJson(),
         'accessory': accessory?.toJson(),
         'equippedSkills': equippedSkills.map((s) => s.toJson()).toList(),
-        'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
+  'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
+  // Sauvegarde du système de classes
+  'ownedClassIds': ownedClassIds.toList(),
+  'activeClassId': activeClassId,
         'basedRarity': basedRarity.name,
         'currentRarity': currentRarity.name,
         'isInTeam': isInTeam,
@@ -147,6 +185,8 @@ class Character {     // est un personnage jouable (pas le player)
       weaponMasteries: (json['weaponMasteries'] as List?)
           ?.map((w) => WeaponMastery.fromJson(w))
           .toList(),
+      initialOwnedClassIds: ((json['ownedClassIds'] as List?) ?? []).map((e) => e.toString()).toSet(),
+      activeClassId: json['activeClassId'],
       basedRarity: CharacterRarity.values.firstWhere(
         (r) => r.name == json['basedRarity'],
         orElse: () => CharacterRarity.common,
@@ -208,7 +248,17 @@ class Character {     // est un personnage jouable (pas le player)
         multiplier += skill.statBonuses[statKey]!;
       }
     }
-    
+
+    // Ajouter les boosts passifs provenant des classes (ClassTree)
+    try {
+  final classBoosts = ClassTree.instance.aggregatePassiveBoostsFor(ownedClassIds);
+      if (classBoosts.containsKey(statKey)) {
+        multiplier += classBoosts[statKey]!;
+      }
+    } catch (_) {
+      // Defensive: si ClassTree n'est pas disponible ou autre, ignorer
+    }
+
     return multiplier;
   }
 
@@ -283,10 +333,46 @@ class Character {     // est un personnage jouable (pas le player)
       // +5% par niveau de maîtrise (E=0%, D=5%, C=10%, B=15%, A=20%, S=25%)
       damage *= (1.0 + (mastery.level * 0.05));
     }
+
+    // Appliquer les boosts de maîtrise spécifiques d'une classe (ex: 'sword', 'unarmed')
+    try {
+  final classBoosts = ClassTree.instance.aggregatePassiveBoostsFor(ownedClassIds);
+      if (weapon != null) {
+        final wt = _getWeaponType(weapon!);
+        switch (wt) {
+          case WeaponType.sword:
+            if (classBoosts.containsKey('sword')) damage *= (1.0 + classBoosts['sword']!);
+            break;
+          case WeaponType.staff:
+            if (classBoosts.containsKey('staff')) damage *= (1.0 + classBoosts['staff']!);
+            break;
+          case WeaponType.dagger:
+            if (classBoosts.containsKey('dagger')) damage *= (1.0 + classBoosts['dagger']!);
+            break;
+          case WeaponType.rod:
+            if (classBoosts.containsKey('rod')) damage *= (1.0 + classBoosts['rod']!);
+            break;
+          default:
+            break;
+        }
+      } else {
+        // Pas d'arme => appliquer boost 'unarmed' si présent
+        if (classBoosts.containsKey('unarmed')) damage *= (1.0 + classBoosts['unarmed']!);
+      }
+    } catch (_) {
+      // ignore errors
+    }
     
-    // Bonus de compétence active utilisée
+    // Bonus de compétence active utilisée + autres passifs liés aux multiplicateurs de dégâts
     if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
-      damage *= (1.0 + activeSkill.statBonuses['damageMultiplier']!);
+      final skillMult = 1.0 + activeSkill.statBonuses['damageMultiplier']!;
+      // Inclure passifs / classes qui affectent damageMultiplier
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= skillMult * passiveDamageMult;
+    } else {
+      // Même si aucune compétence active, appliquer les passifs qui modifient damageMultiplier
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= passiveDamageMult;
     }
     
     // Réduction selon la défense de la cible
@@ -303,9 +389,14 @@ class Character {     // est un personnage jouable (pas le player)
     // Magie de base (avec équipement et passives)
     double damage = totalMagic.toDouble();
     
-    // Bonus de compétence active
+    // Bonus de compétence active + passifs liés au multiplicateur de dégâts magiques
     if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
-      damage *= (1.0 + activeSkill.statBonuses['damageMultiplier']!);
+      final skillMult = 1.0 + activeSkill.statBonuses['damageMultiplier']!;
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= skillMult * passiveDamageMult;
+    } else {
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= passiveDamageMult;
     }
     
     // Réduction selon la résistance magique de la cible
@@ -314,6 +405,26 @@ class Character {     // est un personnage jouable (pas le player)
     
     // Dégâts minimum de 1
     return damage.round().clamp(1, 9999);
+  }
+
+  /// Calcule la quantité de soin fournie par une compétence (activeSkill)
+  /// Retourne la valeur de HP restaurée (sans appliquer au target ici)
+  /// Formule de base : target.maxHp * healMultiplier * passifs
+  int calculateHealAmount(Character target, {Skill? activeSkill}) {
+    if (activeSkill == null) return 0;
+    if (!activeSkill.statBonuses.containsKey('healMultiplier')) return 0;
+
+    final baseMult = activeSkill.statBonuses['healMultiplier']!; // ex: 0.30 = 30% HP
+
+    // Passifs / classes qui impactent le multiplicateur de soin
+    final passiveHealMult = _getSkillBonusMultiplier('healMultiplier');
+
+    double amount = target.totalMaxHp * baseMult;
+    amount *= passiveHealMult;
+
+    // Ne pas dépasser le HP manquant
+    final missing = (target.totalMaxHp - target.currentHp).clamp(0, target.totalMaxHp);
+    return amount.round().clamp(0, missing);
   }
 
   /// Détermine le type d'arme équipée
@@ -375,7 +486,7 @@ class Character {     // est un personnage jouable (pas le player)
         stats.attack += (1 * rarityMultiplier).round();
         stats.maxHp += (5 * rarityMultiplier).round();
         break;
-      case PersonaClass.rogue:
+      case PersonaClass.peasant:
         stats.speed += (3 * rarityMultiplier).round();
         stats.attack += (2 * rarityMultiplier).round();
         stats.luck += (1 * rarityMultiplier).round();

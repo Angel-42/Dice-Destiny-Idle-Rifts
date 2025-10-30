@@ -26,7 +26,7 @@ class CharacterFactory {
     switch (characterClass) {
       case PersonaClass.mage:
         return 'MCM';
-      case PersonaClass.rogue:
+      case PersonaClass.peasant:
         return 'MCA';
       case PersonaClass.warrior:
         return 'MCS';
@@ -73,7 +73,7 @@ class CharacterFactory {
         return 'Guerrier puissant et résistant';
       case PersonaClass.mage:
         return 'Mage aux puissants sorts';
-      case PersonaClass.rogue:
+      case PersonaClass.peasant:
         return 'Voleur agile et chanceux';
       case PersonaClass.cleric:
         return 'Clerc soigneur et protecteur';
@@ -195,7 +195,7 @@ class CharacterFactory {
         maxHp -= 10;
         defense -= 2;
         break;
-      case PersonaClass.rogue:
+      case PersonaClass.peasant:
         // Stealthy and lucky
         speed += 6;
         luck += 4;

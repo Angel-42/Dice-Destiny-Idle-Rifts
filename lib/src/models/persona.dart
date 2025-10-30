@@ -68,14 +68,18 @@ enum PersonaRegion {
 }
 
 enum PersonaClass {
-  warrior('Guerrier', 'Combattant au corps à corps, spécialisé dans l\'attaque et la défense physique.', '⚔️', false),
-  mage('Mage', 'Maître des arcanes, capable de lancer des sorts dévastateurs à distance.', '🧙‍♂️', true),
-  rogue('Voleur', 'Expert en discrétion, excelle dans les attaques surprises et les mouvements tactiques.', '🗡️', false),
-  cleric('Clerc', 'Guérisseur divin, capable de soigner ses alliés et de repousser les forces du mal.', '⚕️', true);
+  warrior('Guerrier', 'Combattant au corps à corps, spécialisé dans l\'attaque et la défense physique.', '⚔️', false, 'novice_swordsman'),
+  mage('Mage', 'Maître des arcanes, capable de lancer des sorts dévastateurs à distance.', '🧙‍♂️', true, 'novice_mage'),
+  peasant('Paysan', 'Combattant polyvalent, bon en combat au corps à corps et à l\'arc.', '🥊', false, 'novice_peasant'),
+  cleric('Clerc', 'Guérisseur divin, capable de soigner ses alliés et de repousser les forces du mal.', '⚕️', true, 'novice_healer');
   
-  const PersonaClass(this.displayName, this.description, this.emoji, this.isMagical);
+  const PersonaClass(this.displayName, this.description, this.emoji, this.isMagical, this.defaultNoviceId);
   final String displayName;
   final String description;
   final String emoji;
   final bool isMagical; // true = utilise magic, false = utilise attack
+  final String defaultNoviceId; // id par défaut du noeud novice dans ClassTree
+
+  /// Retourne l'id du noeud "novice" par défaut pour ce PersonaClass
+  String get noviceId => defaultNoviceId;
 }
