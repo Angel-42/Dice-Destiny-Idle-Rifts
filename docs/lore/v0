@@ -1,0 +1,76 @@
+# Dice-Destiny-Idle-Rifts : Documentation & Lore
+
+## I. Le Concept Fondamental
+
+| Élément | Description | Implication dans le Jeu |
+| :--- | :--- | :--- |
+| **Titre** | Dice-Destiny-Idle-Rifts | Mélange de hasard (Dice), de narration (Destiny), de progression passive (Idle), et de zones de jeu (Rifts). |
+| **Style Visuel** | **Petite Échelle :** Pixel Art 2D (Gameplay, style Fire Emblem).<br>**Grande Échelle :** Illustrations Lisses (Cinématiques, Dialogues). | Nécessite des assets cohérents sur ces deux plans. |
+| **Thème** | Dark Fantasy / Médiéval-Fantastique avec Fusions Culturelles. | Les quatre grandes factions culturelles (Médiévale, Asiatique, Nordique, Égyptienne) sont le cœur du monde. |
+
+---
+
+## II. Le Lore : La Négation et les Rifts
+
+### 1. L'Énergie du Chaos : La Négation (Prima-Chaos)
+
+L'énergie fondamentale de l'univers n'est pas l'ordre, mais le **Chaos (La Négation / Prima-Chaos)**.
+
+* **Nature :** C'est une force primordiale et imprévisible qui régit la chance, la malchance, et l'aléa des événements. Elle est la source de toute magie et de tout pouvoir, mais aussi de la destruction.
+* **Danger :** Si elle est trop concentrée ou mal lancée, elle déchire la réalité.
+
+### 2. L'Origine du Cataclysme : Le Grand Lancement
+
+Il y a un âge sombre, une ancienne civilisation (le **Projet Oméga**) a tenté de capter et de contrôler le *Prima-Chaos* pour instaurer l'Ordre Absolu.
+
+* **L'Événement :** Cette tentative a échoué, provoquant une réaction en chaîne appelée le **Grand Lancement**. L'explosion de *Prima-Chaos* a fracassé le tissu de l'espace-temps.
+* **Les Rifts (Les Brèches) :** Les Rifts sont les **cicatrices dimensionnelles** de ce Lancement. Elles ont introduit des fragments de réalités et d'époques différentes, mélangeant les quatre grandes cultures dans un même monde instable.
+
+---
+
+## III. Le Personnage Principal : Le Déserteur
+
+### 1. L'Identité Oubliée
+
+Le Déserteur est un être synthétisé ou génétiquement optimisé par le Projet Oméga, destiné à être le conteneur vivant du *Prima-Chaos*.
+
+* **L'Amnésie :** Le Déserteur est l'**auteur involontaire** du Grand Lancement. L'explosion de *Prima-Chaos* a effacé sa mémoire (le **Prix du Lancement**), le protégeant de l'onde de choc mais lui ôtant son identité et son but initial.
+* **Le Rôle :** Il/Elle est un **"Lanceur Né"**, capable d'absorber et de manipuler le *Prima-Chaos*, ce qui lui permet de changer de classe à volonté (Épéiste, Voleur, Mage, Clerc).
+* **L'Apparence :** Cape usée et Capuche (pour cacher l'éclat du Chaos et éviter d'être reconnu comme la cause du Lancement).
+
+### 2. Le Dilemme Moral (Conflit Principal)
+
+Le Déserteur se réveille dans l'une des quatre régions et est immédiatement influencé par la vision du monde de cette faction :
+
+| Faction | Philosophie Morale | Objectif Final (Fin du Jeu) |
+| :--- | :--- | :--- |
+| **Médiévale** | **L'Ordre Absolu :** Le Chaos est le Mal. Il faut éradiquer la Négation et établir une tyrannie stricte. | **FIN A : Le Régime de l'Ordre.** (Monde stable mais opprimé). |
+| **Asiatique** | **L'Équilibre du Chaos :** Le Chaos doit être contenu et harmonisé. Il faut accepter l'Aléa dans un nouvel équilibre. | **FIN B : Le Nouvel Équilibre.** (Monde stabilisé mais toujours une mosaïque). |
+| **Nordique/Égyptienne** | **La Fatalité/Manipulation :** Le Chaos est un outil. Il faut l'utiliser pour la gloire (Nordique) ou le pouvoir (Égyptienne). | **FIN C : Le Lancement Fatal.** (Le Déserteur devient le nouveau maître du Chaos/Tyrannie). |
+
+---
+
+## IV. Modes de Jeu et Lore
+
+### 1. Le Mode Campagne (Destiny)
+
+* **Raison d'Être :** Le Déserteur parcourt le monde pour **récupérer ses souvenirs perdus** (*Fragments Mémoriels*) et découvrir la vérité sur le Grand Lancement et son rôle.
+* **Progression :** Chaque Rift fermé ou stabilisé donne un **Fragment Mémoriel** et permet au joueur de faire un choix moral qui affecte son allégeance à la faction de départ.
+* **Fin :** Le choix de la faction dominante détermine l'interprétation des souvenirs retrouvés et mène à l'une des trois fins morales.
+
+### 2. Le Mode Rift (Idle)
+
+* **Raison d'Être :** Les Rifts Mineurs sont la source perpétuelle de *Prima-Chaos*. Le Déserteur doit y aller pour **drainer et gérer cette énergie instable**.
+* **Progression :** L'aspect Idle (la boucle de gameplay sans fin) est justifié par le besoin de **continuellement accumuler de l'Essence de Chaos** (la ressource de progression) pour éviter que le *Prima-Chaos* ne s'accumule de manière incontrôlable et ne provoque un nouveau Grand Lancement.
+* **L'Idle est une nécessité :** Le Déserteur ne peut pas *s'arrêter* de se battre.
+
+---
+
+## V. Les Assets Graphiques (Rappel des Formats)
+
+Pour la production des images, les quatre formats suivants sont requis :
+
+1.  **Pixel Art 2D (Petite Échelle) :** Spritesheet (7 frames, 1 ligne) pour l'animation AFK/Gameplay.
+2.  **Illustration Lisse (Grande Échelle) :** Pleine illustration sans fond pour les Cinématiques/Histoire.
+3.  **Headshot Lisse (Carré) :** Cadre carré aux coins arrondis, rempli, fond transparent (PNG) pour les Icônes/Menus.
+4.  **Buste Lisse (Vertical) :** Illustration verticale, cadre subtil, fond opaque (gris clair) pour les Écrans de Dialogue.

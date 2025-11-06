@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/skill.dart';
+import '../models/class_tree.dart';
+import '../models/character.dart';
 import 'game_data_service.dart';
 
 /// Service de migration des données pour les mises à jour de schéma
@@ -45,6 +47,42 @@ class DataMigrationService {
       debugPrint('✅ Migration terminée: $migratedCount/${ characters.length} personnages migrés');
     } catch (e) {
       debugPrint('❌ Erreur migration: $e');
+    }
+  }
+
+  /// Migre les personnages existants pour utiliser le nouveau système de ClassTree
+  static Future<void> migrateCharactersToClassTree() async {
+    try {
+      debugPrint('🔄 Début migration ClassTree...');
+      final characters = await GameDataService.getAllCharacters();
+  final tree = ClassTree.instance;
+      int migrated = 0;
+
+      for (final character in characters) {
+        if (character.ownedClassIds.isEmpty) {
+          // Déterminer la novice correspondant au persona
+          final noviceId = character.persona.characterClass.noviceId;
+
+          character.ownedClassIds.add(noviceId);
+
+          if (character.basedRarity == CharacterRarity.epic) {
+            final noviceNode = tree.get(noviceId);
+            if (noviceNode != null && noviceNode.children.isNotEmpty) {
+              final advId = noviceNode.children.first;
+              character.ownedClassIds.add(advId);
+              character.activeClassId = advId;
+            }
+          }
+
+          character.activeClassId ??= noviceId;
+          await GameDataService.saveCharacter(character);
+          migrated++;
+        }
+      }
+
+      debugPrint('✅ Migration ClassTree terminée: $migrated/${characters.length} personnages migrés');
+    } catch (e) {
+      debugPrint('❌ Erreur migration ClassTree: $e');
     }
   }
   

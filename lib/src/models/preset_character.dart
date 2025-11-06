@@ -1,6 +1,7 @@
 import 'persona.dart';
 import 'character.dart';
 import 'equipment.dart';
+import 'class_tree.dart';
 
 /// Personnage prédéfini (template) pour le système de gacha
 class PresetCharacter {
@@ -65,6 +66,30 @@ class PresetCharacter {
       description: description,
     );
 
+    // Déterminer les classes initiales selon le persona et la rareté
+  final tree = ClassTree.instance;
+    final noviceId = persona.characterClass.noviceId;
+    final owned = <String>{noviceId};
+    String? active = noviceId;
+
+    if (rarity == CharacterRarity.epic || rarity == CharacterRarity.legendary) {
+      final noviceNode = tree.get(noviceId);
+      if (noviceNode != null && noviceNode.children.isNotEmpty) {
+        final advId = noviceNode.children.first;
+        owned.add(advId);
+        active = advId;
+
+        if (rarity == CharacterRarity.legendary) {
+          final advNode = tree.get(advId);
+          if (advNode != null && advNode.children.isNotEmpty) {
+            final eliteId = advNode.children.first;
+            owned.add(eliteId);
+            active = eliteId;
+          }
+        }
+      }
+    }
+
     return Character(
       name: name,
       persona: persona,
@@ -73,6 +98,8 @@ class PresetCharacter {
       weapon: starterWeapon,
       basedRarity: rarity,
       currentRarity: rarity,
+      initialOwnedClassIds: owned,
+      activeClassId: active,
     );
   }
 }
