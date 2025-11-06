@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^5.5.2
   firebase_auth: ^5.3.3
   google_sign_in: ^6.2.2
+  audioplayers: ^6.1.0
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
@@ -73,6 +74,7 @@ flutter:
   assets:
     - assets/welcome.jpeg
     - assets/logo/
+    - assets/musics/
     - assets/characters/Envia/
     - assets/characters/Elio/
     - assets/characters/Ragor/
