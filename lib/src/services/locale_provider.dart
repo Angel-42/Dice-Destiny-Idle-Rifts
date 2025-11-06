@@ -18,6 +18,8 @@ class LocaleProvider extends ChangeNotifier {
     final code = prefs.getString(_prefKey);
     if (code != null && code.isNotEmpty) {
       _locale = Locale(code);
+    } else {
+      _locale = const Locale('en');
     }
     notifyListeners();
   }

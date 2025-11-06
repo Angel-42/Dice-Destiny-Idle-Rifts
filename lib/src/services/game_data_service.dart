@@ -437,7 +437,6 @@ class GameDataService {
             preset.fullsize != character.appearance.fullsize) {
           print('🔄 Migration sprites pour ${character.name}');
           
-          // Créer un nouveau Character avec tous les sprites
           final updatedCharacter = Character(
             id: character.id,
             name: character.name,
