@@ -51,7 +51,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
     });
   }
 
-  /// Helper pour afficher soit un emoji, soit une image sprite
   Widget _buildCharacterSprite(String sprite, double size) {
     final cleanSprite = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
     
@@ -379,14 +378,47 @@ class _CharactersScreenState extends State<CharactersScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          GestureDetector(
-            onTap: () => _showFullsizeImage(character.appearance.fullsize),
-            child: SizedBox(
-              width: 80,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: _buildCharacterSprite(image, 120),
-              ),
+          SizedBox(
+            width: 80,
+            child: Stack(
+              children: [
+                GestureDetector(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: _buildCharacterSprite(image, 120),
+                  ),
+                ),
+                // Bouton '+' en haut à gauche
+                Positioned(
+                  bottom: 4,
+                  left: 4,
+                  child: GestureDetector(
+                    onTap: () => _showFullsizeImage(character.appearance.fullsize),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.add,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Flexible(
