@@ -95,7 +95,6 @@ class CharacterDetailScreen extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Image carrée à gauche
         Container(
           width: 80,
           height: 80,
@@ -117,7 +116,6 @@ class CharacterDetailScreen extends StatelessWidget {
         
         const SizedBox(width: 12),
         
-        // Nom et Level
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +151,6 @@ class CharacterDetailScreen extends StatelessWidget {
         
         const SizedBox(width: 8),
         
-        // 3 Passives (skills) à droite
         Column(
           children: [
             if (character.equippedSkills.isNotEmpty)

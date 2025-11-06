@@ -198,6 +198,38 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "settingsAudio": "Audio",
+  "settingsMusic": "Music",
+  "settingsMusicSubtitle": "Enable background music",
+  "settingsMusicVolume": "Music Volume",
+  "settingsSfx": "Sound Effects",
+  "settingsSfxSubtitle": "Enable game sound effects",
+  "settingsSfxVolume": "SFX Volume",
+  "settingsLanguage": "Language",
+  "settingsLanguageTitle": "Language",
+  "settingsSelectLanguage": "Select Language",
+  "settingsResetDefaults": "Reset to Defaults",
+  "settingsResetTitle": "Reset Settings?",
+  "settingsResetMessage": "This will reset all settings to their default values.",
+  "settingsResetSuccess": "Settings reset to defaults",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Account",
+  "settingsLinkEmail": "Link Email",
+  "settingsLinkEmailSubtitle": "Add email authentication",
+  "settingsLinkGoogle": "Link Google",
+  "settingsLinkGoogleSubtitle": "Add Google authentication",
+  "settingsDeleteAccount": "Delete Account",
+  "settingsDeleteAccountTitle": "Delete Account?",
+  "settingsDeleteAccountMessage": "This will permanently delete your account and all associated data. This action cannot be undone.",
+  "settingsDeleteAccountSuccess": "Account deleted successfully",
+  "settingsLinkSuccess": "Account linked successfully",
+  "settingsAlreadyLinked": "Already linked",
+  "settingsAnonymous": "Anonymous Account"
 }
 

@@ -462,4 +462,97 @@ class SFr extends S {
 
   @override
   String get backToOptions => '← Retour aux options';
+
+  @override
+  String get settingsAudio => 'Audio';
+
+  @override
+  String get settingsMusic => 'Musique';
+
+  @override
+  String get settingsMusicSubtitle => 'Activer la musique de fond';
+
+  @override
+  String get settingsMusicVolume => 'Volume Musique';
+
+  @override
+  String get settingsSfx => 'Effets Sonores';
+
+  @override
+  String get settingsSfxSubtitle => 'Activer les effets sonores du jeu';
+
+  @override
+  String get settingsSfxVolume => 'Volume Effets';
+
+  @override
+  String get settingsLanguage => 'Langue';
+
+  @override
+  String get settingsLanguageTitle => 'Langue';
+
+  @override
+  String get settingsSelectLanguage => 'Sélectionner la Langue';
+
+  @override
+  String get settingsResetDefaults => 'Réinitialiser';
+
+  @override
+  String get settingsResetTitle => 'Réinitialiser les Paramètres ?';
+
+  @override
+  String get settingsResetMessage =>
+      'Cela réinitialisera tous les paramètres à leurs valeurs par défaut.';
+
+  @override
+  String get settingsResetSuccess => 'Paramètres réinitialisés';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get settingsAccount => 'Compte';
+
+  @override
+  String get settingsLinkEmail => 'Lier Email';
+
+  @override
+  String get settingsLinkEmailSubtitle =>
+      'Ajouter l\'authentification par email';
+
+  @override
+  String get settingsLinkGoogle => 'Lier Google';
+
+  @override
+  String get settingsLinkGoogleSubtitle => 'Ajouter l\'authentification Google';
+
+  @override
+  String get settingsDeleteAccount => 'Supprimer le compte';
+
+  @override
+  String get settingsDeleteAccountTitle => 'Supprimer le compte ?';
+
+  @override
+  String get settingsDeleteAccountMessage =>
+      'Cela supprimera définitivement votre compte et toutes les données associées. Cette action est irréversible.';
+
+  @override
+  String get settingsDeleteAccountSuccess => 'Compte supprimé avec succès';
+
+  @override
+  String get settingsLinkSuccess => 'Compte lié avec succès';
+
+  @override
+  String get settingsAlreadyLinked => 'Déjà lié';
+
+  @override
+  String get settingsAnonymous => 'Compte anonyme';
 }

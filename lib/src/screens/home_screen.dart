@@ -4,7 +4,6 @@ import '../services/game_data_service.dart';
 import '../services/sound_manager.dart';
 import '../models/player.dart';
 import '../widgets/player_bar.dart';
-import '../widgets/sound_control_widget.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
@@ -144,12 +143,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
         ),
       ),
       
-      // Contrôles audio en haut à droite
-      Positioned(
-        top: 90,
-        right: 10,
-        child: const SoundControlWidget(),
-      ),
     ],
       ),
     );

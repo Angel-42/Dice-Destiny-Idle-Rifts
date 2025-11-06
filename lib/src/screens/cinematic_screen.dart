@@ -20,59 +20,10 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
   int _currentScene = 0;
   bool _canSkip = true;
   Timer? _sceneTimer;
+  bool _isInitialized = false;
   
   // Les scènes du lore (texte + durée)
-  List<Map<String, dynamic>> get _scenes => [
-    {
-      'title': S.of(context)!.cinematicTitle1,
-      'text': S.of(context)!.cinematicText1,
-      'subtitle': S.of(context)!.cinematicSubtitle1,
-      'duration': 4,
-      'color': const Color(0xFF1a0f2e),
-      'particles': 20,
-    },
-    {
-      'title': S.of(context)!.cinematicTitle2,
-      'text': S.of(context)!.cinematicText2,
-      'subtitle': S.of(context)!.cinematicSubtitle2,
-      'duration': 5,
-      'color': const Color(0xFF4a3a7a),
-      'particles': 30,
-    },
-    {
-      'title': S.of(context)!.cinematicTitle3,
-      'text': S.of(context)!.cinematicText3,
-      'subtitle': S.of(context)!.cinematicSubtitle3,
-      'duration': 5,
-      'color': const Color(0xFF8B0000),
-      'particles': 40,
-    },
-    {
-      'title': S.of(context)!.cinematicTitle4,
-      'text': S.of(context)!.cinematicText4,
-      'subtitle': S.of(context)!.cinematicSubtitle4,
-      'duration': 5,
-      'color': const Color(0xFF2d1b4e),
-      'particles': 50,
-    },
-    {
-      'title': S.of(context)!.cinematicTitle5,
-      'text': S.of(context)!.cinematicText5,
-      'subtitle': S.of(context)!.cinematicSubtitle5,
-      'duration': 5,
-      'color': const Color(0xFF7c5fa8),
-      'particles': 35,
-    },
-    {
-      'title': S.of(context)!.cinematicTitle6,
-      'text': S.of(context)!.cinematicText6,
-      'subtitle': S.of(context)!.cinematicSubtitle6,
-      'duration': 6,
-      'color': const Color(0xFFFFD700),
-      'particles': 60,
-      'isFinal': true,
-    },
-  ];
+  late List<Map<String, dynamic>> _scenes;
 
   @override
   void initState() {
@@ -103,8 +54,70 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
       parent: _slideController,
       curve: Curves.easeOutCubic,
     ));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     
-    _startScene();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      
+      // Initialiser les scènes avec les traductions
+      _scenes = [
+        {
+          'title': S.of(context)!.cinematicTitle1,
+          'text': S.of(context)!.cinematicText1,
+          'subtitle': S.of(context)!.cinematicSubtitle1,
+          'duration': 4,
+          'color': const Color(0xFF1a0f2e),
+          'particles': 20,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle2,
+          'text': S.of(context)!.cinematicText2,
+          'subtitle': S.of(context)!.cinematicSubtitle2,
+          'duration': 5,
+          'color': const Color(0xFF4a3a7a),
+          'particles': 30,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle3,
+          'text': S.of(context)!.cinematicText3,
+          'subtitle': S.of(context)!.cinematicSubtitle3,
+          'duration': 5,
+          'color': const Color(0xFF8B0000),
+          'particles': 40,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle4,
+          'text': S.of(context)!.cinematicText4,
+          'subtitle': S.of(context)!.cinematicSubtitle4,
+          'duration': 5,
+          'color': const Color(0xFF2d1b4e),
+          'particles': 50,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle5,
+          'text': S.of(context)!.cinematicText5,
+          'subtitle': S.of(context)!.cinematicSubtitle5,
+          'duration': 5,
+          'color': const Color(0xFF7c5fa8),
+          'particles': 35,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle6,
+          'text': S.of(context)!.cinematicText6,
+          'subtitle': S.of(context)!.cinematicSubtitle6,
+          'duration': 6,
+          'color': const Color(0xFFFFD700),
+          'particles': 60,
+          'isFinal': true,
+        },
+      ];
+      
+      _startScene();
+    }
   }
 
   @override

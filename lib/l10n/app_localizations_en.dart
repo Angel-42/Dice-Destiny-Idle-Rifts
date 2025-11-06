@@ -458,4 +458,96 @@ class SEn extends S {
 
   @override
   String get backToOptions => '← Back to options';
+
+  @override
+  String get settingsAudio => 'Audio';
+
+  @override
+  String get settingsMusic => 'Music';
+
+  @override
+  String get settingsMusicSubtitle => 'Enable background music';
+
+  @override
+  String get settingsMusicVolume => 'Music Volume';
+
+  @override
+  String get settingsSfx => 'Sound Effects';
+
+  @override
+  String get settingsSfxSubtitle => 'Enable game sound effects';
+
+  @override
+  String get settingsSfxVolume => 'SFX Volume';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLanguageTitle => 'Language';
+
+  @override
+  String get settingsSelectLanguage => 'Select Language';
+
+  @override
+  String get settingsResetDefaults => 'Reset to Defaults';
+
+  @override
+  String get settingsResetTitle => 'Reset Settings?';
+
+  @override
+  String get settingsResetMessage =>
+      'This will reset all settings to their default values.';
+
+  @override
+  String get settingsResetSuccess => 'Settings reset to defaults';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get settingsAccount => 'Account';
+
+  @override
+  String get settingsLinkEmail => 'Link Email';
+
+  @override
+  String get settingsLinkEmailSubtitle => 'Add email authentication';
+
+  @override
+  String get settingsLinkGoogle => 'Link Google';
+
+  @override
+  String get settingsLinkGoogleSubtitle => 'Add Google authentication';
+
+  @override
+  String get settingsDeleteAccount => 'Delete Account';
+
+  @override
+  String get settingsDeleteAccountTitle => 'Delete Account?';
+
+  @override
+  String get settingsDeleteAccountMessage =>
+      'This will permanently delete your account and all associated data. This action cannot be undone.';
+
+  @override
+  String get settingsDeleteAccountSuccess => 'Account deleted successfully';
+
+  @override
+  String get settingsLinkSuccess => 'Account linked successfully';
+
+  @override
+  String get settingsAlreadyLinked => 'Already linked';
+
+  @override
+  String get settingsAnonymous => 'Anonymous Account';
 }

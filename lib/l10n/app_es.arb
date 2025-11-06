@@ -198,5 +198,37 @@
                 "type": "String"
             }
         }
-    }
+    },
+
+    "settingsAudio": "Audio",
+    "settingsMusic": "Música",
+    "settingsMusicSubtitle": "Activar música de fondo",
+    "settingsMusicVolume": "Volumen Música",
+    "settingsSfx": "Efectos de Sonido",
+    "settingsSfxSubtitle": "Activar efectos de sonido del juego",
+    "settingsSfxVolume": "Volumen Efectos",
+    "settingsLanguage": "Idioma",
+    "settingsLanguageTitle": "Idioma",
+    "settingsSelectLanguage": "Seleccionar Idioma",
+    "settingsResetDefaults": "Restaurar Valores",
+    "settingsResetTitle": "¿Restablecer Configuración?",
+    "settingsResetMessage": "Esto restablecerá todas las configuraciones a sus valores predeterminados.",
+    "settingsResetSuccess": "Configuración restablecida",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Cuenta",
+  "settingsLinkEmail": "Vincular Email",
+  "settingsLinkEmailSubtitle": "Agregar autenticación por email",
+  "settingsLinkGoogle": "Vincular Google",
+  "settingsLinkGoogleSubtitle": "Agregar autenticación de Google",
+  "settingsDeleteAccount": "Eliminar cuenta",
+  "settingsDeleteAccountTitle": "¿Eliminar cuenta?",
+  "settingsDeleteAccountMessage": "Esto eliminará permanentemente su cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+  "settingsDeleteAccountSuccess": "Cuenta eliminada con éxito",
+  "settingsLinkSuccess": "Cuenta vinculada con éxito",
+  "settingsAlreadyLinked": "Ya vinculado",
+  "settingsAnonymous": "Cuenta anónima"
 }

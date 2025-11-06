@@ -169,5 +169,37 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "settingsAudio": "Audio",
+  "settingsMusic": "Musique",
+  "settingsMusicSubtitle": "Activer la musique de fond",
+  "settingsMusicVolume": "Volume Musique",
+  "settingsSfx": "Effets Sonores",
+  "settingsSfxSubtitle": "Activer les effets sonores du jeu",
+  "settingsSfxVolume": "Volume Effets",
+  "settingsLanguage": "Langue",
+  "settingsLanguageTitle": "Langue",
+  "settingsSelectLanguage": "Sélectionner la Langue",
+  "settingsResetDefaults": "Réinitialiser",
+  "settingsResetTitle": "Réinitialiser les Paramètres ?",
+  "settingsResetMessage": "Cela réinitialisera tous les paramètres à leurs valeurs par défaut.",
+  "settingsResetSuccess": "Paramètres réinitialisés",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Compte",
+  "settingsLinkEmail": "Lier Email",
+  "settingsLinkEmailSubtitle": "Ajouter l'authentification par email",
+  "settingsLinkGoogle": "Lier Google",
+  "settingsLinkGoogleSubtitle": "Ajouter l'authentification Google",
+  "settingsDeleteAccount": "Supprimer le compte",
+  "settingsDeleteAccountTitle": "Supprimer le compte ?",
+  "settingsDeleteAccountMessage": "Cela supprimera définitivement votre compte et toutes les données associées. Cette action est irréversible.",
+  "settingsDeleteAccountSuccess": "Compte supprimé avec succès",
+  "settingsLinkSuccess": "Compte lié avec succès",
+  "settingsAlreadyLinked": "Déjà lié",
+  "settingsAnonymous": "Compte anonyme"
 }

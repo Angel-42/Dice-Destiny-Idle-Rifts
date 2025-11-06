@@ -198,5 +198,37 @@
                 "type": "String"
             }
         }
-    }
+    },
+
+    "settingsAudio": "Audio",
+    "settingsMusic": "Musik",
+    "settingsMusicSubtitle": "Hintergrundmusik aktivieren",
+    "settingsMusicVolume": "Musiklautstärke",
+    "settingsSfx": "Soundeffekte",
+    "settingsSfxSubtitle": "Spiel-Soundeffekte aktivieren",
+    "settingsSfxVolume": "Effektlautstärke",
+    "settingsLanguage": "Sprache",
+    "settingsLanguageTitle": "Sprache",
+    "settingsSelectLanguage": "Sprache Auswählen",
+    "settingsResetDefaults": "Zurücksetzen",
+    "settingsResetTitle": "Einstellungen Zurücksetzen?",
+    "settingsResetMessage": "Dies setzt alle Einstellungen auf ihre Standardwerte zurück.",
+    "settingsResetSuccess": "Einstellungen zurückgesetzt",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Konto",
+  "settingsLinkEmail": "E-Mail verknüpfen",
+  "settingsLinkEmailSubtitle": "E-Mail-Authentifizierung hinzufügen",
+  "settingsLinkGoogle": "Google verknüpfen",
+  "settingsLinkGoogleSubtitle": "Google-Authentifizierung hinzufügen",
+  "settingsDeleteAccount": "Konto löschen",
+  "settingsDeleteAccountTitle": "Konto löschen?",
+  "settingsDeleteAccountMessage": "Dies löscht Ihr Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "settingsDeleteAccountSuccess": "Konto erfolgreich gelöscht",
+  "settingsLinkSuccess": "Konto erfolgreich verknüpft",
+  "settingsAlreadyLinked": "Bereits verknüpft",
+  "settingsAnonymous": "Anonymes Konto"
 }

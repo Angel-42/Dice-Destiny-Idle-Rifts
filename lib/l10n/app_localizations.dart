@@ -964,6 +964,186 @@ abstract class S {
   /// In en, this message translates to:
   /// **'← Back to options'**
   String get backToOptions;
+
+  /// No description provided for @settingsAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get settingsAudio;
+
+  /// No description provided for @settingsMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get settingsMusic;
+
+  /// No description provided for @settingsMusicSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable background music'**
+  String get settingsMusicSubtitle;
+
+  /// No description provided for @settingsMusicVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Music Volume'**
+  String get settingsMusicVolume;
+
+  /// No description provided for @settingsSfx.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound Effects'**
+  String get settingsSfx;
+
+  /// No description provided for @settingsSfxSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable game sound effects'**
+  String get settingsSfxSubtitle;
+
+  /// No description provided for @settingsSfxVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'SFX Volume'**
+  String get settingsSfxVolume;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsSelectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get settingsSelectLanguage;
+
+  /// No description provided for @settingsResetDefaults.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Defaults'**
+  String get settingsResetDefaults;
+
+  /// No description provided for @settingsResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Settings?'**
+  String get settingsResetTitle;
+
+  /// No description provided for @settingsResetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will reset all settings to their default values.'**
+  String get settingsResetMessage;
+
+  /// No description provided for @settingsResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings reset to defaults'**
+  String get settingsResetSuccess;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// No description provided for @languageSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Español'**
+  String get languageSpanish;
+
+  /// No description provided for @languageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get languageGerman;
+
+  /// No description provided for @settingsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsAccount;
+
+  /// No description provided for @settingsLinkEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Link Email'**
+  String get settingsLinkEmail;
+
+  /// No description provided for @settingsLinkEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add email authentication'**
+  String get settingsLinkEmailSubtitle;
+
+  /// No description provided for @settingsLinkGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link Google'**
+  String get settingsLinkGoogle;
+
+  /// No description provided for @settingsLinkGoogleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Google authentication'**
+  String get settingsLinkGoogleSubtitle;
+
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get settingsDeleteAccount;
+
+  /// No description provided for @settingsDeleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get settingsDeleteAccountTitle;
+
+  /// No description provided for @settingsDeleteAccountMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete your account and all associated data. This action cannot be undone.'**
+  String get settingsDeleteAccountMessage;
+
+  /// No description provided for @settingsDeleteAccountSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get settingsDeleteAccountSuccess;
+
+  /// No description provided for @settingsLinkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account linked successfully'**
+  String get settingsLinkSuccess;
+
+  /// No description provided for @settingsAlreadyLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Already linked'**
+  String get settingsAlreadyLinked;
+
+  /// No description provided for @settingsAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous Account'**
+  String get settingsAnonymous;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

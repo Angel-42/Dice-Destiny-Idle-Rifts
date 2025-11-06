@@ -462,4 +462,97 @@ class SDe extends S {
 
   @override
   String get backToOptions => '← Zurück zu den Optionen';
+
+  @override
+  String get settingsAudio => 'Audio';
+
+  @override
+  String get settingsMusic => 'Musik';
+
+  @override
+  String get settingsMusicSubtitle => 'Hintergrundmusik aktivieren';
+
+  @override
+  String get settingsMusicVolume => 'Musiklautstärke';
+
+  @override
+  String get settingsSfx => 'Soundeffekte';
+
+  @override
+  String get settingsSfxSubtitle => 'Spiel-Soundeffekte aktivieren';
+
+  @override
+  String get settingsSfxVolume => 'Effektlautstärke';
+
+  @override
+  String get settingsLanguage => 'Sprache';
+
+  @override
+  String get settingsLanguageTitle => 'Sprache';
+
+  @override
+  String get settingsSelectLanguage => 'Sprache Auswählen';
+
+  @override
+  String get settingsResetDefaults => 'Zurücksetzen';
+
+  @override
+  String get settingsResetTitle => 'Einstellungen Zurücksetzen?';
+
+  @override
+  String get settingsResetMessage =>
+      'Dies setzt alle Einstellungen auf ihre Standardwerte zurück.';
+
+  @override
+  String get settingsResetSuccess => 'Einstellungen zurückgesetzt';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get settingsAccount => 'Konto';
+
+  @override
+  String get settingsLinkEmail => 'E-Mail verknüpfen';
+
+  @override
+  String get settingsLinkEmailSubtitle => 'E-Mail-Authentifizierung hinzufügen';
+
+  @override
+  String get settingsLinkGoogle => 'Google verknüpfen';
+
+  @override
+  String get settingsLinkGoogleSubtitle =>
+      'Google-Authentifizierung hinzufügen';
+
+  @override
+  String get settingsDeleteAccount => 'Konto löschen';
+
+  @override
+  String get settingsDeleteAccountTitle => 'Konto löschen?';
+
+  @override
+  String get settingsDeleteAccountMessage =>
+      'Dies löscht Ihr Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get settingsDeleteAccountSuccess => 'Konto erfolgreich gelöscht';
+
+  @override
+  String get settingsLinkSuccess => 'Konto erfolgreich verknüpft';
+
+  @override
+  String get settingsAlreadyLinked => 'Bereits verknüpft';
+
+  @override
+  String get settingsAnonymous => 'Anonymes Konto';
 }

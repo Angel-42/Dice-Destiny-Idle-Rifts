@@ -461,4 +461,96 @@ class SEs extends S {
 
   @override
   String get backToOptions => '← Volver a opciones';
+
+  @override
+  String get settingsAudio => 'Audio';
+
+  @override
+  String get settingsMusic => 'Música';
+
+  @override
+  String get settingsMusicSubtitle => 'Activar música de fondo';
+
+  @override
+  String get settingsMusicVolume => 'Volumen Música';
+
+  @override
+  String get settingsSfx => 'Efectos de Sonido';
+
+  @override
+  String get settingsSfxSubtitle => 'Activar efectos de sonido del juego';
+
+  @override
+  String get settingsSfxVolume => 'Volumen Efectos';
+
+  @override
+  String get settingsLanguage => 'Idioma';
+
+  @override
+  String get settingsLanguageTitle => 'Idioma';
+
+  @override
+  String get settingsSelectLanguage => 'Seleccionar Idioma';
+
+  @override
+  String get settingsResetDefaults => 'Restaurar Valores';
+
+  @override
+  String get settingsResetTitle => '¿Restablecer Configuración?';
+
+  @override
+  String get settingsResetMessage =>
+      'Esto restablecerá todas las configuraciones a sus valores predeterminados.';
+
+  @override
+  String get settingsResetSuccess => 'Configuración restablecida';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get settingsAccount => 'Cuenta';
+
+  @override
+  String get settingsLinkEmail => 'Vincular Email';
+
+  @override
+  String get settingsLinkEmailSubtitle => 'Agregar autenticación por email';
+
+  @override
+  String get settingsLinkGoogle => 'Vincular Google';
+
+  @override
+  String get settingsLinkGoogleSubtitle => 'Agregar autenticación de Google';
+
+  @override
+  String get settingsDeleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get settingsDeleteAccountTitle => '¿Eliminar cuenta?';
+
+  @override
+  String get settingsDeleteAccountMessage =>
+      'Esto eliminará permanentemente su cuenta y todos los datos asociados. Esta acción no se puede deshacer.';
+
+  @override
+  String get settingsDeleteAccountSuccess => 'Cuenta eliminada con éxito';
+
+  @override
+  String get settingsLinkSuccess => 'Cuenta vinculada con éxito';
+
+  @override
+  String get settingsAlreadyLinked => 'Ya vinculado';
+
+  @override
+  String get settingsAnonymous => 'Cuenta anónima';
 }
