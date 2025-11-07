@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
+import '../models/character_inventory.dart';
+import '../models/equipment.dart';
 import '../services/game_data_service.dart';
 
 class CharactersScreen extends StatefulWidget {
@@ -1568,45 +1570,213 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                   children: [
                     _buildEquipmentSlotCompact(
                       icon: character.weapon?.emoji ?? '⚔️',
-                      name: character.weapon?.name ?? 'Siegfried',
+                      name: character.weapon?.name ?? '-',
                       hasItem: character.weapon != null,
+                      onTap: () async {
+                        await _showEquipmentSelectionDialog(
+                          character: character,
+                          equipmentType: EquipmentType.weapon,
+                          onSelect: (equipment) async {
+                            setState(() {
+                              character.weapon = equipment;
+                            });
+                            await GameDataService.saveCharacter(character);
+                          },
+                        );
+                      },
                     ),
                     const SizedBox(height: 3),
                     _buildEquipmentSlotCompact(
                       icon: character.armor?.emoji ?? '🛡️',
                       name: character.armor?.name ?? '-',
                       hasItem: character.armor != null,
+                      onTap: () async {
+                        await _showEquipmentSelectionDialog(
+                          character: character,
+                          equipmentType: EquipmentType.armor,
+                          onSelect: (equipment) async {
+                            setState(() {
+                              character.armor = equipment;
+                            });
+                            await GameDataService.saveCharacter(character);
+                          },
+                        );
+                      },
                     ),
                     const SizedBox(height: 3),
                     _buildEquipmentSlotCompact(
-                      icon: '✨',
-                      name: 'Blazing Light',
-                      hasItem: true,
+                      icon: character.accessory?.emoji ?? '💍',
+                      name: character.accessory?.name ?? '-',
+                      hasItem: character.accessory != null,
+                      onTap: () async {
+                        await _showEquipmentSelectionDialog(
+                          character: character,
+                          equipmentType: EquipmentType.accessory,
+                          onSelect: (equipment) async {
+                            setState(() {
+                              character.accessory = equipment;
+                            });
+                            await GameDataService.saveCharacter(character);
+                          },
+                        );
+                      },
                     ),
                     const SizedBox(height: 6),
-                    _buildEquipmentSlotCompact(
-                      icon: '💥',
-                      name: 'Armored Blow 3',
-                      hasItem: true,
-                    ),
-                    const SizedBox(height: 3),
-                    _buildEquipmentSlotCompact(
-                      icon: '🔰',
-                      name: '-',
-                      hasItem: false,
-                    ),
-                    const SizedBox(height: 3),
-                    _buildEquipmentSlotCompact(
-                      icon: '🎯',
-                      name: 'Spur Def 3',
-                      hasItem: true,
-                    ),
+                    // Skill slots (max 5)
+                    ...List.generate(5, (index) {
+                      final hasSkill = character.equippedSkills.length > index;
+                      final skill = hasSkill ? character.equippedSkills[index] : null;
+                      
+                      return Column(
+                        children: [
+                          if (index > 0) const SizedBox(height: 3),
+                          _buildEquipmentSlotCompact(
+                            icon: skill?.emoji ?? '🔰',
+                            name: skill?.name ?? '-',
+                            hasItem: hasSkill,
+                            onTap: () async {
+                              await _showSkillSelectionDialog(
+                                character: character,
+                                skillSlotIndex: index,
+                                onSelect: (selectedSkill) async {
+                                  setState(() {
+                                    if (selectedSkill == null) {
+                                      // Retirer la compétence
+                                      if (index < character.equippedSkills.length) {
+                                        character.equippedSkills.removeAt(index);
+                                      }
+                                    } else {
+                                      // Ajouter ou remplacer la compétence
+                                      if (index < character.equippedSkills.length) {
+                                        character.equippedSkills[index] = selectedSkill;
+                                      } else {
+                                        // Remplir les slots vides si nécessaire
+                                        while (character.equippedSkills.length < index) {
+                                          character.equippedSkills.add(
+                                            Skill(
+                                              id: 'empty_${character.equippedSkills.length}',
+                                              name: '-',
+                                              emoji: '🔰',
+                                              description: 'Slot vide',
+                                              type: SkillType.passive,
+                                            ),
+                                          );
+                                        }
+                                        character.equippedSkills.add(selectedSkill);
+                                      }
+                                    }
+                                  });
+                                  await GameDataService.saveCharacter(character);
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    }),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Dialog pour sélectionner une compétence depuis l'inventaire
+  Future<void> _showSkillSelectionDialog({
+    required Character character,
+    required int skillSlotIndex, // L'index du slot de compétence (0-4)
+    required Function(Skill?) onSelect,
+  }) async {
+    final allSkills = character.inventory.getAllSkills();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2332),
+        title: Text(
+          'Sélectionner une compétence (Slot ${skillSlotIndex + 1})',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: allSkills.length + 1, // +1 pour l'option "Aucun"
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                // Option "Aucun" pour retirer la compétence
+                return ListTile(
+                  leading: const Text('❌', style: TextStyle(fontSize: 24)),
+                  title: const Text(
+                    'Aucun',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onSelect(null);
+                  },
+                );
+              }
+
+              final inventoryItem = allSkills[index - 1];
+              final skill = inventoryItem.item;
+              final isUnlocked = inventoryItem.isUnlocked(
+                characterLevel: character.level,
+                characterStars: character.currentRarity.index + 1,
+              );
+
+              return ListTile(
+                enabled: isUnlocked,
+                leading: Text(
+                  skill.emoji,
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: isUnlocked ? null : Colors.grey,
+                  ),
+                ),
+                title: Text(
+                  skill.name,
+                  style: TextStyle(
+                    color: isUnlocked ? Colors.white : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: isUnlocked
+                    ? Text(
+                        skill.description,
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : Text(
+                        '🔒 ${inventoryItem.condition.description}',
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                trailing: isUnlocked
+                    ? Icon(
+                        Icons.chevron_right,
+                        color: Colors.blue.withOpacity(0.6),
+                      )
+                    : const Icon(Icons.lock, color: Colors.grey),
+                onTap: isUnlocked
+                    ? () {
+                        Navigator.of(context).pop();
+                        onSelect(skill);
+                      }
+                    : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
       ),
     );
   }
@@ -1646,13 +1816,119 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
     );
   }
 
+  // Dialog pour sélectionner un équipement depuis l'inventaire
+  Future<void> _showEquipmentSelectionDialog({
+    required Character character,
+    required EquipmentType equipmentType,
+    required Function(Equipment?) onSelect,
+  }) async {
+    final allItems = equipmentType == EquipmentType.weapon
+        ? character.inventory.getAllWeapons()
+        : equipmentType == EquipmentType.armor
+            ? character.inventory.armors
+            : character.inventory.accessories;
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2332),
+        title: Text(
+          equipmentType == EquipmentType.weapon
+              ? 'Sélectionner une arme'
+              : equipmentType == EquipmentType.armor
+                  ? 'Sélectionner une armure'
+                  : 'Sélectionner un accessoire',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: allItems.length + 1, // +1 pour l'option "Aucun"
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                // Option "Aucun" pour retirer l'équipement
+                return ListTile(
+                  leading: const Text('❌', style: TextStyle(fontSize: 24)),
+                  title: const Text(
+                    'Aucun',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onSelect(null);
+                  },
+                );
+              }
+
+              final inventoryItem = allItems[index - 1];
+              final equipment = inventoryItem.item;
+              final isUnlocked = inventoryItem.isUnlocked(
+                characterLevel: character.level,
+                characterStars: character.currentRarity.index + 1,
+              );
+
+              return ListTile(
+                enabled: isUnlocked,
+                leading: Text(
+                  equipment.emoji,
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: isUnlocked ? null : Colors.grey,
+                  ),
+                ),
+                title: Text(
+                  equipment.name,
+                  style: TextStyle(
+                    color: isUnlocked ? Colors.white : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: isUnlocked
+                    ? Text(
+                        equipment.bonusDescription.isNotEmpty 
+                            ? equipment.bonusDescription 
+                            : 'Pas de bonus',
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      )
+                    : Text(
+                        '🔒 ${inventoryItem.condition.description}',
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                trailing: isUnlocked
+                    ? Icon(
+                        Icons.chevron_right,
+                        color: Colors.blue.withOpacity(0.6),
+                      )
+                    : const Icon(Icons.lock, color: Colors.grey),
+                onTap: isUnlocked
+                    ? () {
+                        Navigator.of(context).pop();
+                        onSelect(equipment);
+                      }
+                    : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Slot d'équipement/skill compact (comme dans l'image)
   Widget _buildEquipmentSlotCompact({
     required String icon,
     required String name,
     required bool hasItem,
+    VoidCallback? onTap,
   }) {
-    return Container(
+    final widget = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF2A4A6A).withOpacity(hasItem ? 0.8 : 0.3),
@@ -1681,5 +1957,13 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
         ],
       ),
     );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: widget,
+      );
+    }
+    return widget;
   }
 }

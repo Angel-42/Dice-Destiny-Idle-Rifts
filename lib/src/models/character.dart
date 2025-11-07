@@ -3,6 +3,7 @@ import '../models/equipment.dart';
 import '../models/skill.dart';
 import '../models/weapon_mastery.dart';
 import '../models/class_tree.dart';
+import '../models/character_inventory.dart';
 
 class Character {     // est un personnage jouable (pas le player)
   final String id;
@@ -31,6 +32,9 @@ class Character {     // est un personnage jouable (pas le player)
   
   // maîtrises d'armes
   List<WeaponMastery> weaponMasteries;
+
+  // --- Nouveau: Inventaire personnel du personnage
+  CharacterInventory inventory;
 
   // --- Nouveau: système de classes (ids référencés depuis ClassTree)
   // Ensemble d'ids de classes possédées par le personnage
@@ -68,12 +72,14 @@ class Character {     // est un personnage jouable (pas le player)
     this.isInTeam = false,
     this.teamPosition = 0,
     DateTime? obtainedAt,
+    CharacterInventory? inventory,
   })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         currentHp = stats.maxHp,
         equippedSkills = equippedSkills ?? [],
         weaponMasteries = weaponMasteries ?? [],
   ownedClassIds = initialOwnedClassIds ?? {},
-        obtainedAt = obtainedAt ?? DateTime.now() {
+        obtainedAt = obtainedAt ?? DateTime.now(),
+        inventory = inventory ?? CharacterInventory.createDefault(persona.characterClass.name) {
     // Si pas d'arme, ajouter l'arme de départ
     weapon ??= DefaultWeapons.getForClass(persona.characterClass.name);
     
@@ -140,6 +146,8 @@ class Character {     // est un personnage jouable (pas le player)
         'accessory': accessory?.toJson(),
         'equippedSkills': equippedSkills.map((s) => s.toJson()).toList(),
   'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
+  // Sauvegarde de l'inventaire
+  'inventory': inventory.toJson(),
   // Sauvegarde du système de classes
   'ownedClassIds': ownedClassIds.toList(),
   'activeClassId': activeClassId,
@@ -185,6 +193,9 @@ class Character {     // est un personnage jouable (pas le player)
       weaponMasteries: (json['weaponMasteries'] as List?)
           ?.map((w) => WeaponMastery.fromJson(w))
           .toList(),
+      inventory: json['inventory'] != null 
+          ? CharacterInventory.fromJson(json['inventory'])
+          : null, // Will use default in constructor
       initialOwnedClassIds: ((json['ownedClassIds'] as List?) ?? []).map((e) => e.toString()).toSet(),
       activeClassId: json['activeClassId'],
       basedRarity: CharacterRarity.values.firstWhere(

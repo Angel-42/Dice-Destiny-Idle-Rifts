@@ -1,0 +1,715 @@
+import 'equipment.dart';
+import 'skill.dart';
+
+/// Condition de déblocage pour un item
+class UnlockCondition {
+  final UnlockConditionType type;
+  final dynamic value;
+  final String description;
+
+  const UnlockCondition({
+    required this.type,
+    required this.value,
+    required this.description,
+  });
+
+  /// Vérifie si la condition est remplie
+  bool isMet({
+    required int characterLevel,
+    required int characterStars,
+    int? classPromotionCount,
+  }) {
+    switch (type) {
+      case UnlockConditionType.level:
+        return characterLevel >= (value as int);
+      case UnlockConditionType.stars:
+        return characterStars >= (value as int);
+      case UnlockConditionType.classPromotion:
+        return (classPromotionCount ?? 0) >= (value as int);
+      case UnlockConditionType.always:
+        return true;
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+    'type': type.name,
+    'value': value,
+    'description': description,
+  };
+
+  factory UnlockCondition.fromJson(Map<String, dynamic> json) => UnlockCondition(
+    type: UnlockConditionType.values.byName(json['type']),
+    value: json['value'],
+    description: json['description'],
+  );
+}
+
+enum UnlockConditionType {
+  level,      // Niveau requis
+  stars,      // Rareté requise (nombre d'étoiles)
+  classPromotion, // Nombre de promotions de classe
+  always,     // Toujours débloqué
+}
+
+/// Item d'inventaire avec condition de déblocage
+class InventoryItem<T> {
+  final T item;
+  final UnlockCondition condition;
+  final bool isDefault; // Item de départ
+
+  const InventoryItem({
+    required this.item,
+    required this.condition,
+    this.isDefault = false,
+  });
+
+  bool isUnlocked({
+    required int characterLevel,
+    required int characterStars,
+    int? classPromotionCount,
+  }) {
+    return condition.isMet(
+      characterLevel: characterLevel,
+      characterStars: characterStars,
+      classPromotionCount: classPromotionCount,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'item': item is Equipment 
+        ? (item as Equipment).toJson() 
+        : (item as Skill).toJson(),
+    'condition': condition.toJson(),
+    'isDefault': isDefault,
+    'itemType': item is Equipment ? 'equipment' : 'skill',
+  };
+
+  factory InventoryItem.fromJson(Map<String, dynamic> json) {
+    final itemType = json['itemType'] as String;
+    final item = itemType == 'equipment'
+        ? Equipment.fromJson(json['item'])
+        : Skill.fromJson(json['item']);
+    
+    return InventoryItem(
+      item: item as T,
+      condition: UnlockCondition.fromJson(json['condition']),
+      isDefault: json['isDefault'] ?? false,
+    );
+  }
+}
+
+/// Inventaire personnel d'un personnage
+class CharacterInventory {
+  // Armes disponibles pour ce personnage
+  final List<InventoryItem<Equipment>> weapons;
+  
+  // Armures disponibles
+  final List<InventoryItem<Equipment>> armors;
+  
+  // Accessoires disponibles
+  final List<InventoryItem<Equipment>> accessories;
+  
+  // Compétences disponibles
+  final List<InventoryItem<Skill>> skills;
+
+  CharacterInventory({
+    List<InventoryItem<Equipment>>? weapons,
+    List<InventoryItem<Equipment>>? armors,
+    List<InventoryItem<Equipment>>? accessories,
+    List<InventoryItem<Skill>>? skills,
+  })  : weapons = weapons ?? [],
+        armors = armors ?? [],
+        accessories = accessories ?? [],
+        skills = skills ?? [];
+
+  /// Récupère toutes les armes (débloquées + bloquées)
+  List<InventoryItem<Equipment>> getAllWeapons() => weapons;
+
+  /// Récupère seulement les armes débloquées
+  List<Equipment> getUnlockedWeapons({
+    required int characterLevel,
+    required int characterStars,
+    int? classPromotionCount,
+  }) {
+    return weapons
+        .where((item) => item.isUnlocked(
+              characterLevel: characterLevel,
+              characterStars: characterStars,
+              classPromotionCount: classPromotionCount,
+            ))
+        .map((item) => item.item)
+        .toList();
+  }
+
+  /// Récupère toutes les compétences (débloquées + bloquées)
+  List<InventoryItem<Skill>> getAllSkills() => skills;
+
+  /// Récupère seulement les compétences débloquées
+  List<Skill> getUnlockedSkills({
+    required int characterLevel,
+    required int characterStars,
+    int? classPromotionCount,
+  }) {
+    return skills
+        .where((item) => item.isUnlocked(
+              characterLevel: characterLevel,
+              characterStars: characterStars,
+              classPromotionCount: classPromotionCount,
+            ))
+        .map((item) => item.item)
+        .toList();
+  }
+
+  Map<String, dynamic> toJson() => {
+    'weapons': weapons.map((w) => w.toJson()).toList(),
+    'armors': armors.map((a) => a.toJson()).toList(),
+    'accessories': accessories.map((a) => a.toJson()).toList(),
+    'skills': skills.map((s) => s.toJson()).toList(),
+  };
+
+  factory CharacterInventory.fromJson(Map<String, dynamic> json) {
+    return CharacterInventory(
+      weapons: (json['weapons'] as List?)
+          ?.map((w) => InventoryItem<Equipment>.fromJson(w))
+          .toList(),
+      armors: (json['armors'] as List?)
+          ?.map((a) => InventoryItem<Equipment>.fromJson(a))
+          .toList(),
+      accessories: (json['accessories'] as List?)
+          ?.map((a) => InventoryItem<Equipment>.fromJson(a))
+          .toList(),
+      skills: (json['skills'] as List?)
+          ?.map((s) => InventoryItem<Skill>.fromJson(s))
+          .toList(),
+    );
+  }
+
+  /// Crée un inventaire par défaut pour une classe donnée
+  static CharacterInventory createDefault(String className) {
+    return CharacterInventory(
+      weapons: _getDefaultWeapons(className),
+      armors: _getDefaultArmors(),
+      accessories: _getDefaultAccessories(),
+      skills: _getDefaultSkills(className),
+    );
+  }
+
+  static List<InventoryItem<Equipment>> _getDefaultWeapons(String className) {
+    // Warrior / Knight
+    if (className.toLowerCase().contains('warrior') || className.toLowerCase().contains('knight')) {
+      return [
+        // Arme de départ
+        InventoryItem(
+          item: const Equipment(
+            id: 'iron_sword',
+            name: 'Iron Sword',
+            emoji: '⚔️',
+            type: EquipmentType.weapon,
+            bonuses: {'attack': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Arme de départ',
+          ),
+          isDefault: true,
+        ),
+        // Arme niveau 5
+        InventoryItem(
+          item: const Equipment(
+            id: 'bronze_axe',
+            name: 'Bronze Axe',
+            emoji: '🪓',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.common,
+            bonuses: {'attack': 7, 'defense': 1},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Niveau 5 requis',
+          ),
+        ),
+        // Arme niveau 10
+        InventoryItem(
+          item: const Equipment(
+            id: 'steel_sword',
+            name: 'Steel Sword',
+            emoji: '⚔️',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.uncommon,
+            bonuses: {'attack': 10, 'defense': 2},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Niveau 10 requis',
+          ),
+        ),
+        // Arme niveau 15
+        InventoryItem(
+          item: const Equipment(
+            id: 'battle_hammer',
+            name: 'Battle Hammer',
+            emoji: '🔨',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.uncommon,
+            bonuses: {'attack': 13, 'defense': 3},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Niveau 15 requis',
+          ),
+        ),
+        // Arme niveau 20
+        InventoryItem(
+          item: const Equipment(
+            id: 'silver_sword',
+            name: 'Silver Sword',
+            emoji: '⚔️',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.rare,
+            bonuses: {'attack': 16, 'speed': 4},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 20,
+            description: 'Niveau 20 requis',
+          ),
+        ),
+        // Arme 3 étoiles
+        InventoryItem(
+          item: const Equipment(
+            id: 'flame_blade',
+            name: 'Flame Blade',
+            emoji: '🔥',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.rare,
+            bonuses: {'attack': 18, 'magic': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 3,
+            description: '3★ requis',
+          ),
+        ),
+        // Arme 5 étoiles
+        InventoryItem(
+          item: const Equipment(
+            id: 'legendary_blade',
+            name: 'Excalibur',
+            emoji: '⚔️',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.legendary,
+            bonuses: {'attack': 25, 'defense': 8, 'speed': 7},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ requis',
+          ),
+        ),
+      ];
+    }
+    
+    // Mage / Wizard
+    if (className.toLowerCase().contains('mage') || className.toLowerCase().contains('wizard')) {
+      return [
+        InventoryItem(
+          item: const Equipment(
+            id: 'wooden_staff',
+            name: 'Wooden Staff',
+            emoji: '🪄',
+            type: EquipmentType.weapon,
+            bonuses: {'magic': 6},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Arme de départ',
+          ),
+          isDefault: true,
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'apprentice_tome',
+            name: 'Apprentice Tome',
+            emoji: '📖',
+            type: EquipmentType.weapon,
+            bonuses: {'magic': 8, 'speed': 2},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Niveau 5 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'mystic_wand',
+            name: 'Mystic Wand',
+            emoji: '🪄',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.uncommon,
+            bonuses: {'magic': 12, 'speed': 3},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Niveau 10 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'crystal_staff',
+            name: 'Crystal Staff',
+            emoji: '✨',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.rare,
+            bonuses: {'magic': 18, 'speed': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Niveau 15 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'archmage_grimoire',
+            name: 'Archmage Grimoire',
+            emoji: '📚',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.rare,
+            bonuses: {'magic': 22, 'speed': 6, 'defense': 3},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 20,
+            description: 'Niveau 20 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'staff_of_eternity',
+            name: 'Staff of Eternity',
+            emoji: '🌟',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.legendary,
+            bonuses: {'magic': 30, 'speed': 8, 'defense': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ requis',
+          ),
+        ),
+      ];
+    }
+
+    // Archer / Ranger
+    if (className.toLowerCase().contains('archer') || className.toLowerCase().contains('ranger')) {
+      return [
+        InventoryItem(
+          item: const Equipment(
+            id: 'short_bow',
+            name: 'Short Bow',
+            emoji: '🏹',
+            type: EquipmentType.weapon,
+            bonuses: {'attack': 4, 'speed': 3},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Arme de départ',
+          ),
+          isDefault: true,
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'hunting_bow',
+            name: 'Hunting Bow',
+            emoji: '🏹',
+            type: EquipmentType.weapon,
+            bonuses: {'attack': 8, 'speed': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Niveau 5 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'longbow',
+            name: 'Longbow',
+            emoji: '🏹',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.uncommon,
+            bonuses: {'attack': 12, 'speed': 7},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Niveau 10 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'composite_bow',
+            name: 'Composite Bow',
+            emoji: '🏹',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.rare,
+            bonuses: {'attack': 16, 'speed': 9},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Niveau 15 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'silver_hawk',
+            name: 'Silver Hawk',
+            emoji: '🦅',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.legendary,
+            bonuses: {'attack': 24, 'speed': 12, 'luck': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ requis',
+          ),
+        ),
+      ];
+    }
+
+    // Thief / Rogue
+    if (className.toLowerCase().contains('thief') || className.toLowerCase().contains('rogue')) {
+      return [
+        InventoryItem(
+          item: const Equipment(
+            id: 'rusty_dagger',
+            name: 'Rusty Dagger',
+            emoji: '🗡️',
+            type: EquipmentType.weapon,
+            bonuses: {'attack': 3, 'speed': 5},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Arme de départ',
+          ),
+          isDefault: true,
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'steel_dagger',
+            name: 'Steel Dagger',
+            emoji: '🗡️',
+            type: EquipmentType.weapon,
+            bonuses: {'attack': 7, 'speed': 7},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Niveau 5 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'poison_blade',
+            name: 'Poison Blade',
+            emoji: '🐍',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.uncommon,
+            bonuses: {'attack': 11, 'speed': 9},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Niveau 10 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'shadow_strike',
+            name: 'Shadow Strike',
+            emoji: '🌑',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.rare,
+            bonuses: {'attack': 15, 'speed': 11, 'luck': 4},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Niveau 15 requis',
+          ),
+        ),
+        InventoryItem(
+          item: const Equipment(
+            id: 'phantom_edge',
+            name: 'Phantom Edge',
+            emoji: '👻',
+            type: EquipmentType.weapon,
+            rarity: EquipmentRarity.legendary,
+            bonuses: {'attack': 22, 'speed': 15, 'luck': 8},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ requis',
+          ),
+        ),
+      ];
+    }
+
+    // Défaut générique
+    return [
+      InventoryItem(
+        item: DefaultWeapons.byClass[className] ?? const Equipment(
+          id: 'basic_weapon',
+          name: 'Basic Weapon',
+          emoji: '🗡️',
+          type: EquipmentType.weapon,
+          bonuses: {'attack': 3},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.always,
+          value: 0,
+          description: 'Arme de départ',
+        ),
+        isDefault: true,
+      ),
+    ];
+  }
+
+  static List<InventoryItem<Equipment>> _getDefaultArmors() {
+    return [
+      // Armure de base
+      InventoryItem(
+        item: const Equipment(
+          id: 'cloth_armor',
+          name: 'Cloth Armor',
+          emoji: '👕',
+          type: EquipmentType.armor,
+          bonuses: {'defense': 3},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.always,
+          value: 0,
+          description: 'Disponible',
+        ),
+        isDefault: true,
+      ),
+      // Niveau 5
+      InventoryItem(
+        item: const Equipment(
+          id: 'leather_armor',
+          name: 'Leather Armor',
+          emoji: '🥋',
+          type: EquipmentType.armor,
+          bonuses: {'defense': 6, 'speed': 1},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.level,
+          value: 5,
+          description: 'Niveau 5 requis',
+        ),
+      ),
+      // Niveau 10
+      InventoryItem(
+        item: const Equipment(
+          id: 'chainmail',
+          name: 'Chainmail',
+          emoji: '⛓️',
+          type: EquipmentType.armor,
+          rarity: EquipmentRarity.uncommon,
+          bonuses: {'defense': 10},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.level,
+          value: 10,
+          description: 'Niveau 10 requis',
+        ),
+      ),
+      // Niveau 15
+      InventoryItem(
+        item: const Equipment(
+          id: 'plate_armor',
+          name: 'Plate Armor',
+          emoji: '🛡️',
+          type: EquipmentType.armor,
+          rarity: EquipmentRarity.rare,
+          bonuses: {'defense': 15, 'attack': 2},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.level,
+          value: 15,
+          description: 'Niveau 15 requis',
+        ),
+      ),
+      // 3 étoiles
+      InventoryItem(
+        item: const Equipment(
+          id: 'dragon_scale',
+          name: 'Dragon Scale Armor',
+          emoji: '🐉',
+          type: EquipmentType.armor,
+          rarity: EquipmentRarity.rare,
+          bonuses: {'defense': 18, 'magic': 5},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.stars,
+          value: 3,
+          description: '3★ requis',
+        ),
+      ),
+      // 5 étoiles
+      InventoryItem(
+        item: const Equipment(
+          id: 'celestial_armor',
+          name: 'Celestial Armor',
+          emoji: '✨',
+          type: EquipmentType.armor,
+          rarity: EquipmentRarity.legendary,
+          bonuses: {'defense': 25, 'magic': 8, 'speed': 5},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.stars,
+          value: 5,
+          description: '5★ requis',
+        ),
+      ),
+    ];
+  }
+
+  static List<InventoryItem<Equipment>> _getDefaultAccessories() {
+    return [
+      // Disponible de base
+      InventoryItem(
+        item: const Equipment(
+          id: 'basic_ring',
+          name: 'Simple Ring',
+          emoji: '💍',
+          type: EquipmentType.accessory,
+          bonuses: {'luck': 2},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.level,
+          value: 5,
+          description: 'Niveau 5 requis',
+        ),
+      ),
+    ];
+  }
+
+  static List<InventoryItem<Skill>> _getDefaultSkills(String className) {
+    // TODO: À implémenter selon les classes
+    return [];
+  }
+}
