@@ -346,7 +346,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() => _language = code);
         await _saveSetting('language', code);
         
-        // Appliquer le changement de langue immédiatement
         LocaleProvider.instance.setLocale(Locale(code));
         
         if (mounted) Navigator.pop(context);
@@ -437,7 +436,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final options = <Widget>[];
 
-    // Option pour lier Email si pas encore lié
     if (!hasEmail) {
       options.add(ListTile(
         leading: const Icon(Icons.email, color: Colors.blue),
@@ -467,7 +465,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ));
     }
 
-    // Option pour lier Google si pas encore lié
     if (!hasGoogle) {
       options.add(ListTile(
         leading: const Icon(Icons.g_mobiledata, color: Colors.red, size: 32),
@@ -594,7 +591,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       backgroundColor: Colors.green,
                     ),
                   );
-                  setState(() {}); // Rafraîchir l'affichage
+                  setState(() {});
                 }
               } catch (e) {
                 if (mounted) {
@@ -630,7 +627,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        setState(() {}); // Rafraîchir l'affichage
+        setState(() {});
       }
     } catch (e) {
       if (mounted) {
@@ -667,8 +664,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               try {
                 await AuthService.deleteAccount();
                 if (mounted) {
-                  Navigator.pop(context); // Fermer le dialog
-                  Navigator.of(context).pushReplacementNamed('/'); // Retour à l'écran de connexion
+                  Navigator.pop(context);
+                  Navigator.of(context).pushReplacementNamed('/');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.settingsDeleteAccountSuccess),

@@ -29,19 +29,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
   bool _selectedFromTeam = false;
 
   void _showFullsizeImage(String? fullsizeSprite) {
-    if (fullsizeSprite == null) return;
+    if (fullsizeSprite == null || _selectedCharacter == null) return;
     
-    final cleanPath = fullsizeSprite.startsWith('~/') 
-        ? fullsizeSprite.substring(2) 
-        : fullsizeSprite;
-    
-    showDialog(
-      context: context,
-      builder: (context) => GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: InteractiveViewer(
-          child: Image.asset(cleanPath),
-        ),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => _FullCharacterDetailScreen(character: _selectedCharacter!),
       ),
     );
   }
@@ -171,8 +163,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  /// Gère la sélection/échange de personnages dans la team
-  /// [fromTeamSlot] = true si le clic vient de EDIT TEAM, false si de ALL HEROES
   Future<void> _handleCharacterSelection(
     Character character, 
     List<Character> teamCharacters,
@@ -1248,6 +1238,447 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _FullCharacterDetailScreen extends StatefulWidget {
+  final Character character;
+
+  const _FullCharacterDetailScreen({required this.character});
+
+  @override
+  State<_FullCharacterDetailScreen> createState() => _FullCharacterDetailScreenState();
+}
+
+class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> {
+  bool _showUI = true;
+
+  String _cleanSprite(String sprite) {
+    return sprite.startsWith('~/') ? sprite.substring(2) : sprite;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final character = widget.character;
+    final fullsizeSprite = character.appearance.fullsize;
+
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            _showUI = !_showUI;
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(character.appearance.colorValue).withOpacity(0.6),
+                Colors.black,
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: fullsizeSprite != null
+                    ? InteractiveViewer(
+                        child: Image.asset(
+                          _cleanSprite(fullsizeSprite),
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(Icons.error, color: Colors.red, size: 64),
+                            );
+                          },
+                        ),
+                      )
+                    : const Center(
+                        child: Icon(Icons.person, color: Colors.white, size: 128),
+                      ),
+              ),
+
+              if (_showUI) ...[
+                // Gradient léger en haut (pour la flèche retour et le Tap!)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.7),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: 40,
+                  left: 16,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: 40,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.touch_app, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Tap!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildHeader(character),
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.0),
+                                Colors.black.withOpacity(0.45),
+                              ],
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _buildMainInfoBlock(character),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Header séparé au-dessus du bloc principal
+  Widget _buildHeader(Character character) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(character.appearance.colorValue).withOpacity(0.4),
+            Color(character.appearance.colorValue).withOpacity(0.2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.amber.withOpacity(0.6), width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              character.currentRarity.stars,
+              (index) => const Icon(Icons.star, color: Colors.amber, size: 18),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  character.persona.displayName,
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  character.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Bloc principal : Niveau/EXP + Stats à gauche + Équipement/Skills à droite
+  Widget _buildMainInfoBlock(Character character) {
+    final expProgress = character.xp / character.xpForNextLevel;
+    
+    return Container(
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E3A5F).withOpacity(0.8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.red.withOpacity(0.6)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.military_tech, color: Colors.red, size: 14),
+                              const SizedBox(width: 4),
+                              Text(
+                                'LV. ${character.level}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade800,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: LinearProgressIndicator(
+                                      value: character.level >= 40 ? 1.0 : expProgress,
+                                      backgroundColor: Colors.transparent,
+                                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  character.level >= 40 ? 'EXP MAX' : 'EXP ${character.xp}/${character.xpForNextLevel}',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Stats (6 lignes)
+                    _buildStatRow('HP', character.stats.maxHp, Colors.green),
+                    _buildStatRow(character.offensiveStatName, character.totalOffensive, Colors.red),
+                    _buildStatRow('Spd', character.totalSpeed, Colors.blue),
+                    _buildStatRow('Def', character.totalDefense, Colors.orange),
+                    _buildStatRow('Lck', character.totalLuck, Colors.purple),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Séparateur vertical
+            Container(
+              width: 1,
+              color: Colors.white.withOpacity(0.3),
+            ),
+            
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildEquipmentSlotCompact(
+                      icon: character.weapon?.emoji ?? '⚔️',
+                      name: character.weapon?.name ?? 'Siegfried',
+                      hasItem: character.weapon != null,
+                    ),
+                    const SizedBox(height: 3),
+                    _buildEquipmentSlotCompact(
+                      icon: character.armor?.emoji ?? '🛡️',
+                      name: character.armor?.name ?? '-',
+                      hasItem: character.armor != null,
+                    ),
+                    const SizedBox(height: 3),
+                    _buildEquipmentSlotCompact(
+                      icon: '✨',
+                      name: 'Blazing Light',
+                      hasItem: true,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildEquipmentSlotCompact(
+                      icon: '💥',
+                      name: 'Armored Blow 3',
+                      hasItem: true,
+                    ),
+                    const SizedBox(height: 3),
+                    _buildEquipmentSlotCompact(
+                      icon: '🔰',
+                      name: '-',
+                      hasItem: false,
+                    ),
+                    const SizedBox(height: 3),
+                    _buildEquipmentSlotCompact(
+                      icon: '🎯',
+                      name: 'Spur Def 3',
+                      hasItem: true,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Une ligne de stat (label à gauche, valeur à droite)
+  Widget _buildStatRow(String label, int value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A4A6A).withOpacity(0.6),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              value.toString(),
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Slot d'équipement/skill compact (comme dans l'image)
+  Widget _buildEquipmentSlotCompact({
+    required String icon,
+    required String name,
+    required bool hasItem,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A4A6A).withOpacity(hasItem ? 0.8 : 0.3),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: hasItem ? Colors.blue.withOpacity(0.6) : Colors.grey.withOpacity(0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              name,
+              style: TextStyle(
+                color: hasItem ? Colors.white : Colors.grey.withOpacity(0.5),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
