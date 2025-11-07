@@ -268,11 +268,11 @@ class CharacterDetailScreen extends StatelessWidget {
               
               const SizedBox(height: 8),
               
-              // Armure
-              if (character.armor != null)
-                _buildCompactEquipmentSlot(character.armor!)
+              // Armure ou Accessoire (mutuellement exclusif)
+              if (character.armorOrAccessory != null)
+                _buildCompactEquipmentSlot(character.armorOrAccessory!)
               else
-                _buildCompactEmptySlot('🛡️', 'Armor'),
+                _buildCompactEmptySlot('🛡️', 'Armor/Accessory'),
               
               const SizedBox(height: 8),
               

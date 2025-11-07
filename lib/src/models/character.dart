@@ -24,10 +24,9 @@ class Character {     // est un personnage jouable (pas le player)
 
   // équipement
   Equipment? weapon;
-  Equipment? armor;
-  Equipment? accessory;
+  Equipment? armorOrAccessory; // Armure OU accessoire (mutuellement exclusif)
 
-  // compétences équipées (max 5)
+  // compétences équipées (max 4: 1 active + 3 passives)
   List<Skill> equippedSkills;
   
   // maîtrises d'armes
@@ -61,8 +60,7 @@ class Character {     // est un personnage jouable (pas le player)
     this.x = 0,
     this.y = 0,
     this.weapon,
-    this.armor,
-    this.accessory,
+    this.armorOrAccessory,
   List<Skill>? equippedSkills,
   List<WeaponMastery>? weaponMasteries,
   Set<String>? initialOwnedClassIds,
@@ -142,8 +140,7 @@ class Character {     // est un personnage jouable (pas le player)
         'y': y,
         'currentHp': currentHp,
         'weapon': weapon?.toJson(),
-        'armor': armor?.toJson(),
-        'accessory': accessory?.toJson(),
+        'armorOrAccessory': armorOrAccessory?.toJson(),
         'equippedSkills': equippedSkills.map((s) => s.toJson()).toList(),
   'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
   // Sauvegarde de l'inventaire
@@ -185,8 +182,9 @@ class Character {     // est un personnage jouable (pas le player)
       x: json['x'] ?? 0,
       y: json['y'] ?? 0,
       weapon: json['weapon'] != null ? Equipment.fromJson(json['weapon']) : null,
-      armor: json['armor'] != null ? Equipment.fromJson(json['armor']) : null,
-      accessory: json['accessory'] != null ? Equipment.fromJson(json['accessory']) : null,
+      armorOrAccessory: json['armorOrAccessory'] != null 
+          ? Equipment.fromJson(json['armorOrAccessory']) 
+          : (json['armor'] != null ? Equipment.fromJson(json['armor']) : null), // Rétrocompatibilité
       equippedSkills: (json['equippedSkills'] as List?)
           ?.map((s) => Skill.fromJson(s))
           .toList(),
@@ -237,14 +235,9 @@ class Character {     // est un personnage jouable (pas le player)
       bonus += weapon!.bonuses[statKey]!;
     }
     
-    // Bonus de l'armure
-    if (armor != null && armor!.bonuses.containsKey(statKey)) {
-      bonus += armor!.bonuses[statKey]!;
-    }
-    
-    // Bonus de l'accessoire
-    if (accessory != null && accessory!.bonuses.containsKey(statKey)) {
-      bonus += accessory!.bonuses[statKey]!;
+    // Bonus de l'armure ou accessoire
+    if (armorOrAccessory != null && armorOrAccessory!.bonuses.containsKey(statKey)) {
+      bonus += armorOrAccessory!.bonuses[statKey]!;
     }
     
     return bonus;
@@ -400,7 +393,6 @@ class Character {     // est un personnage jouable (pas le player)
     // Magie de base (avec équipement et passives)
     double damage = totalMagic.toDouble();
     
-    // Bonus de compétence active + passifs liés au multiplicateur de dégâts magiques
     if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
       final skillMult = 1.0 + activeSkill.statBonuses['damageMultiplier']!;
       final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');

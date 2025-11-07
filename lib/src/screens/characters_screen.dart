@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
-import '../models/character_inventory.dart';
+
 import '../models/equipment.dart';
 import '../services/game_data_service.dart';
 
@@ -323,8 +323,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
       x: character.x,
       y: character.y,
       weapon: character.weapon,
-      armor: character.armor,
-      accessory: character.accessory,
+      armorOrAccessory: character.armorOrAccessory,
       equippedSkills: character.equippedSkills,
       weaponMasteries: character.weaponMasteries,
       basedRarity: character.basedRarity,
@@ -681,9 +680,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
-                  character.armor?.emoji ?? '🛡️',
-                  character.armor?.name ?? '-',
-                  character.armor != null,
+                  character.armorOrAccessory?.emoji ?? '🛡️',
+                  character.armorOrAccessory?.name ?? '-',
+                  character.armorOrAccessory != null,
                 ),
               ),
               () {
@@ -1587,34 +1586,15 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                     ),
                     const SizedBox(height: 3),
                     _buildEquipmentSlotCompact(
-                      icon: character.armor?.emoji ?? '🛡️',
-                      name: character.armor?.name ?? '-',
-                      hasItem: character.armor != null,
+                      icon: character.armorOrAccessory?.emoji ?? '�️',
+                      name: character.armorOrAccessory?.name ?? '-',
+                      hasItem: character.armorOrAccessory != null,
                       onTap: () async {
-                        await _showEquipmentSelectionDialog(
+                        await _showArmorOrAccessorySelectionDialog(
                           character: character,
-                          equipmentType: EquipmentType.armor,
                           onSelect: (equipment) async {
                             setState(() {
-                              character.armor = equipment;
-                            });
-                            await GameDataService.saveCharacter(character);
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 3),
-                    _buildEquipmentSlotCompact(
-                      icon: character.accessory?.emoji ?? '💍',
-                      name: character.accessory?.name ?? '-',
-                      hasItem: character.accessory != null,
-                      onTap: () async {
-                        await _showEquipmentSelectionDialog(
-                          character: character,
-                          equipmentType: EquipmentType.accessory,
-                          onSelect: (equipment) async {
-                            setState(() {
-                              character.accessory = equipment;
+                              character.armorOrAccessory = equipment;
                             });
                             await GameDataService.saveCharacter(character);
                           },
@@ -1622,17 +1602,24 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                       },
                     ),
                     const SizedBox(height: 6),
-                    // Skill slots (max 5)
-                    ...List.generate(5, (index) {
-                      final hasSkill = character.equippedSkills.length > index;
-                      final skill = hasSkill ? character.equippedSkills[index] : null;
+                    ...List.generate(4, (index) {
+                      Skill? skill;
+                      if (index < character.equippedSkills.length) {
+                        final currentSkill = character.equippedSkills[index];
+                        if (!currentSkill.id.startsWith('empty_')) {
+                          skill = currentSkill;
+                        }
+                      }
+                      
+                      final hasSkill = skill != null;
+                      final isActiveSlot = index == 0;
                       
                       return Column(
                         children: [
                           if (index > 0) const SizedBox(height: 3),
                           _buildEquipmentSlotCompact(
-                            icon: skill?.emoji ?? '🔰',
-                            name: skill?.name ?? '-',
+                            icon: skill?.emoji ?? (isActiveSlot ? '⚡' : '🔰'),
+                            name: skill?.name ?? (isActiveSlot ? 'Active' : 'Passive ${index}'),
                             hasItem: hasSkill,
                             onTap: () async {
                               await _showSkillSelectionDialog(
@@ -1641,29 +1628,30 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                                 onSelect: (selectedSkill) async {
                                   setState(() {
                                     if (selectedSkill == null) {
-                                      // Retirer la compétence
                                       if (index < character.equippedSkills.length) {
-                                        character.equippedSkills.removeAt(index);
+                                        character.equippedSkills[index] = Skill(
+                                          id: 'empty_$index',
+                                          name: '-',
+                                          emoji: '🔰',
+                                          description: 'Slot vide',
+                                          type: index == 0 ? SkillType.active : SkillType.passive,
+                                        );
                                       }
                                     } else {
-                                      // Ajouter ou remplacer la compétence
-                                      if (index < character.equippedSkills.length) {
-                                        character.equippedSkills[index] = selectedSkill;
-                                      } else {
-                                        // Remplir les slots vides si nécessaire
-                                        while (character.equippedSkills.length < index) {
-                                          character.equippedSkills.add(
-                                            Skill(
-                                              id: 'empty_${character.equippedSkills.length}',
-                                              name: '-',
-                                              emoji: '🔰',
-                                              description: 'Slot vide',
-                                              type: SkillType.passive,
-                                            ),
-                                          );
-                                        }
-                                        character.equippedSkills.add(selectedSkill);
+                                      while (character.equippedSkills.length <= index) {
+                                        character.equippedSkills.add(
+                                          Skill(
+                                            id: 'empty_${character.equippedSkills.length}',
+                                            name: '-',
+                                            emoji: '🔰',
+                                            description: 'Slot vide',
+                                            type: character.equippedSkills.length == 0 
+                                                ? SkillType.active 
+                                                : SkillType.passive,
+                                          ),
+                                        );
                                       }
+                                      character.equippedSkills[index] = selectedSkill;
                                     }
                                   });
                                   await GameDataService.saveCharacter(character);
@@ -1687,17 +1675,36 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
   // Dialog pour sélectionner une compétence depuis l'inventaire
   Future<void> _showSkillSelectionDialog({
     required Character character,
-    required int skillSlotIndex, // L'index du slot de compétence (0-4)
+    required int skillSlotIndex, // L'index du slot de compétence (0-3)
     required Function(Skill?) onSelect,
   }) async {
-    final allSkills = character.inventory.getAllSkills();
+    // Déterminer le type de compétence attendu selon le slot
+    final requiredType = skillSlotIndex == 0 ? SkillType.active : SkillType.passive;
+    
+    // Filtrer les compétences par type
+    final allSkills = character.inventory.getAllSkills()
+        .where((item) => item.item.type == requiredType)
+        .toList();
+    
+    // Récupérer les IDs des compétences déjà équipées (sauf le slot actuel)
+    final alreadyEquippedIds = <String>{};
+    for (int i = 0; i < character.equippedSkills.length; i++) {
+      if (i != skillSlotIndex) {
+        final skill = character.equippedSkills[i];
+        if (!skill.id.startsWith('empty_')) {
+          alreadyEquippedIds.add(skill.id);
+        }
+      }
+    }
 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A2332),
         title: Text(
-          'Sélectionner une compétence (Slot ${skillSlotIndex + 1})',
+          skillSlotIndex == 0 
+              ? 'Sélectionner une compétence active (Slot 1)'
+              : 'Sélectionner une compétence passive (Slot ${skillSlotIndex + 1})',
           style: const TextStyle(color: Colors.white),
         ),
         content: SizedBox(
@@ -1727,41 +1734,51 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                 characterLevel: character.level,
                 characterStars: character.currentRarity.index + 1,
               );
+              
+              // Vérifier si cette compétence est déjà équipée ailleurs
+              final isAlreadyEquipped = alreadyEquippedIds.contains(skill.id);
 
               return ListTile(
-                enabled: isUnlocked,
+                enabled: isUnlocked && !isAlreadyEquipped,
                 leading: Text(
                   skill.emoji,
                   style: TextStyle(
                     fontSize: 24,
-                    color: isUnlocked ? null : Colors.grey,
+                    color: isUnlocked && !isAlreadyEquipped ? null : Colors.grey,
                   ),
                 ),
                 title: Text(
                   skill.name,
                   style: TextStyle(
-                    color: isUnlocked ? Colors.white : Colors.grey,
+                    color: isUnlocked && !isAlreadyEquipped ? Colors.white : Colors.grey,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                subtitle: isUnlocked
-                    ? Text(
-                        skill.description,
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                subtitle: isAlreadyEquipped
+                    ? const Text(
+                        '⚠️ Déjà équipé',
+                        style: TextStyle(color: Colors.orange, fontSize: 12),
                       )
-                    : Text(
-                        '🔒 ${inventoryItem.condition.description}',
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                trailing: isUnlocked
-                    ? Icon(
-                        Icons.chevron_right,
-                        color: Colors.blue.withOpacity(0.6),
-                      )
-                    : const Icon(Icons.lock, color: Colors.grey),
-                onTap: isUnlocked
+                    : isUnlocked
+                        ? Text(
+                            skill.description,
+                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        : Text(
+                            '🔒 ${inventoryItem.condition.description}',
+                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                trailing: isAlreadyEquipped
+                    ? const Icon(Icons.warning, color: Colors.orange)
+                    : isUnlocked
+                        ? Icon(
+                            Icons.chevron_right,
+                            color: Colors.blue.withOpacity(0.6),
+                          )
+                        : const Icon(Icons.lock, color: Colors.grey),
+                onTap: isUnlocked && !isAlreadyEquipped
                     ? () {
                         Navigator.of(context).pop();
                         onSelect(skill);
@@ -1812,6 +1829,105 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Dialog pour sélectionner une armure OU un accessoire
+  Future<void> _showArmorOrAccessorySelectionDialog({
+    required Character character,
+    required Function(Equipment?) onSelect,
+  }) async {
+    // Combiner armures et accessoires dans une seule liste
+    final allArmors = character.inventory.armors;
+    final allAccessories = character.inventory.accessories;
+    final allItems = [...allArmors, ...allAccessories];
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2332),
+        title: const Text(
+          'Sélectionner une armure ou un accessoire',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: allItems.length + 1, // +1 pour l'option "Aucun"
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                // Option "Aucun" pour retirer l'équipement
+                return ListTile(
+                  leading: const Text('❌', style: TextStyle(fontSize: 24)),
+                  title: const Text(
+                    'Aucun',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onSelect(null);
+                  },
+                );
+              }
+
+              final inventoryItem = allItems[index - 1];
+              final equipment = inventoryItem.item;
+              final isUnlocked = inventoryItem.isUnlocked(
+                characterLevel: character.level,
+                characterStars: character.currentRarity.index + 1,
+              );
+
+              return ListTile(
+                enabled: isUnlocked,
+                leading: Text(
+                  equipment.emoji,
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: isUnlocked ? null : Colors.grey,
+                  ),
+                ),
+                title: Text(
+                  equipment.name,
+                  style: TextStyle(
+                    color: isUnlocked ? Colors.white : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: isUnlocked
+                    ? Text(
+                        equipment.bonusDescription.isNotEmpty 
+                            ? equipment.bonusDescription 
+                            : 'Pas de bonus',
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      )
+                    : Text(
+                        '🔒 ${inventoryItem.condition.description}',
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                trailing: isUnlocked
+                    ? Icon(
+                        Icons.chevron_right,
+                        color: Colors.blue.withOpacity(0.6),
+                      )
+                    : const Icon(Icons.lock, color: Colors.grey),
+                onTap: isUnlocked
+                    ? () {
+                        Navigator.of(context).pop();
+                        onSelect(equipment);
+                      }
+                    : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
       ),
     );
   }
@@ -1921,7 +2037,6 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
     );
   }
 
-  // Slot d'équipement/skill compact (comme dans l'image)
   Widget _buildEquipmentSlotCompact({
     required String icon,
     required String name,

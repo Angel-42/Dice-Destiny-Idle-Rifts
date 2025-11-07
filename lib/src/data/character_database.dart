@@ -2,14 +2,97 @@ import 'package:dice_destiny_idle_rifts/src/models/character.dart';
 import '../models/persona.dart';
 import '../models/equipment.dart';
 import '../models/preset_character.dart';
+import '../models/character_inventory.dart';
+import '../models/skill.dart';
+import 'weapons_database.dart';
+import 'skills_database.dart';
+import 'armors_database.dart';
 
 /// Bibliothèque de personnages prédéfinis
 class CharacterDatabase {
   // ============================================================================
+  // HELPERS POUR CRÉER DES INVENTAIRES PERSONNALISÉS
+  // ============================================================================
+
+  /// Crée un inventaire personnalisé pour un personnage
+  static CharacterInventory _createCustomInventory({
+    required List<Equipment> weapons,
+    required List<UnlockCondition> weaponConditions,
+    List<Equipment>? armors,
+    List<UnlockCondition>? armorConditions,
+    List<Equipment>? accessories,
+    List<UnlockCondition>? accessoryConditions,
+    List<Skill>? skills,
+    List<UnlockCondition>? skillConditions,
+  }) {
+    return CharacterInventory(
+      weapons: _createInventoryItems(weapons, weaponConditions),
+      armors: armors != null && armorConditions != null
+          ? _createInventoryItems(armors, armorConditions)
+          : [],
+      accessories: accessories != null && accessoryConditions != null
+          ? _createInventoryItems(accessories, accessoryConditions)
+          : [],
+      skills: skills != null && skillConditions != null
+          ? _createInventoryItemsSkills(skills, skillConditions)
+          : [],
+    );
+  }
+
+  static List<InventoryItem<Equipment>> _createInventoryItems(
+    List<Equipment> items,
+    List<UnlockCondition> conditions,
+  ) {
+    assert(items.length == conditions.length);
+    return List.generate(
+      items.length,
+      (i) => InventoryItem(
+        item: items[i],
+        condition: conditions[i],
+        isDefault: conditions[i].type == UnlockConditionType.always,
+      ),
+    );
+  }
+
+  static List<InventoryItem<Skill>> _createInventoryItemsSkills(
+    List<Skill> items,
+    List<UnlockCondition> conditions,
+  ) {
+    assert(items.length == conditions.length);
+    return List.generate(
+      items.length,
+      (i) => InventoryItem(
+        item: items[i],
+        condition: conditions[i],
+        isDefault: conditions[i].type == UnlockConditionType.always,
+      ),
+    );
+  }
+
+  // Conditions de déblocage communes
+  static const _alwaysUnlocked = UnlockCondition(
+    type: UnlockConditionType.always,
+    value: 0,
+    description: 'Débloqué par défaut',
+  );
+
+  static UnlockCondition _levelCondition(int level) => UnlockCondition(
+    type: UnlockConditionType.level,
+    value: level,
+    description: 'Niveau $level requis',
+  );
+
+  static UnlockCondition _starsCondition(int stars) => UnlockCondition(
+    type: UnlockConditionType.stars,
+    value: stars,
+    description: '$stars★ requis',
+  );
+
+  // ============================================================================
   // LÉGENDAIRES (5★) - 3% de drop
   // ============================================================================
 
-  static const PresetCharacter chromLordOfBlades = PresetCharacter(
+  static final PresetCharacter chromLordOfBlades = PresetCharacter(
     id: 'chrom_001',
     name: 'Chrom',
     title: 'Le Prince Exalté',
@@ -40,27 +123,82 @@ Il porte l'épée sacrée Falchion, transmise de génération en génération.
       'range': 1,
       'luck': 22,
     },
-    starterWeapon: Equipment(
-      id: 'falchion',
-      name: 'Falchion',
-      emoji: '⚔️',
-      type: EquipmentType.weapon,
-      rarity: EquipmentRarity.legendary,
-      bonuses: {'attack': 15, 'luck': 5},
-    ),
+    starterWeapon: WeaponsDatabase.falchion,
     voiceLines: [
       'Tout le monde mérite une seconde chance !',
       'Je protégerai mes alliés, quoi qu\'il arrive.',
       'Pour Ylisse !',
     ],
     tags: ['Leader', 'DPS', 'Physique'],
+    customInventory: _createCustomInventory(
+      // ARMES (max 1 équipée)
+      weapons: [
+        WeaponsDatabase.falchion,
+        WeaponsDatabase.steelSword,
+        WeaponsDatabase.silverSword,
+        WeaponsDatabase.excalibur,
+        WeaponsDatabase.dragonSlayer,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(10),
+        _starsCondition(4),
+        _starsCondition(5),
+      ],
+      // ARMURES (max 1 équipée)
+      armors: [
+        ArmorsDatabase.knightArmor,
+        ArmorsDatabase.plateArmor,
+        ArmorsDatabase.dragonScaleArmor,
+        ArmorsDatabase.celestialArmor,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+        _levelCondition(15),
+        _starsCondition(5),
+      ],
+      // ACCESSOIRES (max 1 équipé - mutuellement exclusif avec armure)
+      accessories: [
+        AccessoriesDatabase.strengthRing,
+        AccessoriesDatabase.championBelt,
+        AccessoriesDatabase.crownOfKings,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(15),
+        _starsCondition(5),
+      ],
+      // COMPÉTENCES : 1 active + 3 passives max
+      skills: [
+        // Active (peut en équiper 1 seule)
+        SkillsDatabase.powerStrike,
+        SkillsDatabase.shieldBash,
+        SkillsDatabase.whirlwind,
+        // Passives (peut en équiper 3)
+        SkillsDatabase.nobleLeadership,
+        SkillsDatabase.criticalHit,
+        SkillsDatabase.weaponMaster,
+      ],
+      skillConditions: [
+        // Actives
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(10),
+        // Passives
+        _alwaysUnlocked, // Passive de noble
+        _starsCondition(3),
+        _starsCondition(4),
+      ],
+    ),
   );
 
   // ============================================================================
   // ÉPIQUES (4★) - 12% de drop
   // ============================================================================
 
-  static const PresetCharacter envia = PresetCharacter(
+  static final PresetCharacter envia = PresetCharacter(
     id: 'envia_001',
     name: 'Envia',
     title: 'Sabreuse des Ombres',
@@ -86,35 +224,84 @@ et protège les innocents contre les oppresseurs.
       characterClass: PersonaClass.warrior,
     ),
     baseStats: {
-      'maxHp': 140,
-      'attack': 28,
-      'defense': 20,
-      'speed': 18,
-      'magic': 5,
+      'maxHp': 120,
+      'attack': 26,
+      'defense': 16,
+      'speed': 22,
+      'magic': 4,
       'range': 1,
-      'luck': 22,
+      'luck': 18,
     },
-    starterWeapon: Equipment(
-      id: 'falchion',
-      name: 'Falchion',
-      emoji: '⚔️',
-      type: EquipmentType.weapon,
-      rarity: EquipmentRarity.legendary,
-      bonuses: {'attack': 15, 'luck': 5},
-    ),
+    starterWeapon: WeaponsDatabase.katana,
     voiceLines: [
-      'Tout le monde mérite une seconde chance !',
-      'Je protégerai mes alliés, quoi qu\'il arrive.',
-      'Pour Ylisse !',
+      'Le passé ne définit pas l\'avenir.',
+      'Mes lames ne connaissent pas la pitié.',
+      'Pour la rédemption !',
     ],
-    tags: ['DPS', 'Physique'],
+    tags: ['DPS', 'Physique', 'Vitesse'],
+    customInventory: _createCustomInventory(
+      // ARMES (max 1 équipée)
+      weapons: [
+        WeaponsDatabase.katana,
+        WeaponsDatabase.steelSword,
+        WeaponsDatabase.shadowSword,
+        WeaponsDatabase.flameBlade,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(10),
+        _levelCondition(15),
+      ],
+      // ARMURES (max 1 équipée)
+      armors: [
+        ArmorsDatabase.leatherArmor,
+        ArmorsDatabase.shadowCloak,
+        ArmorsDatabase.mythrilChain,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+        _levelCondition(15),
+      ],
+      // ACCESSOIRES (max 1 équipé - mutuellement exclusif avec armure)
+      accessories: [
+        AccessoriesDatabase.speedRing,
+        AccessoriesDatabase.swiftBoots,
+        AccessoriesDatabase.hermesBoots,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(10),
+        _levelCondition(20),
+      ],
+      // COMPÉTENCES : 1 active + 3 passives max
+      skills: [
+        // Active (peut en équiper 1 seule)
+        SkillsDatabase.powerStrike,
+        SkillsDatabase.backstab,
+        // Passives (peut en équiper 3)
+        SkillsDatabase.peasantEndurance,
+        SkillsDatabase.swiftness,
+        SkillsDatabase.criticalHit,
+      ],
+      skillConditions: [
+        // Actives
+        _alwaysUnlocked,
+        _levelCondition(5),
+        // Passives
+        _alwaysUnlocked, // Passive de peasant
+        _starsCondition(3),
+        _starsCondition(4),
+      ],
+    ),
   );
 
   // ============================================================================
   // RARES (3★) - 25% de drop
   // ============================================================================
 
-  static const PresetCharacter elio = PresetCharacter(
+  static final PresetCharacter elio = PresetCharacter(
     id: 'elio_001',
     name: 'Elio',
     title: 'Défenseur du Soleil',
@@ -122,7 +309,7 @@ et protège les innocents contre les oppresseurs.
     lheadshot: '~/assets/characters/Elio/lheadshot.png',
     pixel: '~/assets/characters/Elio/pixel.png',
     fullsize: '~/assets/characters/Elio/fullsize.png',
-    colorValue: 0xFF1E88E5,
+    colorValue: 0xFFFFA726,
     rarity: CharacterRarity.rare,
     description: 'Chevalier solaire, il protège les faibles avec bravoure.',
     backstory: '''
@@ -139,39 +326,278 @@ Il aspire à ramener la paix dans un monde en proie au chaos.
       characterClass: PersonaClass.warrior,
     ),
     baseStats: {
-      'maxHp': 140,
-      'attack': 28,
-      'defense': 20,
-      'speed': 18,
-      'magic': 5,
+      'maxHp': 130,
+      'attack': 24,
+      'defense': 22,
+      'speed': 16,
+      'magic': 6,
       'range': 1,
-      'luck': 22,
+      'luck': 14,
     },
-    starterWeapon: Equipment(
-      id: 'falchion',
-      name: 'Falchion',
-      emoji: '⚔️',
-      type: EquipmentType.weapon,
-      rarity: EquipmentRarity.legendary,
-      bonuses: {'attack': 15, 'luck': 5},
-    ),
+    starterWeapon: WeaponsDatabase.flameBlade,
     voiceLines: [
-      'Tout le monde mérite une seconde chance !',
-      'Je protégerai mes alliés, quoi qu\'il arrive.',
-      'Pour Ylisse !',
+      'La lumière triomphera toujours !',
+      'Je suis le bouclier des innocents.',
+      'Pour l\'honneur et la justice !',
     ],
-    tags: ['DPS', 'Physique'],
+    tags: ['Tank', 'Défense', 'Paladin'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.flameBlade,
+        WeaponsDatabase.ironSword,
+        WeaponsDatabase.steelSword,
+        WeaponsDatabase.silverSword,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(3),
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      armors: [
+        ArmorsDatabase.chainmail,
+        ArmorsDatabase.knightArmor,
+        ArmorsDatabase.plateArmor,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      accessories: [
+        AccessoriesDatabase.defenseRing,
+        AccessoriesDatabase.championBelt,
+        AccessoriesDatabase.giantBelt,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(10),
+        _levelCondition(15),
+      ],
+      skills: [
+        // Active (peut en équiper 1 seule)
+        SkillsDatabase.powerStrike,
+        SkillsDatabase.shieldBash,
+        // Passives (peut en équiper 3)
+        SkillsDatabase.nobleLeadership,
+        SkillsDatabase.ironSkin,
+        SkillsDatabase.counterAttack,
+      ],
+      skillConditions: [
+        // Actives
+        _alwaysUnlocked,
+        _levelCondition(5),
+        // Passives
+        _alwaysUnlocked,
+        _starsCondition(3),
+        _starsCondition(4),
+      ],
+    ),
   );
 
   // ============================================================================
   // COMMUNS (2★) - 60% de drop
   // ============================================================================
 
+  static final PresetCharacter ragor = PresetCharacter(
+    id: 'ragor_001',
+    name: 'Ragor',
+    title: 'Archer des Forêts',
+    headshot: '~/assets/characters/Ragor/headshot.png',
+    lheadshot: '~/assets/characters/Ragor/lheadshot.png',
+    pixel: '~/assets/characters/Ragor/pixel.png',
+    fullsize: '~/assets/characters/Ragor/fullsize.png',
+    colorValue: 0xFF66BB6A,
+    rarity: CharacterRarity.common,
+    description: 'Archer agile qui traque ses proies avec patience.',
+    backstory: '''
+Ragor a grandi dans les forêts profondes, apprenant l'art de la chasse
+auprès des meilleurs pisteurs. Sa précision légendaire et sa connexion
+avec la nature en font un allié précieux, bien qu'il préfère la solitude
+des bois à l'agitation des villes.
+''',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.peasant,
+      characterClass: PersonaClass.warrior,
+    ),
+    baseStats: {
+      'maxHp': 100,
+      'attack': 18,
+      'defense': 12,
+      'speed': 20,
+      'magic': 3,
+      'range': 2,
+      'luck': 16,
+    },
+    starterWeapon: WeaponsDatabase.shortBow,
+    voiceLines: [
+      'Patience et précision.',
+      'La nature ne pardonne pas.',
+      'Une flèche, une cible.',
+    ],
+    tags: ['DPS', 'Distance', 'Vitesse'],
+    customInventory: _createCustomInventory(
+      // ARMES (max 1 équipée)
+      weapons: [
+        WeaponsDatabase.shortBow,
+        WeaponsDatabase.huntingBow,
+        WeaponsDatabase.longbow,
+        WeaponsDatabase.compositeBow,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(10),
+        _levelCondition(15),
+      ],
+      // ARMURES (max 1 équipée)
+      armors: [
+        ArmorsDatabase.leatherArmor,
+        ArmorsDatabase.reinforcedLeather,
+        ArmorsDatabase.elvenRobe,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      // ACCESSOIRES (max 1 équipé - mutuellement exclusif avec armure)
+      accessories: [
+        AccessoriesDatabase.speedRing,
+        AccessoriesDatabase.luckyClover,
+        AccessoriesDatabase.windwalkerBoots,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(10),
+        _levelCondition(15),
+      ],
+      // COMPÉTENCES : 1 active + 3 passives max
+      skills: [
+        // Active (peut en équiper 1 seule)
+        SkillsDatabase.multiShot,
+        SkillsDatabase.snipe,
+        // Passives (peut en équiper 3)
+        SkillsDatabase.peasantEndurance,
+        SkillsDatabase.swiftness,
+        SkillsDatabase.evasion,
+      ],
+      skillConditions: [
+        // Actives
+        _alwaysUnlocked,
+        _levelCondition(8),
+        // Passives
+        _alwaysUnlocked, // Passive de peasant
+        _starsCondition(2),
+        _starsCondition(3),
+      ],
+    ),
+  );
+
+  static final PresetCharacter mca = PresetCharacter(
+    id: 'mca_001',
+    name: 'Aria',
+    title: 'Mage Apprentie',
+    headshot: '~/assets/characters/MCA/headshot.png',
+    lheadshot: '~/assets/characters/MCA/lheadshot.png',
+    pixel: '~/assets/characters/MCA/pixel.png',
+    fullsize: '~/assets/characters/MCA/fullsize.png',
+    colorValue: 0xFF7E57C2,
+    rarity: CharacterRarity.common,
+    description: 'Jeune mage pleine de potentiel et d\'enthousiasme.',
+    backstory: '''
+Aria étudie la magie dans une académie prestigieuse. Bien qu'encore
+apprentie, son talent brut et sa détermination impressionnent ses
+professeurs. Elle rêve de devenir une grande archmage et de découvrir
+les secrets oubliés de l'ancienne magie.
+''',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.scholar,
+      characterClass: PersonaClass.mage,
+    ),
+    baseStats: {
+      'maxHp': 85,
+      'attack': 6,
+      'defense': 10,
+      'speed': 14,
+      'magic': 22,
+      'range': 2,
+      'luck': 12,
+    },
+    starterWeapon: WeaponsDatabase.woodenStaff,
+    voiceLines: [
+      'La connaissance est pouvoir !',
+      'Je vais devenir une grande mage !',
+      'Par la puissance des arcanes !',
+    ],
+    tags: ['DPS', 'Magie', 'Support'],
+    customInventory: _createCustomInventory(
+      // ARMES (max 1 équipée)
+      weapons: [
+        WeaponsDatabase.woodenStaff,
+        WeaponsDatabase.apprenticeTome,
+        WeaponsDatabase.mysticWand,
+        WeaponsDatabase.crystalStaff,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(3),
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      // ARMURES (max 1 équipée)
+      armors: [
+        ArmorsDatabase.clothArmor,
+        ArmorsDatabase.wizardRobe,
+        ArmorsDatabase.archmageRobe,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      // ACCESSOIRES (max 1 équipé - mutuellement exclusif avec armure)
+      accessories: [
+        AccessoriesDatabase.magicRing,
+        AccessoriesDatabase.sagesAmulet,
+        AccessoriesDatabase.magicOrb,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(10),
+        _levelCondition(15),
+      ],
+      // COMPÉTENCES : 1 active + 3 passives max
+      skills: [
+        // Active (peut en équiper 1 seule)
+        SkillsDatabase.fireball,
+        SkillsDatabase.iceLance,
+        // Passives (peut en équiper 3)
+        SkillsDatabase.scholarWisdom,
+        SkillsDatabase.magicMastery,
+        SkillsDatabase.swiftness,
+      ],
+      skillConditions: [
+        // Actives
+        _alwaysUnlocked,
+        _levelCondition(6),
+        // Passives
+        _alwaysUnlocked, // Passive de scholar
+        _starsCondition(3),
+        _levelCondition(8),
+      ],
+    ),
+  );
+
   // ============================================================================
   // LISTE COMPLÈTE
   // ============================================================================
 
-  static const List<PresetCharacter> allCharacters = [
+  static final List<PresetCharacter> allCharacters = [
     // Légendaires
     chromLordOfBlades,
     
@@ -182,9 +608,10 @@ Il aspire à ramener la paix dans un monde en proie au chaos.
     elio,
     
     // Communs
+    ragor,
+    mca,
   ];
 
-  /// Récupère un personnage par ID
   static PresetCharacter? getById(String id) {
     try {
       return allCharacters.firstWhere((c) => c.id == id);
@@ -193,17 +620,14 @@ Il aspire à ramener la paix dans un monde en proie au chaos.
     }
   }
 
-  /// Filtre par rareté
   static List<PresetCharacter> getByRarity(CharacterRarity rarity) {
     return allCharacters.where((c) => c.rarity == rarity).toList();
   }
 
-  /// Filtre par classe
   static List<PresetCharacter> getByClass(PersonaClass characterClass) {
     return allCharacters.where((c) => c.persona.characterClass == characterClass).toList();
   }
 
-  /// Filtre par tag
   static List<PresetCharacter> getByTag(String tag) {
     return allCharacters.where((c) => c.tags.contains(tag)).toList();
   }
