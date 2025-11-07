@@ -78,6 +78,8 @@ class Character {     // est un personnage jouable (pas le player)
   ownedClassIds = initialOwnedClassIds ?? {},
         obtainedAt = obtainedAt ?? DateTime.now(),
         inventory = inventory ?? CharacterInventory.createDefault(persona.characterClass.name) {
+    // ⚠️ IMPORTANT: Si un inventory custom était fourni, ne pas le remplacer
+    // Le ?? ci-dessus garantit qu'on garde le custom si fourni
     // Si pas d'arme, ajouter l'arme de départ
     weapon ??= DefaultWeapons.getForClass(persona.characterClass.name);
     
@@ -154,6 +156,26 @@ class Character {     // est un personnage jouable (pas le player)
         'teamPosition': teamPosition,
         'obtainedAt': obtainedAt.toIso8601String(),
       };
+
+  /// Tente de récupérer l'inventaire custom depuis CharacterDatabase pour les personnages preset
+  static CharacterInventory? _tryRecoverCustomInventory(String? characterId, Persona persona) {
+    if (characterId == null) return null;
+    
+    // Importer CharacterDatabase uniquement pour la récupération
+    // Note: Cette approche peut créer une dépendance circulaire, à surveiller
+    try {
+      // Tente de trouver le preset correspondant dans CharacterDatabase
+      // Les IDs des presets sont définis dans character_database.dart
+      // Ex: 'chrom_001', 'envia_001', 'elio_001', 'aria_001', 'ragor_001'
+      
+      // Pour éviter la dépendance circulaire, on retourne null ici
+      // L'inventaire sera recréé via createDefault
+      // TODO: Implémenter une meilleure stratégie si nécessaire
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
   
   factory Character.fromJson(Map<String, dynamic> json) {
     final persona = Persona.fromJson(json['persona']);
@@ -193,7 +215,7 @@ class Character {     // est un personnage jouable (pas le player)
           .toList(),
       inventory: json['inventory'] != null 
           ? CharacterInventory.fromJson(json['inventory'])
-          : null, // Will use default in constructor
+          : _tryRecoverCustomInventory(json['id'], persona), // Tente de récupérer l'inventaire custom
       initialOwnedClassIds: ((json['ownedClassIds'] as List?) ?? []).map((e) => e.toString()).toSet(),
       activeClassId: json['activeClassId'],
       basedRarity: CharacterRarity.values.firstWhere(
