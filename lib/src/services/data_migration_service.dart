@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import '../models/skill.dart';
+import '../models/character_inventory.dart';
 import '../models/class_tree.dart';
 import '../models/character.dart';
+import '../models/preset_character.dart';
+import '../data/character_database.dart';
 import 'game_data_service.dart';
 
 /// Service de migration des données pour les mises à jour de schéma
@@ -239,5 +242,104 @@ class DataMigrationService {
     }
     
     return null;
+  }
+
+  /// Migre les compétences des personnages existants pour utiliser celles de leur inventaire custom
+  static Future<void> migrateCharacterSkills() async {
+    try {
+      debugPrint('🔄 Début de la migration des compétences...');
+      
+      final characters = await GameDataService.getAllCharacters();
+      
+      int migrated = 0;
+      for (final character in characters) {
+        // Chercher le preset correspondant par nom dans CharacterDatabase
+        PresetCharacter? preset;
+        try {
+          preset = CharacterDatabase.allCharacters.firstWhere(
+            (p) => p.name == character.name,
+          );
+        } catch (e) {
+          // Pas de preset trouvé pour ce personnage
+          continue;
+        }
+        
+        // Si le preset n'a pas d'inventaire custom, on ne fait rien
+        if (preset.customInventory == null) continue;
+        
+        // Vérifier si le personnage a les bonnes compétences
+        final inventory = preset.customInventory!;
+        final allSkills = inventory.getAllSkills();
+        
+        // Trouver les compétences équipées qui ne sont PAS dans l'inventaire
+        bool needsMigration = false;
+        for (final equippedSkill in character.equippedSkills) {
+          if (equippedSkill.id.startsWith('empty_')) continue;
+          
+          final isInInventory = allSkills.any((item) => item.item.id == equippedSkill.id);
+          if (!isInInventory) {
+            needsMigration = true;
+            break;
+          }
+        }
+        
+        if (needsMigration) {
+          debugPrint('🔄 Migration compétences pour ${character.name}');
+          
+          // Récupérer les compétences par défaut de l'inventaire custom
+          final activeSkills = allSkills
+              .where((item) => 
+                  item.item.type == SkillType.active && 
+                  item.condition.type == UnlockConditionType.always)
+              .map((item) => item.item)
+              .toList();
+          
+          final passiveSkills = allSkills
+              .where((item) => 
+                  item.item.type == SkillType.passive && 
+                  item.condition.type == UnlockConditionType.always)
+              .map((item) => item.item)
+              .toList();
+          
+          // Construire la nouvelle liste de compétences
+          final newSkills = <Skill>[
+            if (activeSkills.isNotEmpty) activeSkills.first,
+            ...passiveSkills.take(3),
+          ];
+          
+          final updatedCharacter = Character(
+            id: character.id,
+            name: character.name,
+            persona: character.persona,
+            stats: character.stats,
+            appearance: character.appearance,
+            level: character.level,
+            xp: character.xp,
+            x: character.x,
+            y: character.y,
+            weapon: character.weapon,
+            armorOrAccessory: character.armorOrAccessory,
+            equippedSkills: newSkills,
+            weaponMasteries: character.weaponMasteries,
+            inventory: preset.customInventory,
+            initialOwnedClassIds: character.ownedClassIds,
+            activeClassId: character.activeClassId,
+            basedRarity: character.basedRarity,
+            currentRarity: character.currentRarity,
+            isInTeam: character.isInTeam,
+            teamPosition: character.teamPosition,
+            obtainedAt: character.obtainedAt,
+          );
+          updatedCharacter.currentHp = character.currentHp;
+          
+          await GameDataService.saveCharacter(updatedCharacter);
+          migrated++;
+        }
+      }
+      
+      debugPrint('✅ Migration compétences terminée: $migrated/${characters.length} personnages migrés');
+    } catch (e) {
+      debugPrint('❌ Erreur lors de la migration des compétences: $e');
+    }
   }
 }
