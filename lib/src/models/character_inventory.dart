@@ -709,7 +709,564 @@ class CharacterInventory {
   }
 
   static List<InventoryItem<Skill>> _getDefaultSkills(String className) {
-    // TODO: À implémenter selon les classes
-    return [];
+    // Warrior / Knight skills
+    if (className.toLowerCase().contains('warrior') || className.toLowerCase().contains('knight')) {
+      return [
+        // Starting skill
+        InventoryItem(
+          item: const Skill(
+            id: 'power_strike',
+            name: 'Power Strike',
+            emoji: '⚔️',
+            description: 'Powerful attack dealing +50% damage',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.50},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Starting skill',
+          ),
+          isDefault: true,
+        ),
+        // Level 5 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'shield_bash',
+            name: 'Shield Bash',
+            emoji: '🛡️',
+            description: 'Stuns enemy while dealing damage',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.30, 'defense': 0.10},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Level 5 required',
+          ),
+        ),
+        // Level 10 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'berserker_rage',
+            name: 'Berserker Rage',
+            emoji: '💢',
+            description: '+30% attack, -10% defense for 3 turns',
+            type: SkillType.active,
+            statBonuses: {'attack': 0.30, 'defense': -0.10},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Level 10 required',
+          ),
+        ),
+        // Level 15 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'iron_will',
+            name: 'Iron Will',
+            emoji: '💪',
+            description: 'Passive: +15% defense and HP',
+            type: SkillType.passive,
+            statBonuses: {'defense': 0.15, 'maxHp': 0.15},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Level 15 required',
+          ),
+        ),
+        // 3 stars skill
+        InventoryItem(
+          item: const Skill(
+            id: 'whirlwind_attack',
+            name: 'Whirlwind Attack',
+            emoji: '🌪️',
+            description: 'AOE attack hitting all enemies for 80% damage',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.80},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 3,
+            description: '3★ required',
+          ),
+        ),
+        // Ultimate (5 stars)
+        InventoryItem(
+          item: const Skill(
+            id: 'legendary_strike',
+            name: 'Legendary Strike',
+            emoji: '⚡',
+            description: 'Ultimate: Devastating blow dealing +200% damage',
+            type: SkillType.ultimate,
+            statBonuses: {'damageMultiplier': 2.00},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ required',
+          ),
+        ),
+      ];
+    }
+    
+    // Mage / Wizard skills
+    if (className.toLowerCase().contains('mage') || className.toLowerCase().contains('wizard')) {
+      return [
+        // Starting skill
+        InventoryItem(
+          item: const Skill(
+            id: 'fireball',
+            name: 'Fireball',
+            emoji: '🔥',
+            description: 'Launches a magical fireball (+30% magic damage)',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.30},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Starting skill',
+          ),
+          isDefault: true,
+        ),
+        // Level 5 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'frost_bolt',
+            name: 'Frost Bolt',
+            emoji: '❄️',
+            description: 'Ice attack that slows enemy (-20% speed)',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.25},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Level 5 required',
+          ),
+        ),
+        // Level 10 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'mana_shield',
+            name: 'Mana Shield',
+            emoji: '🔮',
+            description: 'Magic barrier absorbing damage (+20% defense)',
+            type: SkillType.active,
+            statBonuses: {'defense': 0.20},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Level 10 required',
+          ),
+        ),
+        // Level 15 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'arcane_mastery',
+            name: 'Arcane Mastery',
+            emoji: '✨',
+            description: 'Passive: +20% magic power',
+            type: SkillType.passive,
+            statBonuses: {'magic': 0.20},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Level 15 required',
+          ),
+        ),
+        // 3 stars skill
+        InventoryItem(
+          item: const Skill(
+            id: 'chain_lightning',
+            name: 'Chain Lightning',
+            emoji: '⚡',
+            description: 'Lightning that jumps between enemies',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.60},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 3,
+            description: '3★ required',
+          ),
+        ),
+        // Ultimate (5 stars)
+        InventoryItem(
+          item: const Skill(
+            id: 'meteor_storm',
+            name: 'Meteor Storm',
+            emoji: '☄️',
+            description: 'Ultimate: Rains meteors on all enemies (+250% damage)',
+            type: SkillType.ultimate,
+            statBonuses: {'damageMultiplier': 2.50},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ required',
+          ),
+        ),
+      ];
+    }
+
+    // Archer / Ranger skills
+    if (className.toLowerCase().contains('archer') || className.toLowerCase().contains('ranger')) {
+      return [
+        // Starting skill
+        InventoryItem(
+          item: const Skill(
+            id: 'precise_shot',
+            name: 'Precise Shot',
+            emoji: '🎯',
+            description: 'Accurate shot with +40% damage',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.40},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Starting skill',
+          ),
+          isDefault: true,
+        ),
+        // Level 5 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'rapid_fire',
+            name: 'Rapid Fire',
+            emoji: '🏹',
+            description: 'Multiple quick shots (+15% speed)',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.35, 'speed': 0.15},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Level 5 required',
+          ),
+        ),
+        // Level 10 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'hunters_mark',
+            name: 'Hunter\'s Mark',
+            emoji: '🔍',
+            description: 'Marks target for +25% damage from all sources',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.25},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Level 10 required',
+          ),
+        ),
+        // Level 15 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'eagle_eye',
+            name: 'Eagle Eye',
+            emoji: '🦅',
+            description: 'Passive: +20% speed and luck',
+            type: SkillType.passive,
+            statBonuses: {'speed': 0.20, 'luck': 0.20},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Level 15 required',
+          ),
+        ),
+        // 3 stars skill
+        InventoryItem(
+          item: const Skill(
+            id: 'multi_shot',
+            name: 'Multi Shot',
+            emoji: '🎯',
+            description: 'Shoots multiple arrows at once',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.70},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 3,
+            description: '3★ required',
+          ),
+        ),
+        // Ultimate (5 stars)
+        InventoryItem(
+          item: const Skill(
+            id: 'arrow_rain',
+            name: 'Arrow Rain',
+            emoji: '☔',
+            description: 'Ultimate: Rain of arrows covering battlefield (+180% damage)',
+            type: SkillType.ultimate,
+            statBonuses: {'damageMultiplier': 1.80},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ required',
+          ),
+        ),
+      ];
+    }
+
+    // Thief / Rogue skills
+    if (className.toLowerCase().contains('thief') || className.toLowerCase().contains('rogue')) {
+      return [
+        // Starting skill
+        InventoryItem(
+          item: const Skill(
+            id: 'backstab',
+            name: 'Backstab',
+            emoji: '🗡️',
+            description: 'Sneaky attack with critical damage (+100%)',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 1.00},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Starting skill',
+          ),
+          isDefault: true,
+        ),
+        // Level 5 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'smoke_bomb',
+            name: 'Smoke Bomb',
+            emoji: '💨',
+            description: 'Escapes and increases evasion (+30% speed)',
+            type: SkillType.active,
+            statBonuses: {'speed': 0.30},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Level 5 required',
+          ),
+        ),
+        // Level 10 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'poison_blade',
+            name: 'Poison Blade',
+            emoji: '🐍',
+            description: 'Applies poison dealing damage over time',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.40},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Level 10 required',
+          ),
+        ),
+        // Level 15 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'shadow_step',
+            name: 'Shadow Step',
+            emoji: '🌑',
+            description: 'Passive: +25% speed and evasion',
+            type: SkillType.passive,
+            statBonuses: {'speed': 0.25, 'luck': 0.15},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Level 15 required',
+          ),
+        ),
+        // 3 stars skill
+        InventoryItem(
+          item: const Skill(
+            id: 'blade_dance',
+            name: 'Blade Dance',
+            emoji: '⚔️',
+            description: 'Series of quick strikes with daggers',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.75, 'speed': 0.20},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 3,
+            description: '3★ required',
+          ),
+        ),
+        // Ultimate (5 stars)
+        InventoryItem(
+          item: const Skill(
+            id: 'assassinate',
+            name: 'Assassinate',
+            emoji: '💀',
+            description: 'Ultimate: Instant kill attempt (+300% damage)',
+            type: SkillType.ultimate,
+            statBonuses: {'damageMultiplier': 3.00},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ required',
+          ),
+        ),
+      ];
+    }
+
+    // Cleric / Priest skills
+    if (className.toLowerCase().contains('cleric') || className.toLowerCase().contains('priest')) {
+      return [
+        // Starting skill
+        InventoryItem(
+          item: const Skill(
+            id: 'heal',
+            name: 'Heal',
+            emoji: '💚',
+            description: 'Heals an ally (30% max HP)',
+            type: SkillType.active,
+            statBonuses: {'healMultiplier': 0.30},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.always,
+            value: 0,
+            description: 'Starting skill',
+          ),
+          isDefault: true,
+        ),
+        // Level 5 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'bless',
+            name: 'Bless',
+            emoji: '✨',
+            description: 'Increases ally stats (+15% all stats)',
+            type: SkillType.active,
+            statBonuses: {
+              'attack': 0.15,
+              'defense': 0.15,
+              'magic': 0.15,
+              'speed': 0.15,
+            },
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 5,
+            description: 'Level 5 required',
+          ),
+        ),
+        // Level 10 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'holy_light',
+            name: 'Holy Light',
+            emoji: '☀️',
+            description: 'Deals magic damage to undead enemies (+50%)',
+            type: SkillType.active,
+            statBonuses: {'damageMultiplier': 0.50},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 10,
+            description: 'Level 10 required',
+          ),
+        ),
+        // Level 15 skill
+        InventoryItem(
+          item: const Skill(
+            id: 'divine_protection',
+            name: 'Divine Protection',
+            emoji: '🛡️',
+            description: 'Passive: +20% defense and magic resistance',
+            type: SkillType.passive,
+            statBonuses: {'defense': 0.20, 'magic': 0.20},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.level,
+            value: 15,
+            description: 'Level 15 required',
+          ),
+        ),
+        // 3 stars skill
+        InventoryItem(
+          item: const Skill(
+            id: 'mass_heal',
+            name: 'Mass Heal',
+            emoji: '💚',
+            description: 'Heals all allies (25% max HP each)',
+            type: SkillType.active,
+            statBonuses: {'healMultiplier': 0.25},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 3,
+            description: '3★ required',
+          ),
+        ),
+        // Ultimate (5 stars)
+        InventoryItem(
+          item: const Skill(
+            id: 'resurrection',
+            name: 'Resurrection',
+            emoji: '⚕️',
+            description: 'Ultimate: Revives fallen ally with 50% HP',
+            type: SkillType.ultimate,
+            statBonuses: {'healMultiplier': 0.50},
+          ),
+          condition: const UnlockCondition(
+            type: UnlockConditionType.stars,
+            value: 5,
+            description: '5★ required',
+          ),
+        ),
+      ];
+    }
+
+    // Default/Peasant skills
+    return [
+      InventoryItem(
+        item: const Skill(
+          id: 'basic_attack',
+          name: 'Basic Attack',
+          emoji: '👊',
+          description: 'Simple attack with +20% damage',
+          type: SkillType.active,
+          statBonuses: {'damageMultiplier': 0.20},
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.always,
+          value: 0,
+          description: 'Starting skill',
+        ),
+        isDefault: true,
+      ),
+      InventoryItem(
+        item: const Skill(
+          id: 'determination',
+          name: 'Determination',
+          emoji: '💪',
+          description: 'Passive: +10% all stats',
+          type: SkillType.passive,
+          statBonuses: {
+            'attack': 0.10,
+            'defense': 0.10,
+            'magic': 0.10,
+            'speed': 0.10,
+          },
+        ),
+        condition: const UnlockCondition(
+          type: UnlockConditionType.level,
+          value: 10,
+          description: 'Level 10 required',
+        ),
+      ),
+    ];
   }
 }
