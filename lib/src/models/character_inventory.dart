@@ -955,7 +955,7 @@ class CharacterInventory {
         InventoryItem(
           item: const Skill(
             id: 'hunters_mark',
-            name: 'Hunter\'s Mark',
+            name: r"Hunter's Mark",
             emoji: '🔍',
             description: 'Marks target for +25% damage from all sources',
             type: SkillType.active,
