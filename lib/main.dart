@@ -3,6 +3,7 @@ import 'package:dice_destiny_idle_rifts/src/screens/welcome_screen.dart';
 import 'package:dice_destiny_idle_rifts/src/services/data_migration_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/locale_provider.dart';
+import 'package:dice_destiny_idle_rifts/src/services/sound_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,7 +14,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await LocaleProvider.instance.load();     // Charger la locale sauvegardée (pour langue)
+  await LocaleProvider.instance.load();
+  await SoundManager().initialize();
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
@@ -54,7 +56,6 @@ class TacticalDiceApp extends StatelessWidget {
   }
 }
 
-// Widget qui écoute l'état d'authentification
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -63,7 +64,6 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: AuthService.authStateChanges,
       builder: (context, snapshot) {
-        // En attente de la connexion Firebase
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(

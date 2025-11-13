@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service singleton pour gérer tous les sons du jeu
 /// - Musiques de fond (loop)
@@ -20,8 +21,11 @@ class SoundManager {
   
   String? _currentMusic;
 
-  /// Initialise le SoundManager
+  /// Initialise le SoundManager ET charge les settings sauvegardés
   Future<void> initialize() async {
+    // Charger les settings AVANT de configurer les players
+    await _loadSettings();
+
     // Configure le player de musique en mode loop
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
     await _musicPlayer.setVolume(_musicVolume);
@@ -31,12 +35,46 @@ class SoundManager {
     await _sfxPlayer.setVolume(_sfxVolume);
   }
 
+  /// Charge les settings depuis SharedPreferences
+  Future<void> _loadSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _musicEnabled = prefs.getBool('music_enabled') ?? true;
+      _sfxEnabled = prefs.getBool('sfx_enabled') ?? true;
+      _musicVolume = prefs.getDouble('music_volume') ?? 0.7;
+      _sfxVolume = prefs.getDouble('sfx_volume') ?? 0.8;
+      
+      print('🔊 Settings chargés au démarrage:');
+      print('   Music: $_musicEnabled (Volume: $_musicVolume)');
+      print('   SFX: $_sfxEnabled (Volume: $_sfxVolume)');
+    } catch (e) {
+      print('⚠️ Erreur chargement settings audio: $e');
+      // Garder les valeurs par défaut
+    }
+  }
+
+  /// Sauvegarde les settings automatiquement
+  Future<void> _saveSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('music_enabled', _musicEnabled);
+      await prefs.setBool('sfx_enabled', _sfxEnabled);
+      await prefs.setDouble('music_volume', _musicVolume);
+      await prefs.setDouble('sfx_volume', _sfxVolume);
+    } catch (e) {
+      print('⚠️ Erreur sauvegarde settings audio: $e');
+    }
+  }
+
   /// Joue une musique de fond (loop automatique)
   /// 
   /// [musicPath] : chemin relatif depuis assets/ (ex: 'musics/menu.mp3')
   /// [fadeIn] : durée du fade-in en millisecondes (0 = pas de fade)
   Future<void> playMusic(String musicPath, {int fadeIn = 0}) async {
-    if (!_musicEnabled) return;
+    if (!_musicEnabled) {
+      print('🔇 Musique désactivée, pas de lecture');
+      return;
+    }
     
     // Si c'est déjà la musique en cours, ne rien faire
     if (_currentMusic == musicPath) return;
@@ -108,8 +146,15 @@ class SoundManager {
 
   /// Reprend la musique
   Future<void> resumeMusic() async {
-    if (_musicEnabled && _currentMusic != null) {
-      await _musicPlayer.resume();
+    if (!musicEnabled) return;
+
+    try {
+      final state = _musicPlayer.state;
+      if (state == PlayerState.paused) {
+        await _musicPlayer.resume();
+      }
+    } catch (e) {
+      print('❌ Erreur lors de la reprise de la musique: $e');
     }
   }
 
@@ -151,22 +196,26 @@ class SoundManager {
     } else if (_currentMusic != null) {
       _musicPlayer.resume();
     }
+    _saveSettings(); // Sauvegarde automatique
   }
 
   /// Active/désactive les effets sonores
   set sfxEnabled(bool value) {
     _sfxEnabled = value;
+    _saveSettings(); // Sauvegarde automatique
   }
 
   /// Change le volume de la musique (0.0 à 1.0)
   set musicVolume(double value) {
     _musicVolume = value.clamp(0.0, 1.0);
     _musicPlayer.setVolume(_musicVolume);
+    _saveSettings(); // Sauvegarde automatique
   }
 
   /// Change le volume des SFX (0.0 à 1.0)
   set sfxVolume(double value) {
     _sfxVolume = value.clamp(0.0, 1.0);
+    _saveSettings(); // Sauvegarde automatique
   }
 
   /// Libère les ressources

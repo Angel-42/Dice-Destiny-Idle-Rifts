@@ -7,6 +7,7 @@ import '../screens/summon_screen.dart';
 import '../screens/shop_screen.dart';
 import '../screens/misc_screen.dart';
 import '../services/idle_income_service.dart';
+import '../services/sound_manager.dart';
 
 class GameNavbar extends StatefulWidget {
   const GameNavbar({super.key});
@@ -16,9 +17,10 @@ class GameNavbar extends StatefulWidget {
 }
 
 class GameNavbarState extends State<GameNavbar> with WidgetsBindingObserver {
-  int _selectedIndex = 0; // 👈 Home par défaut
+  int _selectedIndex = 0;
 
   late final List<Widget> _widgetOptions;
+  final SoundManager _soundManager = SoundManager();
 
   @override
   void initState() {
@@ -41,8 +43,8 @@ class GameNavbarState extends State<GameNavbar> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // Arrêter le service quand l'app se ferme (ne peut pas être await dans dispose)
     IdleIncomeService.stop();
+    _soundManager.dispose();
     super.dispose();
   }
 
@@ -55,10 +57,12 @@ class GameNavbarState extends State<GameNavbar> with WidgetsBindingObserver {
       // App en background ou fermée
       debugPrint('📱 App en background/fermée');
       IdleIncomeService.stop();
+      _soundManager.pauseMusic();
     } else if (state == AppLifecycleState.resumed) {
       // App de retour en foreground
       debugPrint('📱 App de retour en foreground');
       IdleIncomeService.start();
+      _soundManager.resumeMusic();
     }
   }
 

@@ -15,10 +15,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final SoundManager _soundManager = SoundManager();
   
-  bool _musicEnabled = true;
-  bool _sfxEnabled = true;
-  double _musicVolume = 0.7;
-  double _sfxVolume = 0.8;
   String _language = 'en';
 
   @override
@@ -30,26 +26,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _musicEnabled = prefs.getBool('music_enabled') ?? true;
-      _sfxEnabled = prefs.getBool('sfx_enabled') ?? true;
-      _musicVolume = prefs.getDouble('music_volume') ?? 0.7;
-      _sfxVolume = prefs.getDouble('sfx_volume') ?? 0.8;
       _language = prefs.getString('language') ?? 'en';
     });
-    
-    _soundManager.musicEnabled = _musicEnabled;
-    _soundManager.sfxEnabled = _sfxEnabled;
-    _soundManager.musicVolume = _musicVolume;
-    _soundManager.sfxVolume = _sfxVolume;
   }
 
   Future<void> _saveSetting(String key, dynamic value) async {
     final prefs = await SharedPreferences.getInstance();
-    if (value is bool) {
-      await prefs.setBool(key, value);
-    } else if (value is double) {
-      await prefs.setDouble(key, value);
-    } else if (value is String) {
+    if (value is String) {
       await prefs.setString(key, value);
     }
   }
@@ -105,44 +88,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _buildSwitchTile(
                           title: l10n.settingsMusic,
                           subtitle: l10n.settingsMusicSubtitle,
-                          value: _musicEnabled,
-                          onChanged: (val) async {
-                            setState(() => _musicEnabled = val);
-                            _soundManager.musicEnabled = val;
-                            await _saveSetting('music_enabled', val);
+                          value: _soundManager.musicEnabled,
+                          onChanged: (val) {
+                            setState(() {
+                              _soundManager.musicEnabled = val;
+                            });
                             if (val) {
                               _soundManager.playMusic('musics/menu.mp3', fadeIn: 500);
                             }
                           },
                         ),
-                        if (_musicEnabled)
+                        if (_soundManager.musicEnabled)
                           _buildSliderTile(
                             title: l10n.settingsMusicVolume,
-                            value: _musicVolume,
-                            onChanged: (val) async {
-                              setState(() => _musicVolume = val);
-                              _soundManager.musicVolume = val;
-                              await _saveSetting('music_volume', val);
+                            value: _soundManager.musicVolume,
+                            onChanged: (val) {
+                              setState(() {
+                                _soundManager.musicVolume = val;
+                              });
                             },
                           ),
                         _buildSwitchTile(
                           title: l10n.settingsSfx,
                           subtitle: l10n.settingsSfxSubtitle,
-                          value: _sfxEnabled,
-                          onChanged: (val) async {
-                            setState(() => _sfxEnabled = val);
-                            _soundManager.sfxEnabled = val;
-                            await _saveSetting('sfx_enabled', val);
+                          value: _soundManager.sfxEnabled,
+                          onChanged: (val) {
+                            setState(() {
+                              _soundManager.sfxEnabled = val;
+                            });
                           },
                         ),
-                        if (_sfxEnabled)
+                        if (_soundManager.sfxEnabled)
                           _buildSliderTile(
                             title: l10n.settingsSfxVolume,
-                            value: _sfxVolume,
-                            onChanged: (val) async {
-                              setState(() => _sfxVolume = val);
-                              _soundManager.sfxVolume = val;
-                              await _saveSetting('sfx_volume', val);
+                            value: _soundManager.sfxVolume,
+                            onChanged: (val) {
+                              setState(() {
+                                _soundManager.sfxVolume = val;
+                              });
                             },
                           ),
                       ],
