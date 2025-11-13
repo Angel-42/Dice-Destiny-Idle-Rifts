@@ -5,6 +5,7 @@ class Skill {
   final String id;
   final String name;
   final String emoji;
+  final String? sprite; // Chemin vers le sprite (optionnel)
   final String description;
   final SkillType type;
   final Map<String, double> statBonuses; // Bonus en % ou flat
@@ -13,15 +14,23 @@ class Skill {
     required this.id,
     required this.name,
     required this.emoji,
+    this.sprite,
     required this.description,
     required this.type,
     this.statBonuses = const {},
   });
 
+  /// Retourne le sprite si disponible, sinon l'emoji
+  String get displayIcon => sprite ?? emoji;
+  
+  /// Vérifie si c'est un sprite (chemin de fichier)
+  bool get hasSprite => sprite != null && sprite!.isNotEmpty;
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
     'emoji': emoji,
+    'sprite': sprite,
     'description': description,
     'type': type.name,
     'statBonuses': statBonuses,
@@ -33,6 +42,7 @@ class Skill {
       id: json['id'],
       name: json['name'],
       emoji: json['emoji'],
+      sprite: json['sprite'],
       description: json['description'],
       type: SkillType.values.byName(json['type']),
       statBonuses: bonuses != null 

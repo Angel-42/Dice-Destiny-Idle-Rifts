@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../models/equipment.dart';
+import '../widgets/icon_display.dart';
 
 /// Écran de détails d'un personnage (style Fire Emblem)
 class CharacterDetailScreen extends StatelessWidget {
@@ -157,7 +158,7 @@ class CharacterDetailScreen extends StatelessWidget {
               ...character.equippedSkills.take(3).map((skill) =>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
-                  child: _buildPassiveIcon(skill.emoji),
+                  child: _buildPassiveIcon(skill.displayIcon),
                 ),
               )
             else
@@ -323,7 +324,7 @@ class CharacterDetailScreen extends StatelessWidget {
   }
 
   // Icône de passive (petit carré)
-  Widget _buildPassiveIcon(String emoji) {
+  Widget _buildPassiveIcon(String icon) {
     return Container(
       width: 28,
       height: 28,
@@ -333,10 +334,7 @@ class CharacterDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Center(
-        child: Text(
-          emoji,
-          style: const TextStyle(fontSize: 16),
-        ),
+        child: IconDisplay(icon: icon, size: 16),
       ),
     );
   }
@@ -391,7 +389,7 @@ class CharacterDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(equipment.emoji, style: const TextStyle(fontSize: 24)),
+          IconDisplay(icon: equipment.displayIcon, size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -436,7 +434,7 @@ class CharacterDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 24)),
+          IconDisplay(icon: icon, size: 24),
           const SizedBox(width: 8),
           Text(
             label,
@@ -462,7 +460,7 @@ class CharacterDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(skill.emoji, style: const TextStyle(fontSize: 24)),
+          IconDisplay(icon: skill.displayIcon, size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

@@ -3,6 +3,7 @@ class Equipment {
   final String id;
   final String name;
   final String emoji;
+  final String? sprite; // Chemin vers le sprite (optionnel)
   final EquipmentType type;
   final EquipmentRarity rarity;
   final Map<String, int> bonuses; // 'attack', 'defense', 'magic', 'speed', 'luck'
@@ -11,10 +12,17 @@ class Equipment {
     required this.id,
     required this.name,
     required this.emoji,
+    this.sprite,
     required this.type,
     this.rarity = EquipmentRarity.common,
     this.bonuses = const {},
   });
+
+  /// Retourne le sprite si disponible, sinon l'emoji
+  String get displayIcon => sprite ?? emoji;
+  
+  /// Vérifie si c'est un sprite (chemin de fichier)
+  bool get hasSprite => sprite != null && sprite!.isNotEmpty;
 
   String get bonusDescription {
     if (bonuses.isEmpty) return '';
@@ -38,6 +46,7 @@ class Equipment {
     'id': id,
     'name': name,
     'emoji': emoji,
+    'sprite': sprite,
     'type': type.name,
     'rarity': rarity.name,
     'bonuses': bonuses,
@@ -47,6 +56,7 @@ class Equipment {
     id: json['id'],
     name: json['name'],
     emoji: json['emoji'],
+    sprite: json['sprite'],
     type: EquipmentType.values.byName(json['type']),
     rarity: EquipmentRarity.values.byName(json['rarity'] ?? 'common'),
     bonuses: Map<String, int>.from(json['bonuses'] ?? {}),

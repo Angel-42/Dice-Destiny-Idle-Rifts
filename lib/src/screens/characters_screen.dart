@@ -5,6 +5,7 @@ import '../models/skill.dart';
 
 import '../models/equipment.dart';
 import '../services/game_data_service.dart';
+import '../widgets/icon_display.dart';
 
 class CharactersScreen extends StatefulWidget {
   const CharactersScreen({super.key});
@@ -652,7 +653,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
                               return Flexible(
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 2),
-                                  child: _buildCharDetailPassiveIcon(passives[index].emoji),
+                                  child: _buildCharDetailPassiveIcon(passives[index].displayIcon),
                                 ),
                               );
                             }
@@ -672,7 +673,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
-                  character.weapon?.emoji ?? '⚔️',
+                  character.weapon?.displayIcon ?? '⚔️',
                   character.weapon?.name ?? '-',
                   character.weapon != null,
                 ),
@@ -680,7 +681,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: _buildCharDetailEquipmentSlot(
-                  character.armorOrAccessory?.emoji ?? '🛡️',
+                  character.armorOrAccessory?.displayIcon ?? '🛡️',
                   character.armorOrAccessory?.name ?? '-',
                   character.armorOrAccessory != null,
                 ),
@@ -691,7 +692,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
                     .firstOrNull;
                 
                 return _buildCharDetailEquipmentSlot(
-                  activeSkill?.emoji ?? '✨',
+                  activeSkill?.displayIcon ?? '✨',
                   activeSkill?.name ?? '-',
                   activeSkill != null,
                 );
@@ -705,8 +706,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  // Icône de passive pour le détail du personnage (circulaire)
-  Widget _buildCharDetailPassiveIcon(String emoji) {
+  Widget _buildCharDetailPassiveIcon(String icon) {
     return Container(
       width: 28,
       height: 28,
@@ -715,16 +715,17 @@ class _CharactersScreenState extends State<CharactersScreen> {
         border: Border.all(color: Colors.amber.withOpacity(0.5), width: 1.5),
         shape: BoxShape.circle,
       ),
-      child: Center(
-        child: Text(
-          emoji,
-          style: const TextStyle(fontSize: 14),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: IconDisplay(icon: icon, size: 28),
         ),
       ),
     );
   }
 
-  // Slot vide pour passive (circulaire)
+  // Slot vide pour passive (carré arrondi)
   Widget _buildCharDetailEmptyPassiveSlot() {
     return Container(
       width: 28,
@@ -752,7 +753,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
       ),
       child: Row(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 16)),
+          IconDisplay(icon: icon, size: 16),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
@@ -1568,7 +1569,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildEquipmentSlotCompact(
-                      icon: character.weapon?.emoji ?? '⚔️',
+                      icon: character.weapon?.displayIcon ?? '⚔️',
                       name: character.weapon?.name ?? '-',
                       hasItem: character.weapon != null,
                       onTap: () async {
@@ -1586,7 +1587,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                     ),
                     const SizedBox(height: 3),
                     _buildEquipmentSlotCompact(
-                      icon: character.armorOrAccessory?.emoji ?? '�️',
+                      icon: character.armorOrAccessory?.displayIcon ?? '🛡️',
                       name: character.armorOrAccessory?.name ?? '-',
                       hasItem: character.armorOrAccessory != null,
                       onTap: () async {
@@ -1618,7 +1619,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                         children: [
                           if (index > 0) const SizedBox(height: 3),
                           _buildEquipmentSlotCompact(
-                            icon: skill?.emoji ?? (isActiveSlot ? '⚡' : '🔰'),
+                            icon: skill?.displayIcon ?? (isActiveSlot ? '⚡' : '🔰'),
                             name: skill?.name ?? (isActiveSlot ? 'Active' : 'Passive ${index}'),
                             hasItem: hasSkill,
                             onTap: () async {
@@ -1740,12 +1741,9 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
 
               return ListTile(
                 enabled: isUnlocked && !isAlreadyEquipped,
-                leading: Text(
-                  skill.emoji,
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: isUnlocked && !isAlreadyEquipped ? null : Colors.grey,
-                  ),
+                leading: IconDisplay(
+                  icon: skill.displayIcon,
+                  size: 24,
                 ),
                 title: Text(
                   skill.name,
@@ -1881,13 +1879,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
 
               return ListTile(
                 enabled: isUnlocked,
-                leading: Text(
-                  equipment.emoji,
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: isUnlocked ? null : Colors.grey,
-                  ),
-                ),
+                leading: IconDisplay(icon: equipment.displayIcon, size: 24),
                 title: Text(
                   equipment.name,
                   style: TextStyle(
@@ -1986,13 +1978,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
 
               return ListTile(
                 enabled: isUnlocked,
-                leading: Text(
-                  equipment.emoji,
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: isUnlocked ? null : Colors.grey,
-                  ),
-                ),
+                leading: IconDisplay(icon: equipment.displayIcon, size: 24),
                 title: Text(
                   equipment.name,
                   style: TextStyle(
@@ -2055,7 +2041,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
       ),
       child: Row(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 16)),
+          IconDisplay(icon: icon, size: 16),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

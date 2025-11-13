@@ -22,7 +22,6 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
   Timer? _sceneTimer;
   bool _isInitialized = false;
   
-  // Les scènes du lore (texte + durée)
   late List<Map<String, dynamic>> _scenes;
 
   @override
