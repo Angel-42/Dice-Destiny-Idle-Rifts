@@ -753,7 +753,14 @@ class _CharactersScreenState extends State<CharactersScreen> {
       ),
       child: Row(
         children: [
-          IconDisplay(icon: icon, size: 16),
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: IconDisplay(icon: icon, size: 24),
+            ),
+          ),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
@@ -1617,7 +1624,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                       
                       return Column(
                         children: [
-                          if (index > 0) const SizedBox(height: 3),
+                          if (index > 0) const SizedBox(height: 10),
                           _buildEquipmentSlotCompact(
                             icon: skill?.displayIcon ?? (isActiveSlot ? '⚡' : '🔰'),
                             name: skill?.name ?? (isActiveSlot ? 'Active' : 'Passive ${index}'),
@@ -1743,7 +1750,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
                 enabled: isUnlocked && !isAlreadyEquipped,
                 leading: IconDisplay(
                   icon: skill.displayIcon,
-                  size: 24,
+                  size: 35,
                 ),
                 title: Text(
                   skill.name,
@@ -1879,7 +1886,14 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
 
               return ListTile(
                 enabled: isUnlocked,
-                leading: IconDisplay(icon: equipment.displayIcon, size: 24),
+                leading: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: IconDisplay(icon: equipment.displayIcon, size: 40),
+                  ),
+                ),
                 title: Text(
                   equipment.name,
                   style: TextStyle(
@@ -1978,7 +1992,14 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
 
               return ListTile(
                 enabled: isUnlocked,
-                leading: IconDisplay(icon: equipment.displayIcon, size: 24),
+                leading: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: IconDisplay(icon: equipment.displayIcon, size: 40),
+                  ),
+                ),
                 title: Text(
                   equipment.name,
                   style: TextStyle(
@@ -2030,7 +2051,7 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
     VoidCallback? onTap,
   }) {
     final widget = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF2A4A6A).withOpacity(hasItem ? 0.8 : 0.3),
         borderRadius: BorderRadius.circular(8),
@@ -2041,7 +2062,14 @@ class _FullCharacterDetailScreenState extends State<_FullCharacterDetailScreen> 
       ),
       child: Row(
         children: [
-          IconDisplay(icon: icon, size: 16),
+          SizedBox(
+            width: 30,
+            height: 30,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: IconDisplay(icon: icon, size: 30),
+            ),
+          ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

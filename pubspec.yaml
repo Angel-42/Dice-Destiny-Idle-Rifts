@@ -105,6 +105,17 @@ flutter:
     - assets/weapons/staffs/
     - assets/weapons/swords/
 
+    - assets/equipments/accessories/amulets/
+    - assets/equipments/accessories/belts/
+    - assets/equipments/accessories/boots/
+    - assets/equipments/accessories/rings/
+    - assets/equipments/accessories/special/
+    - assets/equipments/armors/heavyarmors/
+    - assets/equipments/armors/legendaryarmors/
+    - assets/equipments/armors/lightarmors/
+    - assets/equipments/armors/magicalarmors/
+    - assets/equipments/armors/mediumarmors/
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

@@ -333,8 +333,12 @@ class CharacterDetailScreen extends StatelessWidget {
         border: Border.all(color: const Color(0xFF8B4513), width: 2),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Center(
-        child: IconDisplay(icon: icon, size: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: IconDisplay(icon: icon, size: 28),
+        ),
       ),
     );
   }
@@ -389,7 +393,14 @@ class CharacterDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconDisplay(icon: equipment.displayIcon, size: 24),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: IconDisplay(icon: equipment.displayIcon, size: 32),
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -434,7 +445,14 @@ class CharacterDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconDisplay(icon: icon, size: 24),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: IconDisplay(icon: icon, size: 32),
+            ),
+          ),
           const SizedBox(width: 8),
           Text(
             label,
@@ -460,7 +478,14 @@ class CharacterDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconDisplay(icon: skill.displayIcon, size: 24),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: IconDisplay(icon: skill.displayIcon, size: 32),
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

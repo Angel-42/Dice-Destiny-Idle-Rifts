@@ -6,12 +6,14 @@ class IconDisplay extends StatelessWidget {
   final String icon;
   final double size;
   final BoxFit fit;
+  final String? fallbackEmoji;
 
   const IconDisplay({
     super.key,
     required this.icon,
     this.size = 32,
     this.fit = BoxFit.contain,
+    this.fallbackEmoji,
   });
 
   /// Détermine si l'icône est un sprite (chemin de fichier) ou un emoji
@@ -35,9 +37,9 @@ class IconDisplay extends StatelessWidget {
         height: size,
         fit: fit,
         errorBuilder: (context, error, stackTrace) {
-          // Fallback sur un emoji générique si l'image n'existe pas
+          // Fallback sur l'emoji fourni ou un emoji générique
           return Text(
-            '❓',
+            fallbackEmoji ?? '❓',
             style: TextStyle(fontSize: size * 0.8),
           );
         },
