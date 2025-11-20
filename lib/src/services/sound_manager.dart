@@ -90,8 +90,11 @@ class SoundManager {
     _musicVolume = 0.7;
     _sfxVolume = 0.8;
     
-    await _musicPlayer.setVolume(_musicVolume);
-    await _sfxPlayer.setVolume(_sfxVolume);
+    // Appliquer les volumes seulement si le manager est initialisé
+    if (_isInitialized) {
+      await _musicPlayer.setVolume(_musicVolume);
+      await _sfxPlayer.setVolume(_sfxVolume);
+    }
     
     await _saveSettings();
     print('🔄 Settings audio réinitialisés aux valeurs par défaut');

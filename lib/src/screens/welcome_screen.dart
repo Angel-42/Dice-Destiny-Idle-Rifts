@@ -1,5 +1,6 @@
 import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
+import 'package:dice_destiny_idle_rifts/src/services/sound_manager.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/login_dialog.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    _resetSettingsIfNoPlayer();
+    
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -44,6 +47,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     ));
 
     _controller.forward();
+  }
+
+  /// Réinitialise les settings si aucun joueur n'est connecté
+  Future<void> _resetSettingsIfNoPlayer() async {
+    if (!AuthService.isSignedIn) {
+      debugPrint('🔄 Aucun joueur connecté, réinitialisation des settings...');
+      await SoundManager().loadSettingsIfSaveExists(hasSave: false);
+    }
   }
 
   @override

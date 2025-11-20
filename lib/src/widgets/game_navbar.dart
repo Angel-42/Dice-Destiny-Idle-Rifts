@@ -44,7 +44,7 @@ class GameNavbarState extends State<GameNavbar> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     IdleIncomeService.stop();
-    _soundManager.dispose();
+    // Ne pas disposer le SoundManager (singleton global)
     super.dispose();
   }
 
