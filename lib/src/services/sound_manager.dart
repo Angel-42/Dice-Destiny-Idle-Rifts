@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service singleton pour gérer tous les sons du jeu
 /// - Musiques de fond (loop)
@@ -282,7 +283,22 @@ class SoundManager {
 
   /// Libère les ressources
   Future<void> dispose() async {
-    await _musicPlayer.dispose();
-    await _sfxPlayer.dispose();
+    if (!_isInitialized) return;
+    
+    try {
+      await _musicPlayer.stop();
+      await _musicPlayer.dispose();
+    } catch (e) {
+      debugPrint('Erreur lors du dispose de _musicPlayer: $e');
+    }
+    
+    try {
+      await _sfxPlayer.stop();
+      await _sfxPlayer.dispose();
+    } catch (e) {
+      debugPrint('Erreur lors du dispose de _sfxPlayer: $e');
+    }
+    
+    _isInitialized = false;
   }
 }
