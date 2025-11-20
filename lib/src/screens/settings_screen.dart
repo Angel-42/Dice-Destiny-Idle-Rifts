@@ -567,6 +567,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 }
 
+                // Charger les settings maintenant que le compte est lié (donc sauvegarde existe)
+                await SoundManager().loadSettingsIfSaveExists(hasSave: true);
+
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -602,6 +605,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         await AuthService.linkWithGoogle();
       }
+
+      // Charger les settings maintenant que le compte est lié (donc sauvegarde existe)
+      await SoundManager().loadSettingsIfSaveExists(hasSave: true);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

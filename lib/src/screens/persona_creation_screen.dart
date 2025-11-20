@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../models/persona.dart';
-import '../services/character_factory.dart';
+import '../services/mc_character_factory.dart';
 import '../services/game_data_service.dart';
 import '../widgets/game_navbar.dart';
 import '../../l10n/app_localizations.dart';
@@ -149,7 +149,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
         characterClass: _selectedClass!,
       );
       
-      final character = CharacterFactory.createFromPersona(
+      final character = MCCharacterFactory.createMC(
         persona,
         _nameController.text.trim(),
       );

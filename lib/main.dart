@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dice_destiny_idle_rifts/src/screens/welcome_screen.dart';
 import 'package:dice_destiny_idle_rifts/src/services/data_migration_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
+import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/locale_provider.dart';
 import 'package:dice_destiny_idle_rifts/src/services/sound_manager.dart';
 import 'package:flutter/material.dart';
@@ -56,8 +57,27 @@ class TacticalDiceApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _settingsLoaded = false;
+
+  Future<void> _loadSettingsBasedOnSaveData(User? user) async {
+    if (_settingsLoaded) return;
+
+    final bool hasSave = await GameDataService.hasSaveData();
+    
+    await SoundManager().loadSettingsIfSaveExists(hasSave: hasSave);
+    
+    setState(() {
+      _settingsLoaded = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +91,11 @@ class AuthWrapper extends StatelessWidget {
             ),
           );
         }
+
+        if (snapshot.hasData || snapshot.data == null) {
+          _loadSettingsBasedOnSaveData(snapshot.data);
+        }
+
         return const WelcomeScreen();
       },
     );

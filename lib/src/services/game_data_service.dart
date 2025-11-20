@@ -325,6 +325,22 @@ class GameDataService {
     }
   }
 
+  /// Vérifie si une sauvegarde existe (profil OU personnages)
+  static Future<bool> hasSaveData() async {
+    try {
+      // Vérifier le profil
+      final hasProfileData = await hasProfile();
+      if (hasProfileData) return true;
+
+      // Vérifier les personnages
+      final hasChars = await hasCharacters();
+      return hasChars;
+    } catch (e) {
+      debugPrint('❌ Erreur hasSaveData: $e');
+      return false;
+    }
+  }
+
   /// Vérifie si le joueur a des personnages
   static Future<bool> hasCharacters() async {
     try {

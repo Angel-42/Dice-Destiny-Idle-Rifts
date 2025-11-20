@@ -22,8 +22,8 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   Future<void> _initializeSound() async {
-    await _soundManager.initialize();
     // Lance la musique du menu avec un fade-in de 1 seconde
+    // (pas besoin d'initialize(), déjà fait dans main.dart)
     await _soundManager.playMusic('musics/menu.mp3', fadeIn: 1000);
   }
 

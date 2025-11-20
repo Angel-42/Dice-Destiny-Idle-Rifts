@@ -14,6 +14,7 @@ class SoundManager {
   final AudioPlayer _sfxPlayer = AudioPlayer();
 
   // État
+  bool _isInitialized = false;
   bool _musicEnabled = true;
   bool _sfxEnabled = true;
   double _musicVolume = 0.7;
@@ -21,18 +22,42 @@ class SoundManager {
   
   String? _currentMusic;
 
-  /// Initialise le SoundManager ET charge les settings sauvegardés
+  /// Initialise le SoundManager avec les settings par défaut
+  /// Pour charger les settings sauvegardés, appeler loadSettingsIfLinked() séparément
   Future<void> initialize() async {
-    // Charger les settings AVANT de configurer les players
-    await _loadSettings();
+    if (_isInitialized) {
+      print('⚠️ SoundManager déjà initialisé');
+      return;
+    }
 
-    // Configure le player de musique en mode loop
-    await _musicPlayer.setReleaseMode(ReleaseMode.loop);
-    await _musicPlayer.setVolume(_musicVolume);
-    
-    // Configure le player de SFX en mode release
-    await _sfxPlayer.setReleaseMode(ReleaseMode.release);
-    await _sfxPlayer.setVolume(_sfxVolume);
+    try {
+      // Configure le player de musique en mode loop
+      await _musicPlayer.setReleaseMode(ReleaseMode.loop);
+      await _musicPlayer.setVolume(_musicVolume);
+      
+      // Configure le player de SFX en mode release
+      await _sfxPlayer.setReleaseMode(ReleaseMode.release);
+      await _sfxPlayer.setVolume(_sfxVolume);
+      
+      _isInitialized = true;
+      print('✅ SoundManager initialisé');
+    } catch (e) {
+      print('❌ Erreur initialization SoundManager: $e');
+    }
+  }
+
+  /// Charge les settings SEULEMENT si une sauvegarde existe
+  /// Sinon, réinitialise aux valeurs par défaut (nouvelle partie)
+  Future<void> loadSettingsIfSaveExists({required bool hasSave}) async {
+    if (!hasSave) {
+      // Nouvelle partie (pas de sauvegarde) : reset aux valeurs par défaut
+      print('🆕 Nouvelle partie détectée - Settings audio par défaut');
+      await resetToDefaults();
+      return;
+    }
+
+    // Sauvegarde existe : charger les settings sauvegardés
+    await _loadSettings();
   }
 
   /// Charge les settings depuis SharedPreferences
@@ -44,13 +69,31 @@ class SoundManager {
       _musicVolume = prefs.getDouble('music_volume') ?? 0.7;
       _sfxVolume = prefs.getDouble('sfx_volume') ?? 0.8;
       
-      print('🔊 Settings chargés au démarrage:');
+      // Appliquer les volumes chargés aux players
+      await _musicPlayer.setVolume(_musicVolume);
+      await _sfxPlayer.setVolume(_sfxVolume);
+      
+      print('🔊 Settings chargés depuis la sauvegarde:');
       print('   Music: $_musicEnabled (Volume: $_musicVolume)');
       print('   SFX: $_sfxEnabled (Volume: $_sfxVolume)');
     } catch (e) {
       print('⚠️ Erreur chargement settings audio: $e');
       // Garder les valeurs par défaut
     }
+  }
+
+  /// Réinitialise les settings aux valeurs par défaut et les sauvegarde
+  Future<void> resetToDefaults() async {
+    _musicEnabled = true;
+    _sfxEnabled = true;
+    _musicVolume = 0.7;
+    _sfxVolume = 0.8;
+    
+    await _musicPlayer.setVolume(_musicVolume);
+    await _sfxPlayer.setVolume(_sfxVolume);
+    
+    await _saveSettings();
+    print('🔄 Settings audio réinitialisés aux valeurs par défaut');
   }
 
   /// Sauvegarde les settings automatiquement
@@ -71,6 +114,11 @@ class SoundManager {
   /// [musicPath] : chemin relatif depuis assets/ (ex: 'musics/menu.mp3')
   /// [fadeIn] : durée du fade-in en millisecondes (0 = pas de fade)
   Future<void> playMusic(String musicPath, {int fadeIn = 0}) async {
+    if (!_isInitialized) {
+      print('⚠️ SoundManager pas encore initialisé, impossible de jouer la musique');
+      return;
+    }
+
     if (!_musicEnabled) {
       print('🔇 Musique désactivée, pas de lecture');
       return;
@@ -116,6 +164,7 @@ class SoundManager {
   /// 
   /// [fadeOut] : durée du fade-out en millisecondes (0 = arrêt immédiat)
   Future<void> stopMusic({int fadeOut = 0}) async {
+    if (!_isInitialized) return;
     if (_currentMusic == null) return;
 
     try {
@@ -141,12 +190,21 @@ class SoundManager {
 
   /// Met la musique en pause
   Future<void> pauseMusic() async {
-    await _musicPlayer.pause();
+    if (!_isInitialized) return;
+
+    try {
+      final state = _musicPlayer.state;
+      if (state == PlayerState.playing) {
+        await _musicPlayer.pause();
+      }
+    } catch (e) {
+      print('❌ Erreur lors de la mise en pause de la musique: $e');
+    }
   }
 
   /// Reprend la musique
   Future<void> resumeMusic() async {
-    if (!musicEnabled) return;
+    if (!_isInitialized || !musicEnabled) return;
 
     try {
       final state = _musicPlayer.state;
@@ -163,7 +221,7 @@ class SoundManager {
   /// [sfxPath] : chemin relatif depuis assets/ (ex: 'sounds/click.mp3')
   /// [volume] : volume spécifique pour ce son (null = utilise le volume global)
   Future<void> playSfx(String sfxPath, {double? volume}) async {
-    if (!_sfxEnabled) return;
+    if (!_isInitialized || !_sfxEnabled) return;
 
     try {
       final player = AudioPlayer();
@@ -191,6 +249,8 @@ class SoundManager {
   /// Active/désactive la musique
   set musicEnabled(bool value) {
     _musicEnabled = value;
+    if (!_isInitialized) return;
+
     if (!value) {
       _musicPlayer.pause();
     } else if (_currentMusic != null) {
@@ -208,7 +268,9 @@ class SoundManager {
   /// Change le volume de la musique (0.0 à 1.0)
   set musicVolume(double value) {
     _musicVolume = value.clamp(0.0, 1.0);
-    _musicPlayer.setVolume(_musicVolume);
+    if (_isInitialized) {
+      _musicPlayer.setVolume(_musicVolume);
+    }
     _saveSettings(); // Sauvegarde automatique
   }
 
