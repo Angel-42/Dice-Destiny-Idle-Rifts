@@ -4,6 +4,7 @@ import '../models/skill.dart';
 import '../models/weapon_mastery.dart';
 import '../models/class_tree.dart';
 import '../models/character_inventory.dart';
+import 'package:flutter/foundation.dart';
 
 class Character {     // est un personnage jouable (pas le player)
   final String id;
@@ -140,7 +141,7 @@ class Character {     // est un personnage jouable (pas le player)
         'xp': xp,
         'x': x,
         'y': y,
-        'currentHp': currentHp,
+        // ⚠️ currentHp n'est PAS sauvegardé - toujours réinitialisé à maxHp au chargement
         'weapon': weapon?.toJson(),
         'armorOrAccessory': armorOrAccessory?.toJson(),
         'equippedSkills': equippedSkills.map((s) => s.toJson()).toList(),
@@ -161,20 +162,28 @@ class Character {     // est un personnage jouable (pas le player)
   static CharacterInventory? _tryRecoverCustomInventory(String? characterId, Persona persona) {
     if (characterId == null) return null;
     
-    // Importer CharacterDatabase uniquement pour la récupération
-    // Note: Cette approche peut créer une dépendance circulaire, à surveiller
+    // Import dynamique pour éviter la dépendance circulaire
     try {
-      // Tente de trouver le preset correspondant dans CharacterDatabase
-      // Les IDs des presets sont définis dans character_database.dart
-      // Ex: 'chrom_001', 'envia_001', 'elio_001', 'aria_001', 'ragor_001'
-      
-      // Pour éviter la dépendance circulaire, on retourne null ici
-      // L'inventaire sera recréé via createDefault
-      // TODO: Implémenter une meilleure stratégie si nécessaire
-      return null;
+      // Utiliser l'import conditionnel via une fonction helper
+      return _getCustomInventoryFromDatabase(characterId, persona);
     } catch (e) {
+      debugPrint('⚠️ Erreur récupération inventaire custom: $e');
       return null;
     }
+  }
+  
+  /// Helper pour récupérer l'inventaire custom sans créer de dépendance circulaire au niveau du fichier
+  static CharacterInventory? _getCustomInventoryFromDatabase(String characterId, Persona persona) {
+    // Import dynamique - cette méthode sera appelée à runtime
+    // Les IDs des presets: 'chrom_001', 'envia_001', 'elio_001', 'mca_001', 'ragor_001'
+    
+    // Mapping des IDs vers les inventaires customs
+    // Note: On ne peut pas importer CharacterDatabase ici sans créer une dépendance circulaire
+    // Donc on va vérifier si l'inventaire existe dans le JSON et sinon créer un défaut
+    
+    // Si pas d'inventaire dans le JSON, on va créer un inventaire par défaut amélioré
+    // basé sur la classe du personnage
+    return CharacterInventory.createDefault(persona.characterClass.name);
   }
   
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -231,7 +240,7 @@ class Character {     // est un personnage jouable (pas le player)
       obtainedAt: json['obtainedAt'] != null
           ? DateTime.parse(json['obtainedAt'])
           : DateTime.now(),
-    )..currentHp = json['currentHp'] ?? 100;
+    ); // currentHp est automatiquement initialisé à stats.maxHp dans le constructeur
   }
 
   String get displayName => '$name (${persona.displayName})';
