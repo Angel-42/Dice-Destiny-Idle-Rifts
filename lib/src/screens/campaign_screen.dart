@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/map_data.dart';
-import '../widgets/tactical_map_widget.dart';
 import '../models/character.dart';
+import '../models/persona.dart';
+import '../models/skill.dart';
+import '../widgets/tactical_map_widget.dart';
+import '../widgets/character_detail_popup.dart';
+import '../widgets/level_up_animation.dart';
+import '../widgets/icon_display.dart';
+import '../screens/combat_animation_screen.dart';
+import '../services/game_data_service.dart';
+import '../data/enemy_database.dart';
 
 /// Écran de campagne avec map tactique et déplacement
 class CampaignScreen extends StatefulWidget {
@@ -19,9 +27,10 @@ class CampaignScreen extends StatefulWidget {
 class _CampaignScreenState extends State<CampaignScreen> {
   late TacticalMapData mapData;
   late List<UnitPosition> units;
+  late Map<String, Character> charactersMap; // Map pour retrouver les Character depuis unitId
   UnitPosition? selectedUnit;
   Set<String> highlightedTiles = {};
-
+  Set<String> attackableTiles = {};
   @override
   void initState() {
     super.initState();
@@ -36,9 +45,12 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final baseY = mapData.height - 2;
     final startX = 1;
     units = [];
+    charactersMap = {};
 
+    // Ajouter les alliés avec leurs sprites pixel
     for (var i = 0; i < team.length && i < 4; i++) {
       final c = team[i];
+      charactersMap[c.id] = c;
       units.add(UnitPosition(
         unitId: c.id,
         x: startX + i,
@@ -46,38 +58,327 @@ class _CampaignScreenState extends State<CampaignScreen> {
         name: c.name,
         color: Color(c.appearance.colorValue),
         isPlayer: true,
+        pixelSprite: c.appearance.pixel, // Utiliser le sprite pixel s'il existe
       ));
     }
 
-    // Quelques ennemis de test (hardcode)
+    // Générer les ennemis depuis la database
+    // 2 wolves de niveau 1
+    final enemies = [
+      EnemyDatabase.createEnemy('wolf', level: 1),
+      EnemyDatabase.createEnemy('wolf', level: 1),
+    ];
+
+    // Ajouter les ennemis à la map des personnages
+    for (final enemy in enemies) {
+      charactersMap[enemy.id] = enemy;
+    }
+
+    // Positionner les ennemis sur la carte
     units.addAll([
-      UnitPosition(unitId: 'enemy_1', x: 5, y: 2, name: 'Goblin', color: Colors.red, isPlayer: false),
-      UnitPosition(unitId: 'enemy_2', x: 6, y: 3, name: 'Orc', color: Colors.red, isPlayer: false),
+      UnitPosition(
+        unitId: enemies[0].id,
+        x: 5,
+        y: 2,
+        name: enemies[0].name,
+        color: Color(enemies[0].appearance.colorValue),
+        isPlayer: false,
+        pixelSprite: enemies[0].appearance.pixel,
+      ),
+      UnitPosition(
+        unitId: enemies[1].id,
+        x: 6,
+        y: 3,
+        name: enemies[1].name,
+        color: Color(enemies[1].appearance.colorValue),
+        isPlayer: false,
+        pixelSprite: enemies[1].appearance.pixel,
+      ),
     ]);
   }
 
   void _onUnitTap(UnitPosition unit) {
-    if (!unit.isPlayer) {
+    final character = charactersMap[unit.unitId];
+    if (character == null) return;
+
+    // Si c'est un ennemi et qu'on a une unité sélectionnée
+    if (!unit.isPlayer && selectedUnit != null) {
+      _showEnemyDetailAndAttack(character, unit);
+      return;
+    }
+
+    // Si c'est un allié
+    if (unit.isPlayer) {
+      setState(() {
+        if (selectedUnit?.unitId == unit.unitId) {
+          // Désélectionner
+          selectedUnit = null;
+          highlightedTiles.clear();
+          attackableTiles.clear();
+        } else {
+          // Sélectionner
+          selectedUnit = unit;
+          _highlightMoveAndAttackOptions(unit, character);
+        }
+      });
+    } else {
+      // Clic sur ennemi sans sélection -> afficher détails
+      _showCharacterDetail(character, unit, false);
+    }
+  }
+
+  void _showCharacterDetail(Character character, UnitPosition unit, bool canAttack) {
+    showDialog(
+      context: context,
+      builder: (context) => CharacterDetailPopup(
+        character: character,
+        isEnemy: !unit.isPlayer,
+        onClose: () => Navigator.pop(context),
+      ),
+    );
+  }
+
+  void _showEnemyDetailAndAttack(Character enemy, UnitPosition enemyUnit) {
+    final selectedChar = charactersMap[selectedUnit!.unitId];
+    if (selectedChar == null) return;
+
+    // Vérifier si l'ennemi est à portée
+    final distance = _calculateDistance(selectedUnit!.x, selectedUnit!.y, enemyUnit.x, enemyUnit.y);
+    final range = selectedChar.stats.range;
+
+    if (distance > range) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${unit.name} - Ennemi'),
-          duration: const Duration(seconds: 1),
+          content: Text('Cible hors de portée ! (Distance: $distance, Portée: $range)'),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
     }
 
-    setState(() {
-      if (selectedUnit?.unitId == unit.unitId) {
-        // Désélectionner
-        selectedUnit = null;
-        highlightedTiles.clear();
+    // Afficher le popup avec option d'attaque
+    showDialog(
+      context: context,
+      builder: (context) => CharacterDetailPopup(
+        character: enemy,
+        isEnemy: true,
+        onClose: () => Navigator.pop(context),
+        onAttack: () {
+          Navigator.pop(context); // Fermer le popup
+          _startCombat(selectedChar, enemy, selectedUnit!, enemyUnit);
+        },
+      ),
+    );
+  }
+
+  int _calculateDistance(int x1, int y1, int x2, int y2) {
+    return (x1 - x2).abs() + (y1 - y2).abs(); // Distance de Manhattan
+  }
+
+  Future<void> _startCombat(Character attacker, Character defender, 
+      UnitPosition attackerUnit, UnitPosition defenderUnit) async {
+    // Vérifier si le personnage a une compétence active
+    final activeSkill = attacker.equippedSkills
+        .where((s) => s.type == SkillType.active)
+        .firstOrNull;
+    
+    Skill? selectedSkill;
+    
+    // Si compétence active disponible, demander le choix
+    if (activeSkill != null && attackerUnit.isPlayer) {
+      selectedSkill = await _showAttackChoiceDialog(attacker, activeSkill);
+      // Si l'utilisateur annule, on annule le combat
+      if (selectedSkill == null && !mounted) return;
+    }
+    
+    // Ouvrir la scène de combat animée
+    final result = await Navigator.push<CombatResult>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CombatAnimationScreen(
+          attacker: attacker,
+          defender: defender,
+          attackerSkill: selectedSkill,
+          onCombatEnd: (result) {
+            Navigator.pop(context, result);
+          },
+        ),
+      ),
+    );
+
+    if (result == null || !mounted) return;
+
+    // Ajouter l'XP au personnage attaquant
+    if (attackerUnit.isPlayer) {
+      debugPrint('🎯 XP avant combat: ${attacker.xp}');
+      debugPrint('💫 XP gagné: ${result.xpGained}');
+      
+      attacker.xp += result.xpGained;
+      debugPrint('📊 XP après combat: ${attacker.xp}');
+      
+      // Vérifier si level up
+      final xpNeeded = attacker.xpForNextLevel;
+      debugPrint('🎓 XP nécessaire pour level ${attacker.level + 1}: $xpNeeded');
+      
+      if (attacker.xp >= xpNeeded) {
+        debugPrint('⬆️ LEVEL UP! ${attacker.level} -> ${attacker.level + 1}');
+        attacker.xp = (attacker.xp - xpNeeded).toInt();
+        attacker.level += 1;
+        
+        // Calculer les augmentations de stats
+        final statIncreases = _calculateStatIncreases(attacker);
+        debugPrint('📈 Augmentations de stats: $statIncreases');
+        
+        // Appliquer les augmentations
+        attacker.stats.maxHp = attacker.stats.maxHp + statIncreases['HP']!;
+        attacker.stats.attack = attacker.stats.attack + statIncreases['ATK']!;
+        attacker.stats.defense = attacker.stats.defense + statIncreases['DEF']!;
+        attacker.stats.speed = attacker.stats.speed + statIncreases['SPD']!;
+        attacker.stats.magic = attacker.stats.magic + statIncreases['MAG']!;
+        attacker.stats.luck = attacker.stats.luck + statIncreases['LCK']!;
+        
+        // Restaurer HP au max
+        attacker.currentHp = attacker.stats.maxHp;
+        
+        // Sauvegarder immédiatement après level up
+        await GameDataService.saveCharacter(attacker);
+        debugPrint('💾 Personnage sauvegardé après level up');
+        
+        // Afficher l'animation de level up
+        if (mounted) {
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => LevelUpAnimation(
+              character: attacker,
+              statIncreases: statIncreases,
+              onComplete: () => Navigator.pop(context),
+            ),
+          );
+        }
       } else {
-        // Sélectionner
-        selectedUnit = unit;
-        _highlightMoveOptions(unit);
+        debugPrint('❌ Pas de level up (${attacker.xp}/$xpNeeded)');
+        // Sauvegarder l'XP même sans level up
+        await GameDataService.saveCharacter(attacker);
+        debugPrint('💾 XP sauvegardée sans level up');
       }
+    }
+
+    // Mettre à jour les HP et retirer les morts
+    setState(() {
+      if (result.defenderFinalHp <= 0) {
+        units.removeWhere((u) => u.unitId == defenderUnit.unitId);
+      }
+
+      if (result.attackerFinalHp <= 0) {
+        units.removeWhere((u) => u.unitId == attackerUnit.unitId);
+      }
+
+      // Réinitialiser la sélection
+      selectedUnit = null;
+      highlightedTiles.clear();
+      attackableTiles.clear();
+
+      // TODO: Sauvegarder les changements de HP dans Firestore
+      // if (attackerUnit.isPlayer) {
+      //   GameDataService.updateCharacter(attacker);
+      // }
     });
+
+    // Vérifier conditions de victoire/défaite
+    _checkBattleEnd();
+  }
+
+  void _checkBattleEnd() {
+    final hasPlayerUnits = units.any((u) => u.isPlayer);
+    final hasEnemyUnits = units.any((u) => !u.isPlayer);
+
+    if (!hasEnemyUnits) {
+      _showVictoryDialog();
+    } else if (!hasPlayerUnits) {
+      _showDefeatDialog();
+    }
+  }
+
+  void _showVictoryDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('🎉 VICTOIRE !'),
+        content: const Text('Vous avez vaincu tous les ennemis !'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Dialog
+              Navigator.pop(context); // Campaign screen
+            },
+            child: const Text('RETOUR'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDefeatDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('💀 DÉFAITE'),
+        content: const Text('Tous vos personnages ont été vaincus...'),
+        backgroundColor: Colors.red.shade900,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Dialog
+              Navigator.pop(context); // Campaign screen
+            },
+            child: const Text('RETOUR'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _highlightMoveAndAttackOptions(UnitPosition unit, Character character) {
+    highlightedTiles.clear();
+    attackableTiles.clear();
+
+    // Cases de mouvement adjacentes
+    final directions = [
+      (0, -1), (0, 1), (-1, 0), (1, 0),
+    ];
+
+    for (final (dx, dy) in directions) {
+      final newX = unit.x + dx;
+      final newY = unit.y + dy;
+
+      if (mapData.isWalkable(newX, newY)) {
+        final occupant = units.firstWhere(
+          (u) => u.x == newX && u.y == newY,
+          orElse: () => UnitPosition(unitId: '', x: -1, y: -1, name: ''),
+        );
+        
+        if (occupant.x == -1) {
+          highlightedTiles.add('$newX,$newY');
+        }
+      }
+    }
+
+    // Zones d'attaque (basées sur la portée)
+    final range = character.stats.range;
+    for (var u in units) {
+      if (!u.isPlayer) {
+        final distance = _calculateDistance(unit.x, unit.y, u.x, u.y);
+        if (distance <= range) {
+          attackableTiles.add('${u.x},${u.y}');
+        }
+      }
+    }
+
+    setState(() {});
   }
 
   void _highlightMoveOptions(UnitPosition unit) {
@@ -109,12 +410,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     // Vérifier si la case est dans les mouvements possibles
     if (!highlightedTiles.contains('$x,$y')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Déplacement impossible !'),
-          duration: Duration(seconds: 1),
-        ),
-      );
       return;
     }
 
@@ -130,13 +425,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${selectedUnit!.name} déplacé vers ($x, $y)'),
-        duration: const Duration(seconds: 1),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   @override
@@ -179,6 +467,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
                         tileSize: 70,
                         showGrid: true,
                         highlightedTiles: highlightedTiles,
+                        attackableTiles: attackableTiles,
                       ),
                     ),
                   ),
@@ -354,5 +643,124 @@ class _CampaignScreenState extends State<CampaignScreen> {
         child: const TacticalMapLegend(),
       ),
     );
+  }
+  Future<Skill?> _showAttackChoiceDialog(Character character, Skill activeSkill) async {
+    return showDialog<Skill?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E2A47),
+        title: const Text(
+          'Choisir une attaque',
+          style: TextStyle(color: Colors.amber),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Attaque avec arme
+            ListTile(
+              leading: IconDisplay(
+                icon: character.weapon?.displayIcon ?? '⚔️',
+                size: 32,
+              ),
+              title: Text(
+                character.weapon?.name ?? 'Attaque de base',
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                'Dégâts: ${character.totalOffensive}',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              onTap: () => Navigator.pop(context, null), // null = attaque normale
+            ),
+            const Divider(color: Colors.white24),
+            // Attaque avec compétence
+            ListTile(
+              leading: IconDisplay(
+                icon: activeSkill.displayIcon,
+                size: 32,
+              ),
+              title: Text(
+                activeSkill.name,
+                style: const TextStyle(color: Colors.amber),
+              ),
+              subtitle: Text(
+                activeSkill.description,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              onTap: () => Navigator.pop(context, activeSkill),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Calculer les augmentations de stats au level up (style Fire Emblem avec RNG)
+  Map<String, int> _calculateStatIncreases(Character character) {
+    final increases = <String, int>{};
+    
+    // Taux de croissance basés sur la classe
+    final growthRates = _getGrowthRates(character.persona.characterClass);
+    
+    // Pour chaque stat, lancer un "dé" pour voir si elle augmente
+    growthRates.forEach((stat, rate) {
+      final random = (DateTime.now().microsecond % 100) / 100.0;
+      increases[stat] = random < rate ? 1 : 0;
+    });
+    
+    // Garantir au moins 2 stats qui augmentent
+    int totalIncreases = increases.values.fold(0, (sum, val) => sum + val);
+    while (totalIncreases < 2) {
+      final stats = increases.keys.toList();
+      final randomStat = stats[DateTime.now().microsecond % stats.length];
+      if (increases[randomStat]! < 1) {
+        increases[randomStat] = 1;
+        totalIncreases++;
+      }
+    }
+    
+    return increases;
+  }
+
+  // Taux de croissance par classe (probabilité d'augmentation)
+  Map<String, double> _getGrowthRates(PersonaClass characterClass) {
+    switch (characterClass) {
+      case PersonaClass.warrior:
+        return {
+          'HP': 0.80,
+          'ATK': 0.70,
+          'DEF': 0.60,
+          'SPD': 0.40,
+          'MAG': 0.20,
+          'LCK': 0.30,
+        };
+      case PersonaClass.mage:
+        return {
+          'HP': 0.50,
+          'ATK': 0.30,
+          'DEF': 0.40,
+          'SPD': 0.50,
+          'MAG': 0.80,
+          'LCK': 0.40,
+        };
+      case PersonaClass.cleric:
+        return {
+          'HP': 0.60,
+          'ATK': 0.40,
+          'DEF': 0.50,
+          'SPD': 0.50,
+          'MAG': 0.70,
+          'LCK': 0.60,
+        };
+      case PersonaClass.peasant:
+        return {
+          'HP': 0.70,
+          'ATK': 0.60,
+          'DEF': 0.50,
+          'SPD': 0.60,
+          'MAG': 0.30,
+          'LCK': 0.50,
+        };
+    }
   }
 }

@@ -114,9 +114,6 @@ class _BattleScreenState extends State<BattleScreen> {
                             final team = await GameDataService.getTeamCharacters();
                             if (team.isEmpty) {
                               if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(S.of(context)!.needCharacterFirst)),
-                              );
                               return;
                             }
                             if (!mounted) return;
