@@ -23,7 +23,18 @@ Future<void> main() async {
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
+  // Migrations de données
   DataMigrationService.migrateSkillsToV2();
+  
+  // Restaurer les inventaires customs des personnages presets AVANT de lancer l'app
+  // (utile si les inventaires ont été perdus lors de sauvegardes précédentes)
+  try {
+    await GameDataService.restoreCustomInventories();
+    print('✅ Vérification des inventaires terminée');
+  } catch (e) {
+    print('⚠️ Erreur restauration inventaires: $e');
+  }
+  
   runApp(const TacticalDiceApp());
 }
 

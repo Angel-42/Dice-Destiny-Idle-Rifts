@@ -11,6 +11,7 @@ class TacticalMapWidget extends StatelessWidget {
   final double tileSize;
   final bool showGrid;
   final Set<String>? highlightedTiles;
+  final Set<String>? attackableTiles;
 
   const TacticalMapWidget({
     super.key,
@@ -22,6 +23,7 @@ class TacticalMapWidget extends StatelessWidget {
     this.tileSize = 60.0,
     this.showGrid = true,
     this.highlightedTiles,
+    this.attackableTiles,
   });
 
   @override
@@ -59,12 +61,14 @@ class TacticalMapWidget extends StatelessWidget {
                 final hasUnit = unit.x == x && unit.y == y;
                 final isSelected = selectedUnit?.x == x && selectedUnit?.y == y;
                 final isHighlighted = highlightedTiles?.contains('$x,$y') ?? false;
+                final isAttackable = attackableTiles?.contains('$x,$y') ?? false;
 
                 return _MapTileWidget(
                   tile: tile,
                   unit: hasUnit ? unit : null,
                   isSelected: isSelected,
                   isHighlighted: isHighlighted,
+                  isAttackable: isAttackable,
                   size: tileSize,
                   showGrid: showGrid,
                   onTap: () {
@@ -90,6 +94,7 @@ class _MapTileWidget extends StatelessWidget {
   final UnitPosition? unit;
   final bool isSelected;
   final bool isHighlighted;
+  final bool isAttackable;
   final double size;
   final bool showGrid;
   final VoidCallback onTap;
@@ -99,6 +104,7 @@ class _MapTileWidget extends StatelessWidget {
     this.unit,
     this.isSelected = false,
     this.isHighlighted = false,
+    this.isAttackable = false,
     required this.size,
     this.showGrid = true,
     required this.onTap,
@@ -153,38 +159,54 @@ class _MapTileWidget extends StatelessWidget {
                 ),
               ),
 
+            // Highlight de zone d'attaque
+            if (isAttackable)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.3),
+                  border: Border.all(
+                    color: Colors.red,
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.gps_fixed,
+                    color: Colors.red,
+                    size: size * 0.4,
+                  ),
+                ),
+              ),
+
             // Unité
             if (unit != null)
               Center(
-                child: Container(
-                  width: size * 0.7,
-                  height: size * 0.7,
-                  decoration: BoxDecoration(
-                    color: unit!.color,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? Colors.yellow : Colors.white,
-                      width: isSelected ? 3 : 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      unit!.name.substring(0, 1).toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: size * 0.35,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+                child: unit!.pixelSprite != null
+                    ? Container(
+                        width: size * 0.8,
+                        height: size * 0.8,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isSelected ? Colors.yellow : Colors.transparent,
+                            width: isSelected ? 3 : 0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          unit!.pixelSprite!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildFallbackUnitIcon(size, isSelected);
+                          },
+                        ),
+                      )
+                    : _buildFallbackUnitIcon(size, isSelected),
               ),
 
             if (isSelected && unit != null)
@@ -212,6 +234,38 @@ class _MapTileWidget extends StatelessWidget {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackUnitIcon(double size, bool isSelected) {
+    return Container(
+      width: size * 0.7,
+      height: size * 0.7,
+      decoration: BoxDecoration(
+        color: unit!.color,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isSelected ? Colors.yellow : Colors.white,
+          width: isSelected ? 3 : 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          unit!.name.substring(0, 1).toUpperCase(),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: size * 0.35,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

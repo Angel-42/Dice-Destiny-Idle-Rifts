@@ -85,6 +85,7 @@ class UnitPosition {
   final String name;
   final Color color;
   final bool isPlayer;
+  final String? pixelSprite; // Chemin vers le sprite pixel.png
 
   const UnitPosition({
     required this.unitId,
@@ -93,6 +94,7 @@ class UnitPosition {
     required this.name,
     this.color = Colors.blue,
     this.isPlayer = false,
+    this.pixelSprite,
   });
 
   UnitPosition copyWith({
@@ -102,6 +104,7 @@ class UnitPosition {
     String? name,
     Color? color,
     bool? isPlayer,
+    String? pixelSprite,
   }) {
     return UnitPosition(
       unitId: unitId ?? this.unitId,
@@ -110,6 +113,7 @@ class UnitPosition {
       name: name ?? this.name,
       color: color ?? this.color,
       isPlayer: isPlayer ?? this.isPlayer,
+      pixelSprite: pixelSprite ?? this.pixelSprite,
     );
   }
 }

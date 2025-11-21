@@ -474,6 +474,9 @@ class GameDataService {
             armorOrAccessory: character.armorOrAccessory,
             equippedSkills: character.equippedSkills,
             weaponMasteries: character.weaponMasteries,
+            inventory: preset.customInventory ?? character.inventory, // 🔥 IMPORTANT: Restaurer l'inventaire custom du preset
+            initialOwnedClassIds: character.ownedClassIds,
+            activeClassId: character.activeClassId,
             basedRarity: character.basedRarity,
             currentRarity: character.currentRarity,
             isInTeam: character.isInTeam,
@@ -490,6 +493,103 @@ class GameDataService {
       print('✅ Migration terminée: $migrated/${characters.length} personnages migrés');
     } catch (e) {
       print('❌ Erreur lors de la migration: $e');
+    }
+  }
+
+  /// Force la restauration des inventaires customs depuis les presets
+  /// Utile si les inventaires ont été perdus ou sont incomplets
+  static Future<void> restoreCustomInventories() async {
+    try {
+      final characters = await getAllCharacters();
+      if (characters.isEmpty) {
+        print('⚠️ Aucun personnage à restaurer');
+        return;
+      }
+      
+      print('🔄 Restauration des inventaires customs pour ${characters.length} personnages');
+      
+      int restored = 0;
+      for (final character in characters) {
+        print('📋 Vérification de ${character.name}:');
+        print('   - Armes: ${character.inventory.weapons.length}');
+        print('   - Armures: ${character.inventory.armors.length}');
+        print('   - Skills: ${character.inventory.skills.length}');
+        
+        // Chercher le preset correspondant par ID ou nom
+        PresetCharacter? preset;
+        try {
+          preset = CharacterDatabase.getById(character.id) ?? 
+                   CharacterDatabase.allCharacters.firstWhere(
+                     (p) => p.name == character.name,
+                   );
+        } catch (e) {
+          print('   ❌ Pas de preset trouvé pour ${character.name}');
+          continue;
+        }
+        
+        // Si le preset a un inventaire custom et que le personnage n'en a pas ou qu'il est vide
+        if (preset.customInventory != null) {
+          print('   ℹ️ Preset a un inventaire custom avec:');
+          print('      - ${preset.customInventory!.weapons.length} armes');
+          print('      - ${preset.customInventory!.armors.length} armures');
+          print('      - ${preset.customInventory!.skills.length} skills');
+          
+          final hasEmptyInventory = character.inventory.weapons.isEmpty && 
+                                    character.inventory.armors.isEmpty &&
+                                    character.inventory.skills.isEmpty;
+          
+          if (hasEmptyInventory) {
+            print('   🔄 RESTAURATION pour ${character.name}');
+            
+            final updatedCharacter = Character(
+              id: character.id,
+              name: character.name,
+              persona: character.persona,
+              stats: character.stats,
+              appearance: character.appearance,
+              level: character.level,
+              xp: character.xp,
+              x: character.x,
+              y: character.y,
+              weapon: character.weapon,
+              armorOrAccessory: character.armorOrAccessory,
+              equippedSkills: character.equippedSkills,
+              weaponMasteries: character.weaponMasteries,
+              inventory: preset.customInventory!, // Restaurer l'inventaire custom
+              initialOwnedClassIds: character.ownedClassIds,
+              activeClassId: character.activeClassId,
+              basedRarity: character.basedRarity,
+              currentRarity: character.currentRarity,
+              isInTeam: character.isInTeam,
+              teamPosition: character.teamPosition,
+              obtainedAt: character.obtainedAt,
+            );
+            updatedCharacter.currentHp = character.currentHp;
+            
+            await saveCharacter(updatedCharacter);
+            print('   ✅ Sauvegardé dans Firestore');
+            restored++;
+          } else {
+            print('   ✅ Inventaire déjà rempli, pas besoin de restaurer');
+          }
+        } else {
+          print('   ℹ️ Pas d\'inventaire custom dans le preset');
+        }
+      }
+      
+      print('✅ Restauration terminée: $restored/${characters.length} inventaires restaurés');
+      
+      // Vérification : recharger les personnages pour confirmer que la sauvegarde a fonctionné
+      print('🔍 Vérification post-restauration...');
+      final reloadedCharacters = await getAllCharacters();
+      for (final char in reloadedCharacters) {
+        if (char.name == 'MC' || char.name == 'Aria') {
+          print('   ${char.name}: ${char.inventory.weapons.length} armes, ${char.inventory.armors.length} armures, ${char.inventory.skills.length} skills');
+        }
+      }
+    } catch (e, stackTrace) {
+      print('❌ Erreur lors de la restauration: $e');
+      print('Stack trace: $stackTrace');
     }
   }
 }
