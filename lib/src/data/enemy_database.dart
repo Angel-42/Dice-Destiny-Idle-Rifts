@@ -51,9 +51,9 @@ class EnemyDatabase {
       ),
       appearance: CharacterAppearance(
         headshot: '🐺',
-        lheadshot: 'assets/ennemies/wolf/wolf_headshot.png',
-        pixel: 'assets/ennemies/wolf/wolf_pixel.png',
-        fullsize: 'assets/ennemies/wolf/wolf_fullsize.png',
+        lheadshot: 'assets/ennemies/wolf/headshot.png',
+        pixel: 'assets/ennemies/wolf/pixel.png',
+        fullsize: 'assets/ennemies/wolf/fullsize.png',
         description: 'Loup sauvage et agressif',
         colorValue: 0xFF8B4513, // Brun
       ),

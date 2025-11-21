@@ -1144,6 +1144,186 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Anonymous Account'**
   String get settingsAnonymous;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'CLOSE'**
+  String get close;
+
+  /// No description provided for @attack.
+  ///
+  /// In en, this message translates to:
+  /// **'ATTACK'**
+  String get attack;
+
+  /// No description provided for @targetOutOfRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Target out of range! (Distance: {distance}, Range: {range})'**
+  String targetOutOfRange(int distance, int range);
+
+  /// No description provided for @chooseAttack.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an attack'**
+  String get chooseAttack;
+
+  /// No description provided for @basicAttack.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic attack'**
+  String get basicAttack;
+
+  /// No description provided for @damage.
+  ///
+  /// In en, this message translates to:
+  /// **'Damage'**
+  String get damage;
+
+  /// No description provided for @victory.
+  ///
+  /// In en, this message translates to:
+  /// **'🎉 VICTORY!'**
+  String get victory;
+
+  /// No description provided for @allEnemiesDefeated.
+  ///
+  /// In en, this message translates to:
+  /// **'You have defeated all enemies!'**
+  String get allEnemiesDefeated;
+
+  /// No description provided for @returnButton.
+  ///
+  /// In en, this message translates to:
+  /// **'RETURN'**
+  String get returnButton;
+
+  /// No description provided for @defeat.
+  ///
+  /// In en, this message translates to:
+  /// **'💀 DEFEAT'**
+  String get defeat;
+
+  /// No description provided for @allCharactersDefeated.
+  ///
+  /// In en, this message translates to:
+  /// **'All your characters have been defeated...'**
+  String get allCharactersDefeated;
+
+  /// No description provided for @turnEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn ended!'**
+  String get turnEnded;
+
+  /// No description provided for @endTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'END TURN'**
+  String get endTurn;
+
+  /// No description provided for @combatLog.
+  ///
+  /// In en, this message translates to:
+  /// **'COMBAT LOG'**
+  String get combatLog;
+
+  /// No description provided for @combatFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'COMBAT FINISHED'**
+  String get combatFinished;
+
+  /// No description provided for @combatVictorious.
+  ///
+  /// In en, this message translates to:
+  /// **'Combat victorious!'**
+  String get combatVictorious;
+
+  /// No description provided for @enemyDefeated.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} defeated!'**
+  String enemyDefeated(String name);
+
+  /// No description provided for @forgeMyDestiny.
+  ///
+  /// In en, this message translates to:
+  /// **'Forge my destiny'**
+  String get forgeMyDestiny;
+
+  /// No description provided for @tapToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to continue'**
+  String get tapToContinue;
+
+  /// No description provided for @soundSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'🎵 Sound Settings'**
+  String get soundSettings;
+
+  /// No description provided for @music.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get music;
+
+  /// No description provided for @sfx.
+  ///
+  /// In en, this message translates to:
+  /// **'SFX'**
+  String get sfx;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLabel;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @expMax.
+  ///
+  /// In en, this message translates to:
+  /// **'EXP MAX'**
+  String get expMax;
+
+  /// No description provided for @exp.
+  ///
+  /// In en, this message translates to:
+  /// **'EXP {current}/{max}'**
+  String exp(int current, int max);
+
+  /// No description provided for @emptySlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty slot'**
+  String get emptySlot;
+
+  /// No description provided for @noBonus.
+  ///
+  /// In en, this message translates to:
+  /// **'No bonus'**
+  String get noBonus;
+
+  /// No description provided for @notLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Not logged in'**
+  String get notLoggedIn;
+
+  /// No description provided for @summonError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error during summoning: {error}'**
+  String summonError(String error);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

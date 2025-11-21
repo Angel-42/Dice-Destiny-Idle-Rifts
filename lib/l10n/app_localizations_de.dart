@@ -555,4 +555,102 @@ class SDe extends S {
 
   @override
   String get settingsAnonymous => 'Anonymes Konto';
+
+  @override
+  String get close => 'SCHLIESSEN';
+
+  @override
+  String get attack => 'ANGREIFEN';
+
+  @override
+  String targetOutOfRange(int distance, int range) {
+    return 'Ziel außer Reichweite! (Entfernung: $distance, Reichweite: $range)';
+  }
+
+  @override
+  String get chooseAttack => 'Angriff wählen';
+
+  @override
+  String get basicAttack => 'Grundangriff';
+
+  @override
+  String get damage => 'Schaden';
+
+  @override
+  String get victory => '🎉 SIEG!';
+
+  @override
+  String get allEnemiesDefeated => 'Du hast alle Feinde besiegt!';
+
+  @override
+  String get returnButton => 'ZURÜCK';
+
+  @override
+  String get defeat => '💀 NIEDERLAGE';
+
+  @override
+  String get allCharactersDefeated => 'Alle deine Charaktere wurden besiegt...';
+
+  @override
+  String get turnEnded => 'Runde beendet!';
+
+  @override
+  String get endTurn => 'RUNDE BEENDEN';
+
+  @override
+  String get combatLog => 'KAMPFPROTOKOLL';
+
+  @override
+  String get combatFinished => 'KAMPF BEENDET';
+
+  @override
+  String get combatVictorious => 'Kampf gewonnen!';
+
+  @override
+  String enemyDefeated(String name) {
+    return '$name besiegt!';
+  }
+
+  @override
+  String get forgeMyDestiny => 'Mein Schicksal schmieden';
+
+  @override
+  String get tapToContinue => 'Tippen zum Fortfahren';
+
+  @override
+  String get soundSettings => '🎵 Soundeinstellungen';
+
+  @override
+  String get music => 'Musik';
+
+  @override
+  String get sfx => 'Soundeffekte';
+
+  @override
+  String get emailLabel => 'E-Mail';
+
+  @override
+  String get passwordLabel => 'Passwort';
+
+  @override
+  String get expMax => 'EXP MAX';
+
+  @override
+  String exp(int current, int max) {
+    return 'EXP $current/$max';
+  }
+
+  @override
+  String get emptySlot => 'Leerer Slot';
+
+  @override
+  String get noBonus => 'Kein Bonus';
+
+  @override
+  String get notLoggedIn => 'Nicht angemeldet';
+
+  @override
+  String summonError(String error) {
+    return 'Fehler beim Beschwören: $error';
+  }
 }

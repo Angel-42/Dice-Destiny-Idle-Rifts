@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import 'character_compact_view.dart';
 
@@ -65,7 +66,7 @@ class CharacterDetailPopup extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text('FERMER'),
+                child: Text(S.of(context)!.close),
               ),
             ),
           if (onClose != null && onAttack != null) const SizedBox(width: 12),
@@ -74,7 +75,7 @@ class CharacterDetailPopup extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onAttack,
                 icon: const Icon(Icons.gps_fixed),
-                label: const Text('ATTAQUER'),
+                label: Text(S.of(context)!.attack),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,

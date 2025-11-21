@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/map_data.dart';
 import '../models/character.dart';
 import '../models/persona.dart';
@@ -27,7 +28,7 @@ class CampaignScreen extends StatefulWidget {
 class _CampaignScreenState extends State<CampaignScreen> {
   late TacticalMapData mapData;
   late List<UnitPosition> units;
-  late Map<String, Character> charactersMap; // Map pour retrouver les Character depuis unitId
+  late Map<String, Character> charactersMap;
   UnitPosition? selectedUnit;
   Set<String> highlightedTiles = {};
   Set<String> attackableTiles = {};
@@ -38,7 +39,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
   }
 
   void _initializeMap() {
-    // Créer la map
     mapData = TacticalMapData.createTestMap();
 
     final team = widget.team;
@@ -47,7 +47,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
     units = [];
     charactersMap = {};
 
-    // Ajouter les alliés avec leurs sprites pixel
     for (var i = 0; i < team.length && i < 4; i++) {
       final c = team[i];
       charactersMap[c.id] = c;
@@ -58,23 +57,19 @@ class _CampaignScreenState extends State<CampaignScreen> {
         name: c.name,
         color: Color(c.appearance.colorValue),
         isPlayer: true,
-        pixelSprite: c.appearance.pixel, // Utiliser le sprite pixel s'il existe
+        pixelSprite: c.appearance.pixel,
       ));
     }
 
-    // Générer les ennemis depuis la database
-    // 2 wolves de niveau 1
     final enemies = [
       EnemyDatabase.createEnemy('wolf', level: 1),
       EnemyDatabase.createEnemy('wolf', level: 1),
     ];
 
-    // Ajouter les ennemis à la map des personnages
     for (final enemy in enemies) {
       charactersMap[enemy.id] = enemy;
     }
 
-    // Positionner les ennemis sur la carte
     units.addAll([
       UnitPosition(
         unitId: enemies[0].id,
@@ -101,13 +96,11 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final character = charactersMap[unit.unitId];
     if (character == null) return;
 
-    // Si c'est un ennemi et qu'on a une unité sélectionnée
     if (!unit.isPlayer && selectedUnit != null) {
       _showEnemyDetailAndAttack(character, unit);
       return;
     }
 
-    // Si c'est un allié
     if (unit.isPlayer) {
       setState(() {
         if (selectedUnit?.unitId == unit.unitId) {
@@ -116,13 +109,11 @@ class _CampaignScreenState extends State<CampaignScreen> {
           highlightedTiles.clear();
           attackableTiles.clear();
         } else {
-          // Sélectionner
           selectedUnit = unit;
           _highlightMoveAndAttackOptions(unit, character);
         }
       });
     } else {
-      // Clic sur ennemi sans sélection -> afficher détails
       _showCharacterDetail(character, unit, false);
     }
   }
@@ -142,14 +133,13 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final selectedChar = charactersMap[selectedUnit!.unitId];
     if (selectedChar == null) return;
 
-    // Vérifier si l'ennemi est à portée
     final distance = _calculateDistance(selectedUnit!.x, selectedUnit!.y, enemyUnit.x, enemyUnit.y);
     final range = selectedChar.stats.range;
 
     if (distance > range) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Cible hors de portée ! (Distance: $distance, Portée: $range)'),
+          content: Text(S.of(context)!.targetOutOfRange(distance, range)),
           backgroundColor: Colors.orange,
           duration: const Duration(seconds: 2),
         ),
@@ -165,7 +155,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
         isEnemy: true,
         onClose: () => Navigator.pop(context),
         onAttack: () {
-          Navigator.pop(context); // Fermer le popup
+          Navigator.pop(context);
           _startCombat(selectedChar, enemy, selectedUnit!, enemyUnit);
         },
       ),
@@ -275,15 +265,9 @@ class _CampaignScreenState extends State<CampaignScreen> {
         units.removeWhere((u) => u.unitId == attackerUnit.unitId);
       }
 
-      // Réinitialiser la sélection
       selectedUnit = null;
       highlightedTiles.clear();
       attackableTiles.clear();
-
-      // TODO: Sauvegarder les changements de HP dans Firestore
-      // if (attackerUnit.isPlayer) {
-      //   GameDataService.updateCharacter(attacker);
-      // }
     });
 
     // Vérifier conditions de victoire/défaite
@@ -306,15 +290,15 @@ class _CampaignScreenState extends State<CampaignScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('🎉 VICTOIRE !'),
-        content: const Text('Vous avez vaincu tous les ennemis !'),
+        title: Text(S.of(context)!.victory),
+        content: Text(S.of(context)!.allEnemiesDefeated),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Dialog
               Navigator.pop(context); // Campaign screen
             },
-            child: const Text('RETOUR'),
+            child: Text(S.of(context)!.returnButton),
           ),
         ],
       ),
@@ -326,8 +310,8 @@ class _CampaignScreenState extends State<CampaignScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('💀 DÉFAITE'),
-        content: const Text('Tous vos personnages ont été vaincus...'),
+        title: Text(S.of(context)!.defeat),
+        content: Text(S.of(context)!.allCharactersDefeated),
         backgroundColor: Colors.red.shade900,
         actions: [
           TextButton(
@@ -335,7 +319,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
               Navigator.pop(context); // Dialog
               Navigator.pop(context); // Campaign screen
             },
-            child: const Text('RETOUR'),
+            child: Text(S.of(context)!.returnButton),
           ),
         ],
       ),
@@ -384,12 +368,11 @@ class _CampaignScreenState extends State<CampaignScreen> {
   void _highlightMoveOptions(UnitPosition unit) {
     highlightedTiles.clear();
 
-    // Cases adjacentes (haut, bas, gauche, droite)
     final directions = [
-      (0, -1), // Haut
-      (0, 1),  // Bas
-      (-1, 0), // Gauche
-      (1, 0),  // Droite
+      (0, -1),
+      (0, 1),
+      (-1, 0),
+      (1, 0),
     ];
 
     for (final (dx, dy) in directions) {
@@ -616,14 +599,14 @@ class _CampaignScreenState extends State<CampaignScreen> {
                 highlightedTiles.clear();
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Tour terminé !'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text(S.of(context)!.turnEnded),
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },
             icon: const Icon(Icons.check),
-            label: const Text('FIN DU TOUR'),
+            label: Text(S.of(context)!.endTurn),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
@@ -649,9 +632,9 @@ class _CampaignScreenState extends State<CampaignScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E2A47),
-        title: const Text(
-          'Choisir une attaque',
-          style: TextStyle(color: Colors.amber),
+        title: Text(
+          S.of(context)!.chooseAttack,
+          style: const TextStyle(color: Colors.amber),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -663,11 +646,11 @@ class _CampaignScreenState extends State<CampaignScreen> {
                 size: 32,
               ),
               title: Text(
-                character.weapon?.name ?? 'Attaque de base',
+                character.weapon?.name ?? S.of(context)!.basicAttack,
                 style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                'Dégâts: ${character.totalOffensive}',
+                '${S.of(context)!.damage}: ${character.totalOffensive}',
                 style: const TextStyle(color: Colors.white70),
               ),
               onTap: () => Navigator.pop(context, null), // null = attaque normale

@@ -550,4 +550,103 @@ class SEn extends S {
 
   @override
   String get settingsAnonymous => 'Anonymous Account';
+
+  @override
+  String get close => 'CLOSE';
+
+  @override
+  String get attack => 'ATTACK';
+
+  @override
+  String targetOutOfRange(int distance, int range) {
+    return 'Target out of range! (Distance: $distance, Range: $range)';
+  }
+
+  @override
+  String get chooseAttack => 'Choose an attack';
+
+  @override
+  String get basicAttack => 'Basic attack';
+
+  @override
+  String get damage => 'Damage';
+
+  @override
+  String get victory => '🎉 VICTORY!';
+
+  @override
+  String get allEnemiesDefeated => 'You have defeated all enemies!';
+
+  @override
+  String get returnButton => 'RETURN';
+
+  @override
+  String get defeat => '💀 DEFEAT';
+
+  @override
+  String get allCharactersDefeated =>
+      'All your characters have been defeated...';
+
+  @override
+  String get turnEnded => 'Turn ended!';
+
+  @override
+  String get endTurn => 'END TURN';
+
+  @override
+  String get combatLog => 'COMBAT LOG';
+
+  @override
+  String get combatFinished => 'COMBAT FINISHED';
+
+  @override
+  String get combatVictorious => 'Combat victorious!';
+
+  @override
+  String enemyDefeated(String name) {
+    return '$name defeated!';
+  }
+
+  @override
+  String get forgeMyDestiny => 'Forge my destiny';
+
+  @override
+  String get tapToContinue => 'Tap to continue';
+
+  @override
+  String get soundSettings => '🎵 Sound Settings';
+
+  @override
+  String get music => 'Music';
+
+  @override
+  String get sfx => 'SFX';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get expMax => 'EXP MAX';
+
+  @override
+  String exp(int current, int max) {
+    return 'EXP $current/$max';
+  }
+
+  @override
+  String get emptySlot => 'Empty slot';
+
+  @override
+  String get noBonus => 'No bonus';
+
+  @override
+  String get notLoggedIn => 'Not logged in';
+
+  @override
+  String summonError(String error) {
+    return 'Error during summoning: $error';
+  }
 }

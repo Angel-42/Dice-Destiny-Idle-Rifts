@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
 import '../models/equipment.dart';
@@ -66,7 +67,6 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
               ),
 
               if (_showUI) ...[
-                // Gradient léger en haut (pour la flèche retour et le Tap!)
                 Positioned(
                   top: 0,
                   left: 0,
@@ -293,7 +293,7 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
                                   ),
                                 ),
                                 Text(
-                                  character.level >= 40 ? 'EXP MAX' : 'EXP ${character.xp}/${character.xpForNextLevel}',
+                                  character.level >= 40 ? S.of(context)!.expMax : S.of(context)!.exp(character.xp, character.xpForNextLevel),
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 9,
@@ -317,7 +317,6 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
               ),
             ),
             
-            // Séparateur vertical
             Container(
               width: 1,
               color: Colors.white.withOpacity(0.3),
@@ -395,7 +394,7 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
                                           id: 'empty_$index',
                                           name: '-',
                                           emoji: '🔰',
-                                          description: 'Slot vide',
+                                          description: S.of(context)!.emptySlot,
                                           type: index == 0 ? SkillType.active : SkillType.passive,
                                         );
                                       }
@@ -406,7 +405,7 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
                                             id: 'empty_${character.equippedSkills.length}',
                                             name: '-',
                                             emoji: '🔰',
-                                            description: 'Slot vide',
+                                            description: S.of(context)!.emptySlot,
                                             type: character.equippedSkills.length == 0 
                                                 ? SkillType.active 
                                                 : SkillType.passive,
@@ -440,15 +439,12 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
     required int skillSlotIndex, // L'index du slot de compétence (0-3)
     required Function(Skill?) onSelect,
   }) async {
-    // Déterminer le type de compétence attendu selon le slot
     final requiredType = skillSlotIndex == 0 ? SkillType.active : SkillType.passive;
     
-    // Filtrer les compétences par type
     final allSkills = character.inventory.getAllSkills()
         .where((item) => item.item.type == requiredType)
         .toList();
     
-    // Récupérer les IDs des compétences déjà équipées (sauf le slot actuel)
     final alreadyEquippedIds = <String>{};
     for (int i = 0; i < character.equippedSkills.length; i++) {
       if (i != skillSlotIndex) {
@@ -473,10 +469,9 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
           width: double.maxFinite,
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: allSkills.length + 1, // +1 pour l'option "Aucun"
+            itemCount: allSkills.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
-                // Option "Aucun" pour retirer la compétence
                 return ListTile(
                   leading: const Text('❌', style: TextStyle(fontSize: 24)),
                   title: const Text(
@@ -497,7 +492,6 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
                 characterStars: character.currentRarity.index + 1,
               );
               
-              // Vérifier si cette compétence est déjà équipée ailleurs
               final isAlreadyEquipped = alreadyEquippedIds.contains(skill.id);
 
               return ListTile(
@@ -597,7 +591,6 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
     required Character character,
     required Function(Equipment?) onSelect,
   }) async {
-    // Combiner armures et accessoires dans une seule liste
     final allArmors = character.inventory.armors;
     final allAccessories = character.inventory.accessories;
     final allItems = [...allArmors, ...allAccessories];
@@ -614,10 +607,9 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
           width: double.maxFinite,
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: allItems.length + 1, // +1 pour l'option "Aucun"
+            itemCount: allItems.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
-                // Option "Aucun" pour retirer l'équipement
                 return ListTile(
                   leading: const Text('❌', style: TextStyle(fontSize: 24)),
                   title: const Text(
@@ -720,10 +712,9 @@ class _CharacterFullDetailScreenState extends State<CharacterFullDetailScreen> {
           width: double.maxFinite,
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: allItems.length + 1, // +1 pour l'option "Aucun"
+            itemCount: allItems.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
-                // Option "Aucun" pour retirer l'équipement
                 return ListTile(
                   leading: const Text('❌', style: TextStyle(fontSize: 24)),
                   title: const Text(

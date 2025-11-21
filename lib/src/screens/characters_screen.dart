@@ -248,7 +248,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -297,7 +297,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -625,12 +625,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
       await GameDataService.saveCharacter(updatedChar);
 
-      // Message supprimé - pas besoin d'afficher de notification
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -649,12 +648,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
       await GameDataService.saveCharacter(updatedChar);
 
-      // Message supprimé - pas besoin d'afficher de notification
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );

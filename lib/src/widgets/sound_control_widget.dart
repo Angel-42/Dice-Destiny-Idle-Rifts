@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../services/sound_manager.dart';
 
 /// Widget pour contrôler le son (musique et SFX) dans l'UI
@@ -72,7 +73,7 @@ class _SoundSettingsDialogState extends State<SoundSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('🎵 Sound Settings'),
+      title: Text(S.of(context)!.soundSettings),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -81,7 +82,7 @@ class _SoundSettingsDialogState extends State<SoundSettingsDialog> {
             children: [
               const Icon(Icons.music_note, color: Colors.amber),
               const SizedBox(width: 12),
-              const Text('Music'),
+              Text(S.of(context)!.music),
               Expanded(
                 child: Slider(
                   value: _musicVolume,
@@ -105,7 +106,7 @@ class _SoundSettingsDialogState extends State<SoundSettingsDialog> {
             children: [
               const Icon(Icons.volume_up, color: Colors.amber),
               const SizedBox(width: 12),
-              const Text('SFX'),
+              Text(S.of(context)!.sfx),
               Expanded(
                 child: Slider(
                   value: _sfxVolume,
@@ -128,7 +129,7 @@ class _SoundSettingsDialogState extends State<SoundSettingsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: Text(S.of(context)!.close),
         ),
       ],
     );

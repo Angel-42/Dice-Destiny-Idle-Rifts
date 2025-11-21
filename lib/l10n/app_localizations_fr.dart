@@ -555,4 +555,102 @@ class SFr extends S {
 
   @override
   String get settingsAnonymous => 'Compte anonyme';
+
+  @override
+  String get close => 'FERMER';
+
+  @override
+  String get attack => 'ATTAQUER';
+
+  @override
+  String targetOutOfRange(int distance, int range) {
+    return 'Cible hors de portée ! (Distance: $distance, Portée: $range)';
+  }
+
+  @override
+  String get chooseAttack => 'Choisir une attaque';
+
+  @override
+  String get basicAttack => 'Attaque de base';
+
+  @override
+  String get damage => 'Dégâts';
+
+  @override
+  String get victory => '🎉 VICTOIRE !';
+
+  @override
+  String get allEnemiesDefeated => 'Vous avez vaincu tous les ennemis !';
+
+  @override
+  String get returnButton => 'RETOUR';
+
+  @override
+  String get defeat => '💀 DÉFAITE';
+
+  @override
+  String get allCharactersDefeated => 'Tous vos personnages ont été vaincus...';
+
+  @override
+  String get turnEnded => 'Tour terminé !';
+
+  @override
+  String get endTurn => 'FIN DU TOUR';
+
+  @override
+  String get combatLog => 'JOURNAL DE COMBAT';
+
+  @override
+  String get combatFinished => 'COMBAT TERMINÉ';
+
+  @override
+  String get combatVictorious => 'Combat victorieux !';
+
+  @override
+  String enemyDefeated(String name) {
+    return '$name vaincu !';
+  }
+
+  @override
+  String get forgeMyDestiny => 'Forger mon destin';
+
+  @override
+  String get tapToContinue => 'Appuyez pour continuer';
+
+  @override
+  String get soundSettings => '🎵 Paramètres Audio';
+
+  @override
+  String get music => 'Musique';
+
+  @override
+  String get sfx => 'Effets Sonores';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get passwordLabel => 'Mot de passe';
+
+  @override
+  String get expMax => 'EXP MAX';
+
+  @override
+  String exp(int current, int max) {
+    return 'EXP $current/$max';
+  }
+
+  @override
+  String get emptySlot => 'Slot vide';
+
+  @override
+  String get noBonus => 'Pas de bonus';
+
+  @override
+  String get notLoggedIn => 'Non connecté';
+
+  @override
+  String summonError(String error) {
+    return 'Erreur lors de l\'invocation : $error';
+  }
 }

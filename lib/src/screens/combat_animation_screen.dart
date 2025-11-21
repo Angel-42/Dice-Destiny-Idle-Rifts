@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
 
@@ -34,7 +35,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
   int _attackerCurrentHp = 0;
   int _defenderCurrentHp = 0;
   
-  // Pop-ups de dégâts
   int? _attackerDamagePopup;
   int? _defenderDamagePopup;
   
@@ -64,7 +64,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(_fadeController);
 
-    // Démarrer le combat après un court délai
     Future.delayed(const Duration(milliseconds: 500), () {
       _startCombat();
     });
@@ -84,7 +83,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await _fadeController.forward();
 
-    // Déterminer l'ordre d'attaque basé sur la vitesse
     final attackerSpeed = widget.attacker.totalSpeed;
     final defenderSpeed = widget.defender.totalSpeed;
 
@@ -92,17 +90,13 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
         ? [widget.attacker, widget.defender]
         : [widget.defender, widget.attacker];
 
-    // Tour 1: Premier attaquant
     await _performAttack(turnOrder[0], turnOrder[1]);
 
-    // Vérifier si le combat continue
     if (_defenderCurrentHp > 0 && _attackerCurrentHp > 0) {
       await Future.delayed(const Duration(milliseconds: 800));
-      // Tour 2: Contre-attaque
       await _performAttack(turnOrder[1], turnOrder[0]);
     }
 
-    // Fin du combat
     await Future.delayed(const Duration(milliseconds: 1000));
     _endCombat();
   }
@@ -115,10 +109,8 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Calculer les dégâts
     final damage = _calculateDamage(attacker, defender);
     
-    // Afficher le pop-up de dégâts
     setState(() {
       if (defender.id == widget.defender.id) {
         _defenderDamagePopup = damage;
@@ -127,11 +119,9 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
       }
     });
     
-    // Shake animation pour le défenseur
     await _shakeController.forward();
     await _shakeController.reverse();
 
-    // Appliquer les dégâts
     setState(() {
       if (defender.id == widget.defender.id) {
         _defenderCurrentHp = (_defenderCurrentHp - damage).clamp(0, defender.stats.maxHp);
@@ -144,7 +134,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await Future.delayed(const Duration(milliseconds: 800));
     
-    // Cacher le pop-up
     setState(() {
       _attackerDamagePopup = null;
       _defenderDamagePopup = null;
@@ -152,8 +141,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
   }
 
   int _calculateDamage(Character attacker, Character defender) {
-    // Utiliser la vraie formule du Character
-    // Si c'est l'attaquant principal et qu'il a une compétence, l'utiliser
     final useSkill = attacker.id == widget.attacker.id ? widget.attackerSkill : null;
     
     if (attacker.persona.characterClass.isMagical) {
@@ -167,8 +154,7 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     final attackerWon = _defenderCurrentHp <= 0;
     final defenderDefeated = _defenderCurrentHp <= 0;
 
-    // Calculer l'XP gagnée
-    _xpGained = defenderDefeated ? 50 : 20; // 50 XP si tué, 20 XP sinon
+    _xpGained = defenderDefeated ? 50 : 20;
 
     setState(() {
       _phase = CombatPhase.result;
@@ -180,14 +166,13 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     final result = CombatResult(
       attackerWon: attackerWon,
-      defenderWon: false, // Pas de défaite pour l'attaquant
+      defenderWon: false,
       attackerFinalHp: _attackerCurrentHp,
       defenderFinalHp: _defenderCurrentHp,
       combatLog: _combatLog,
       xpGained: _xpGained,
     );
 
-    // Attendre avant de fermer
     Future.delayed(const Duration(seconds: 2), () {
       widget.onCombatEnd(result);
     });
@@ -211,32 +196,26 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              // Background effet
               _buildBackground(),
 
-              // Combattants
               Column(
                 children: [
                   const SizedBox(height: 40),
                   
-                  // HP Bars en haut
                   _buildTopPanel(),
 
                   const Spacer(),
 
-                  // Zone de combat avec sprites
                   _buildCombatZone(),
 
                   const Spacer(),
 
-                  // Log de combat en bas
                   _buildCombatLog(),
                   
                   const SizedBox(height: 20),
                 ],
               ),
 
-              // Résultat final
               if (_phase == CombatPhase.result) _buildResultOverlay(),
             ],
           ),
@@ -478,9 +457,9 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'COMBAT LOG',
-            style: TextStyle(
+          Text(
+            S.of(context)!.combatLog,
+            style: const TextStyle(
               color: Colors.amber,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -588,9 +567,9 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
                 color: Colors.white,
               ),
               const SizedBox(height: 20),
-              const Text(
-                'COMBAT TERMINÉ',
-                style: TextStyle(
+              Text(
+                S.of(context)!.combatFinished,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -600,8 +579,8 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
               const SizedBox(height: 16),
               Text(
                 defenderDefeated
-                    ? '${widget.defender.name} vaincu !'
-                    : 'Combat victorieux !',
+                    ? S.of(context)!.enemyDefeated(widget.defender.name)
+                    : S.of(context)!.combatVictorious,
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 18,

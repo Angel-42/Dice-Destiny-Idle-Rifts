@@ -553,4 +553,103 @@ class SEs extends S {
 
   @override
   String get settingsAnonymous => 'Cuenta anónima';
+
+  @override
+  String get close => 'CERRAR';
+
+  @override
+  String get attack => 'ATACAR';
+
+  @override
+  String targetOutOfRange(int distance, int range) {
+    return '¡Objetivo fuera de alcance! (Distancia: $distance, Alcance: $range)';
+  }
+
+  @override
+  String get chooseAttack => 'Elegir un ataque';
+
+  @override
+  String get basicAttack => 'Ataque básico';
+
+  @override
+  String get damage => 'Daño';
+
+  @override
+  String get victory => '🎉 ¡VICTORIA!';
+
+  @override
+  String get allEnemiesDefeated => '¡Has derrotado a todos los enemigos!';
+
+  @override
+  String get returnButton => 'REGRESAR';
+
+  @override
+  String get defeat => '💀 DERROTA';
+
+  @override
+  String get allCharactersDefeated =>
+      'Todos tus personajes han sido derrotados...';
+
+  @override
+  String get turnEnded => '¡Turno terminado!';
+
+  @override
+  String get endTurn => 'FIN DEL TURNO';
+
+  @override
+  String get combatLog => 'REGISTRO DE COMBATE';
+
+  @override
+  String get combatFinished => 'COMBATE TERMINADO';
+
+  @override
+  String get combatVictorious => '¡Combate victorioso!';
+
+  @override
+  String enemyDefeated(String name) {
+    return '¡$name derrotado!';
+  }
+
+  @override
+  String get forgeMyDestiny => 'Forjar mi destino';
+
+  @override
+  String get tapToContinue => 'Toca para continuar';
+
+  @override
+  String get soundSettings => '🎵 Configuración de Sonido';
+
+  @override
+  String get music => 'Música';
+
+  @override
+  String get sfx => 'Efectos de Sonido';
+
+  @override
+  String get emailLabel => 'Correo electrónico';
+
+  @override
+  String get passwordLabel => 'Contraseña';
+
+  @override
+  String get expMax => 'EXP MÁX';
+
+  @override
+  String exp(int current, int max) {
+    return 'EXP $current/$max';
+  }
+
+  @override
+  String get emptySlot => 'Ranura vacía';
+
+  @override
+  String get noBonus => 'Sin bonificación';
+
+  @override
+  String get notLoggedIn => 'No conectado';
+
+  @override
+  String summonError(String error) {
+    return 'Error durante la invocación: $error';
+  }
 }

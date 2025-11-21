@@ -172,7 +172,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );

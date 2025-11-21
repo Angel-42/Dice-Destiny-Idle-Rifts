@@ -440,12 +440,12 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
-                                          children: const [
-                                            Icon(Icons.auto_awesome, size: 24),
-                                            SizedBox(width: 12),
+                                          children: [
+                                            const Icon(Icons.auto_awesome, size: 24),
+                                            const SizedBox(width: 12),
                                             Text(
-                                              'Forger mon destin',
-                                              style: TextStyle(
+                                              S.of(context)!.forgeMyDestiny,
+                                              style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
                                                 letterSpacing: 1,
@@ -495,7 +495,7 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                       // Instruction
                       if (!isFinalScene)
                         Text(
-                          'Appuyez pour continuer',
+                          S.of(context)!.tapToContinue,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.4),
                             fontSize: 13,

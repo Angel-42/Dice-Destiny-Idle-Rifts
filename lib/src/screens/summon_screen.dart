@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../../l10n/app_localizations.dart';
 import '../services/game_data_service.dart';
 import '../models/character.dart';
 import '../models/preset_character.dart';
@@ -106,7 +107,7 @@ class _SummonScreenState extends State<SummonScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors de l\'invocation : $e'),
+            content: Text(S.of(context)!.summonError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );

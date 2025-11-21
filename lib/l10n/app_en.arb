@@ -230,6 +230,60 @@
   "settingsDeleteAccountSuccess": "Account deleted successfully",
   "settingsLinkSuccess": "Account linked successfully",
   "settingsAlreadyLinked": "Already linked",
-  "settingsAnonymous": "Anonymous Account"
+  "settingsAnonymous": "Anonymous Account",
+
+  "close": "CLOSE",
+  "attack": "ATTACK",
+  "targetOutOfRange": "Target out of range! (Distance: {distance}, Range: {range})",
+  "@targetOutOfRange": {
+    "placeholders": {
+      "distance": {"type": "int"},
+      "range": {"type": "int"}
+    }
+  },
+  "chooseAttack": "Choose an attack",
+  "basicAttack": "Basic attack",
+  "damage": "Damage",
+  "victory": "🎉 VICTORY!",
+  "allEnemiesDefeated": "You have defeated all enemies!",
+  "returnButton": "RETURN",
+  "defeat": "💀 DEFEAT",
+  "allCharactersDefeated": "All your characters have been defeated...",
+  "turnEnded": "Turn ended!",
+  "endTurn": "END TURN",
+  "combatLog": "COMBAT LOG",
+  "combatFinished": "COMBAT FINISHED",
+  "combatVictorious": "Combat victorious!",
+  "enemyDefeated": "{name} defeated!",
+  "@enemyDefeated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "forgeMyDestiny": "Forge my destiny",
+  "tapToContinue": "Tap to continue",
+  "soundSettings": "🎵 Sound Settings",
+  "music": "Music",
+  "sfx": "SFX",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "expMax": "EXP MAX",
+  "exp": "EXP {current}/{max}",
+  "@exp": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "emptySlot": "Empty slot",
+  "noBonus": "No bonus",
+  "notLoggedIn": "Not logged in",
+  "summonError": "Error during summoning: {error}",
+  "@summonError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "slot": "Slot"
 }
 
