@@ -160,9 +160,9 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
       _phase = CombatPhase.result;
     });
 
-    // Mettre à jour les HP actuels des personnages
-    widget.attacker.currentHp = _attackerCurrentHp;
-    widget.defender.currentHp = _defenderCurrentHp;
+    // ⚠️ NE PAS modifier directement les HP des personnages originaux!
+    // Les HP finaux sont retournés dans CombatResult
+    // C'est le campaign_screen qui mettra à jour les HP
 
     final result = CombatResult(
       attackerWon: attackerWon,

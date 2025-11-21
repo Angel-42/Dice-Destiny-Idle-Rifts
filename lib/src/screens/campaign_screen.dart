@@ -257,6 +257,18 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     // Mettre à jour les HP et retirer les morts
     setState(() {
+      // Mettre à jour les HP dans charactersMap
+      final attackerChar = charactersMap[attackerUnit.unitId];
+      final defenderChar = charactersMap[defenderUnit.unitId];
+      
+      if (attackerChar != null) {
+        attackerChar.currentHp = result.attackerFinalHp;
+      }
+      
+      if (defenderChar != null) {
+        defenderChar.currentHp = result.defenderFinalHp;
+      }
+
       if (result.defenderFinalHp <= 0) {
         units.removeWhere((u) => u.unitId == defenderUnit.unitId);
       }

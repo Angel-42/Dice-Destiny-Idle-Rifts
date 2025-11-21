@@ -330,6 +330,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
       isInTeam: isInTeam,
       teamPosition: teamPosition,
       obtainedAt: character.obtainedAt,
+      inventory: character.inventory, // ⚠️ Conserver l'inventaire!
+      initialOwnedClassIds: character.ownedClassIds, // ⚠️ Conserver les classes possédées!
+      activeClassId: character.activeClassId, // ⚠️ Conserver la classe active!
     );
     updated.currentHp = character.currentHp;
     return updated;
