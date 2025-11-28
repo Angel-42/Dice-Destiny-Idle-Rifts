@@ -173,6 +173,18 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
   Future<void> _startCombat(Character attacker, Character defender, 
       UnitPosition attackerUnit, UnitPosition defenderUnit) async {
+    // Calculer la distance entre l'attaquant et le défenseur
+    final distance = _calculateDistance(
+      attackerUnit.x, attackerUnit.y, 
+      defenderUnit.x, defenderUnit.y
+    );
+    
+    // Obtenir la portée d'attaque du défenseur
+    final defenderRange = defender.weapon?.attackRange ?? 1;
+    
+    // Vérifier si le défenseur peut riposter (il doit avoir la portée pour atteindre l'attaquant)
+    final canDefenderCounter = distance <= defenderRange;
+    
     // Vérifier si le personnage a une compétence active
     final activeSkill = attacker.equippedSkills
         .where((s) => s.type == SkillType.active)
@@ -195,6 +207,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
           attacker: attacker,
           defender: defender,
           attackerSkill: selectedSkill,
+          canDefenderCounter: canDefenderCounter, // Passer l'info au combat
           onCombatEnd: (result) {
             Navigator.pop(context, result);
           },

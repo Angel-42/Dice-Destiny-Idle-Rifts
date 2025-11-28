@@ -10,6 +10,7 @@ class CombatAnimationScreen extends StatefulWidget {
   final Character attacker;
   final Character defender;
   final Skill? attackerSkill; // Compétence active utilisée par l'attaquant (null = attaque normale)
+  final bool canDefenderCounter; // Le défenseur peut-il riposter ?
   final Function(CombatResult) onCombatEnd;
 
   const CombatAnimationScreen({
@@ -17,6 +18,7 @@ class CombatAnimationScreen extends StatefulWidget {
     required this.attacker,
     required this.defender,
     this.attackerSkill,
+    this.canDefenderCounter = true, // Par défaut, le défenseur peut riposter
     required this.onCombatEnd,
   });
 
@@ -83,25 +85,30 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await _fadeController.forward();
 
-    final attackerSpeed = widget.attacker.totalSpeed;
-    final defenderSpeed = widget.defender.totalSpeed;
+    // L'ATTAQUANT (celui qui a initié le combat) attaque TOUJOURS en premier
+    // On ne se base PAS sur la vitesse pour l'ordre initial
+    await _performAttack(widget.attacker, widget.defender);
 
-    List<Character> turnOrder = attackerSpeed >= defenderSpeed
-        ? [widget.attacker, widget.defender]
-        : [widget.defender, widget.attacker];
-
-    await _performAttack(turnOrder[0], turnOrder[1]);
-
+    // Le défenseur riposte seulement s'il est vivant ET s'il peut riposter (portée suffisante)
     if (_defenderCurrentHp > 0 && _attackerCurrentHp > 0) {
-      await Future.delayed(const Duration(milliseconds: 800));
-      await _performAttack(turnOrder[1], turnOrder[0]);
+      if (widget.canDefenderCounter) {
+        await Future.delayed(const Duration(milliseconds: 800));
+        await _performAttack(widget.defender, widget.attacker);
+      } else {
+        // Afficher un message indiquant que le défenseur ne peut pas riposter
+        setState(() {
+          _currentAction = '${widget.defender.name} est hors de portée pour riposter !';
+          _combatLog.add(_currentAction);
+        });
+        await Future.delayed(const Duration(milliseconds: 1000));
+      }
     }
 
     await Future.delayed(const Duration(milliseconds: 1000));
     _endCombat();
   }
 
-  Future<void> _performAttack(Character attacker, Character defender) async {
+  Future<void> _performAttack(Character attacker, Character defender, {bool allowDoubleAttack = true}) async {
     setState(() {
       _currentAction = '${attacker.name} attaque !';
       _combatLog.add(_currentAction);
@@ -138,6 +145,24 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
       _attackerDamagePopup = null;
       _defenderDamagePopup = null;
     });
+
+    // Vérifier si le défenseur est toujours vivant ET si la double attaque est autorisée
+    if (allowDoubleAttack) {
+      final defenderIsAlive = (defender.id == widget.defender.id && _defenderCurrentHp > 0) ||
+                              (defender.id == widget.attacker.id && _attackerCurrentHp > 0);
+      
+      if (defenderIsAlive && _checkDoubleAttack(attacker)) {
+        setState(() {
+          _currentAction = '${attacker.name} enchaîne avec une double attaque !';
+          _combatLog.add(_currentAction);
+        });
+        
+        await Future.delayed(const Duration(milliseconds: 600));
+        
+        // Effectuer la deuxième attaque (sans permettre de triple attaque)
+        await _performAttack(attacker, defender, allowDoubleAttack: false);
+      }
+    }
   }
 
   int _calculateDamage(Character attacker, Character defender) {
@@ -148,6 +173,23 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     } else {
       return attacker.calculatePhysicalDamage(defender, activeSkill: useSkill);
     }
+  }
+
+  /// Calcule la probabilité de double attaque basée sur la vitesse et la chance
+  /// Formule: (Speed/2 + Luck/3) / 100
+  /// Avec des stats élevées (Speed 30, Luck 30), on obtient ~25% de chance
+  /// Au début du jeu (Speed 10, Luck 5), on obtient ~6.6% de chance
+  bool _checkDoubleAttack(Character attacker) {
+    final speed = attacker.totalSpeed;
+    final luck = attacker.totalLuck;
+    
+    // Formule: (Speed/2 + Luck/3)
+    final doubleAttackChance = (speed / 2.0) + (luck / 3.0);
+    
+    // Génère un nombre aléatoire entre 0 et 100
+    final random = (DateTime.now().microsecondsSinceEpoch % 10000) / 100.0;
+    
+    return random < doubleAttackChance;
   }
 
   void _endCombat() {
