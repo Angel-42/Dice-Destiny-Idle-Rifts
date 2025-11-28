@@ -96,7 +96,7 @@ class CharacterCompactView extends StatelessWidget {
               child: _buildCharacterSprite(image, 120),
             ),
           ),
-          // Bouton '+' en bas à gauche (si onTap fourni)
+          // Bouton '+' en bas à gauche
           if (onTap != null)
             Positioned(
               bottom: 4,
@@ -151,7 +151,6 @@ class CharacterCompactView extends StatelessWidget {
         },
       );
     } else {
-      // Sinon c'est un emoji, l'afficher en texte
       return Center(
         child: Text(
           sprite,

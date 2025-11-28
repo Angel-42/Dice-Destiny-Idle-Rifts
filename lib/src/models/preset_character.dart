@@ -60,6 +60,7 @@ class PresetCharacter {
       range: baseStats['range'] ?? 1,
       luck: baseStats['luck'] ?? 5,
       gold: 100,
+      movement: baseStats['movement'] ?? 4, // Portée de déplacement par défaut
     );
 
     final appearance = CharacterAppearance(

@@ -14,6 +14,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 5},
+    attackRange: 1,
   );
 
   static const Equipment steelSword = Equipment(
@@ -24,6 +25,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 10, 'defense': 2},
+    attackRange: 1,
   );
 
   static const Equipment silverSword = Equipment(
@@ -34,6 +36,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 16, 'speed': 4},
+    attackRange: 1,
   );
 
   static const Equipment flameBlade = Equipment(
@@ -44,6 +47,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 18, 'magic': 5},
+    attackRange: 1,
   );
 
   static const Equipment excalibur = Equipment(
@@ -54,6 +58,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 25, 'defense': 8, 'speed': 7},
+    attackRange: 1,
   );
 
   static const Equipment falchion = Equipment(
@@ -64,6 +69,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 15, 'luck': 5},
+    attackRange: 1,
   );
 
   static const Equipment shadowSword = Equipment(
@@ -74,6 +80,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.epic,
     bonuses: {'attack': 20, 'speed': 6, 'luck': 4},
+    attackRange: 1,
   );
 
   static const Equipment dragonSlayer = Equipment(
@@ -84,6 +91,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 28, 'defense': 5, 'magic': 3},
+    attackRange: 1,
   );
 
   // ============================================================================
@@ -98,6 +106,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 7, 'defense': 1},
+    attackRange: 1,
   );
 
   static const Equipment steelAxe = Equipment(
@@ -108,6 +117,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 12, 'defense': 2},
+    attackRange: 1,
   );
 
   static const Equipment battleHammer = Equipment(
@@ -118,6 +128,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 13, 'defense': 3},
+    attackRange: 1,
   );
 
   static const Equipment titanAxe = Equipment(
@@ -128,6 +139,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 19, 'defense': 4},
+    attackRange: 1,
   );
 
   static const Equipment stormbreaker = Equipment(
@@ -138,6 +150,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 26, 'defense': 6, 'magic': 5},
+    attackRange: 1,
   );
 
   // ============================================================================
@@ -152,6 +165,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'magic': 6},
+    attackRange: 2,
   );
 
   static const Equipment mysticWand = Equipment(
@@ -162,6 +176,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'magic': 12, 'speed': 3},
+    attackRange: 2,
   );
 
   static const Equipment crystalStaff = Equipment(
@@ -172,6 +187,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'magic': 18, 'speed': 5},
+    attackRange: 2,
   );
 
   static const Equipment staffOfEternity = Equipment(
@@ -182,6 +198,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'magic': 30, 'speed': 8, 'defense': 5},
+    attackRange: 2,
   );
 
   static const Equipment elderWand = Equipment(
@@ -192,6 +209,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'magic': 28, 'luck': 7},
+    attackRange: 2,
   );
 
   // ============================================================================
@@ -206,6 +224,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'magic': 8, 'speed': 2},
+    attackRange: 2,
   );
 
   static const Equipment archmageGrimoire = Equipment(
@@ -216,6 +235,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'magic': 22, 'speed': 6, 'defense': 3},
+    attackRange: 2,
   );
 
   static const Equipment necronomiconEx = Equipment(
@@ -226,6 +246,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'magic': 32, 'speed': 4, 'luck': 5},
+    attackRange: 2,
   );
 
   // ============================================================================
@@ -240,6 +261,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 4, 'speed': 3},
+    attackRange: 2,
   );
 
   static const Equipment huntingBow = Equipment(
@@ -250,6 +272,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 8, 'speed': 5},
+    attackRange: 2,
   );
 
   static const Equipment longbow = Equipment(
@@ -260,6 +283,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 12, 'speed': 7},
+    attackRange: 2,
   );
 
   static const Equipment compositeBow = Equipment(
@@ -270,6 +294,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 16, 'speed': 9},
+    attackRange: 2,
   );
 
   static const Equipment silverHawk = Equipment(
@@ -280,6 +305,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 24, 'speed': 12, 'luck': 5},
+    attackRange: 2,
   );
 
   static const Equipment windcutter = Equipment(
@@ -290,6 +316,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.epic,
     bonuses: {'attack': 20, 'speed': 11, 'magic': 3},
+    attackRange: 2,
   );
 
   // ============================================================================
@@ -304,6 +331,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 3, 'speed': 5},
+    attackRange: 1,
   );
 
   static const Equipment ironDagger = Equipment(
@@ -314,6 +342,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 5, 'speed': 6},
+    attackRange: 1,
   );
 
   static const Equipment steelDagger = Equipment(
@@ -324,6 +353,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 7, 'speed': 7},
+    attackRange: 1,
   );
 
   static const Equipment poisonBlade = Equipment(
@@ -334,6 +364,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 11, 'speed': 9},
+    attackRange: 1,
   );
 
   static const Equipment shadowStrike = Equipment(
@@ -344,6 +375,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 15, 'speed': 11, 'luck': 4},
+    attackRange: 1,
   );
 
   static const Equipment phantomEdge = Equipment(
@@ -354,6 +386,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 22, 'speed': 15, 'luck': 8},
+    attackRange: 1,
   );
 
   static const Equipment bloodDrinker = Equipment(
@@ -364,6 +397,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.epic,
     bonuses: {'attack': 19, 'speed': 13, 'magic': 2},
+    attackRange: 1,
   );
 
   // ============================================================================
@@ -378,6 +412,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'attack': 6, 'defense': 2},
+    attackRange: 2,
   );
 
   static const Equipment steelLance = Equipment(
@@ -388,6 +423,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 11, 'defense': 3},
+    attackRange: 2,
   );
 
   static const Equipment dragonLance = Equipment(
@@ -398,6 +434,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 17, 'defense': 5},
+    attackRange: 2,
   );
 
   static const Equipment gungnir = Equipment(
@@ -408,6 +445,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 27, 'defense': 7, 'luck': 6},
+    attackRange: 2,
   );
 
   // ============================================================================
@@ -422,6 +460,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.common,
     bonuses: {'magic': 3, 'defense': 2},
+    attackRange: 2,
   );
 
   static const Equipment sacredStaff = Equipment(
@@ -432,6 +471,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'magic': 8, 'defense': 4},
+    attackRange: 2,
   );
 
   static const Equipment divineScepter = Equipment(
@@ -442,6 +482,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'magic': 14, 'defense': 6},
+    attackRange: 2,
   );
 
   static const Equipment holyGrail = Equipment(
@@ -452,6 +493,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'magic': 24, 'defense': 10, 'luck': 8},
+    attackRange: 2,
   );
 
   // ============================================================================
@@ -466,6 +508,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 17, 'speed': 8},
+    attackRange: 1,
   );
 
   static const Equipment scythe = Equipment(
@@ -476,6 +519,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.epic,
     bonuses: {'attack': 21, 'magic': 6, 'speed': 4},
+    attackRange: 1,
   );
 
   static const Equipment chakram = Equipment(
@@ -486,6 +530,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.rare,
     bonuses: {'attack': 15, 'speed': 10},
+    attackRange: 2,
   );
 
   static const Equipment claws = Equipment(
@@ -496,6 +541,7 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.uncommon,
     bonuses: {'attack': 9, 'speed': 8},
+    attackRange: 1,
   );
 
   // ============================================================================

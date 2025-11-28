@@ -30,8 +30,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
   late List<UnitPosition> units;
   late Map<String, Character> charactersMap;
   UnitPosition? selectedUnit;
-  Set<String> highlightedTiles = {};
-  Set<String> attackableTiles = {};
+  Set<String> highlightedTiles = {}; // Cases de mouvement (bleues)
+  Set<String> attackableTiles = {}; // Cases d'attaque (rouges)
+  Map<String, int> remainingMovement = {}; // Mouvement restant par unité ce tour
+  
   @override
   void initState() {
     super.initState();
@@ -46,10 +48,12 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final startX = 1;
     units = [];
     charactersMap = {};
+    remainingMovement = {};
 
     for (var i = 0; i < team.length && i < 4; i++) {
       final c = team[i];
       charactersMap[c.id] = c;
+      remainingMovement[c.id] = c.stats.movement; // Initialiser le mouvement restant
       units.add(UnitPosition(
         unitId: c.id,
         x: startX + i,
@@ -68,6 +72,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     for (final enemy in enemies) {
       charactersMap[enemy.id] = enemy;
+      remainingMovement[enemy.id] = enemy.stats.movement; // Initialiser le mouvement restant
     }
 
     units.addAll([
@@ -342,59 +347,29 @@ class _CampaignScreenState extends State<CampaignScreen> {
     highlightedTiles.clear();
     attackableTiles.clear();
 
-    // Cases de mouvement adjacentes
-    final directions = [
-      (0, -1), (0, 1), (-1, 0), (1, 0),
-    ];
-
-    for (final (dx, dy) in directions) {
-      final newX = unit.x + dx;
-      final newY = unit.y + dy;
-
-      if (mapData.isWalkable(newX, newY)) {
-        final occupant = units.firstWhere(
-          (u) => u.x == newX && u.y == newY,
-          orElse: () => UnitPosition(unitId: '', x: -1, y: -1, name: ''),
-        );
-        
-        if (occupant.x == -1) {
-          highlightedTiles.add('$newX,$newY');
-        }
-      }
+    // Obtenir le mouvement RESTANT ce tour (pas le mouvement total)
+    final movementRange = remainingMovement[unit.unitId] ?? character.stats.movement;
+    
+    // Calculer toutes les cases accessibles avec pathfinding
+    final reachableTiles = mapData.getReachableTiles(unit.x, unit.y, movementRange);
+    
+    // Convertir en format Set<String> pour l'UI
+    for (final tile in reachableTiles) {
+      highlightedTiles.add('${tile.x},${tile.y}');
     }
 
-    // Zones d'attaque (basées sur la portée)
-    final range = character.stats.range;
-    for (var u in units) {
-      if (!u.isPlayer) {
-        final distance = _calculateDistance(unit.x, unit.y, u.x, u.y);
-        if (distance <= range) {
-          attackableTiles.add('${u.x},${u.y}');
-        }
-      }
+    // Obtenir la portée d'attaque depuis l'arme équipée
+    int attackRange = 1; // Par défaut
+    if (character.weapon != null) {
+      attackRange = character.weapon!.attackRange;
     }
-
-    setState(() {});
-  }
-
-  void _highlightMoveOptions(UnitPosition unit) {
-    highlightedTiles.clear();
-
-    final directions = [
-      (0, -1),
-      (0, 1),
-      (-1, 0),
-      (1, 0),
-    ];
-
-    for (final (dx, dy) in directions) {
-      final newX = unit.x + dx;
-      final newY = unit.y + dy;
-
-      // Vérifier si la case est valide et marchable
-      if (mapData.isWalkable(newX, newY) && !mapData.isOccupied(newX, newY)) {
-        highlightedTiles.add('$newX,$newY');
-      }
+    
+    // TOUJOURS calculer les cases attaquables (zone rouge visible en permanence)
+    final attackTiles = mapData.getAttackableTiles(reachableTiles, unit.x, unit.y, attackRange);
+    
+    // Convertir en format Set<String> pour l'UI
+    for (final tile in attackTiles) {
+      attackableTiles.add('${tile.x},${tile.y}');
     }
 
     setState(() {});
@@ -408,18 +383,36 @@ class _CampaignScreenState extends State<CampaignScreen> {
       return;
     }
 
-    // Déplacer l'unité
+    final character = charactersMap[selectedUnit!.unitId];
+    if (character == null) return;
+
+    final currentRemaining = remainingMovement[selectedUnit!.unitId] ?? character.stats.movement;
+    
+    // Calculer le chemin optimal vers la destination
+    final pathResult = mapData.findPath(
+      selectedUnit!.x, 
+      selectedUnit!.y, 
+      x, 
+      y, 
+      currentRemaining
+    );
+    
+    if (pathResult == null) return;
+    
+    // Déduire le coût total du mouvement restant
+    remainingMovement[selectedUnit!.unitId] = (currentRemaining - pathResult.totalCost).clamp(0, character.stats.movement);
+
+    // Déplacer l'unité directement à la destination
     setState(() {
       final index = units.indexWhere((u) => u.unitId == selectedUnit!.unitId);
       if (index != -1) {
         units[index] = units[index].copyWith(x: x, y: y);
         selectedUnit = units[index];
         
-        // Mettre à jour les cases en surbrillance
-        _highlightMoveOptions(selectedUnit!);
+        // Mettre à jour les cases en surbrillance avec le mouvement restant
+        _highlightMoveAndAttackOptions(selectedUnit!, character);
       }
     });
-
   }
 
   @override
@@ -589,6 +582,33 @@ class _CampaignScreenState extends State<CampaignScreen> {
                               fontSize: 12,
                             ),
                           ),
+                          // Afficher le mouvement restant
+                          Builder(
+                            builder: (context) {
+                              final character = charactersMap[selectedUnit!.unitId];
+                              if (character == null) return const SizedBox.shrink();
+                              final remaining = remainingMovement[selectedUnit!.unitId] ?? character.stats.movement;
+                              final total = character.stats.movement;
+                              return Row(
+                                children: [
+                                  Icon(
+                                    Icons.directions_run,
+                                    size: 14,
+                                    color: remaining > 0 ? Colors.green : Colors.red,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Mouvement: $remaining/$total',
+                                    style: TextStyle(
+                                      color: remaining > 0 ? Colors.green : Colors.red,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ],
@@ -606,9 +626,18 @@ class _CampaignScreenState extends State<CampaignScreen> {
           // Bouton fin de tour
           ElevatedButton.icon(
             onPressed: () {
+              // Réinitialiser le mouvement de toutes les unités
+              for (final unitId in remainingMovement.keys.toList()) {
+                final character = charactersMap[unitId];
+                if (character != null) {
+                  remainingMovement[unitId] = character.stats.movement;
+                }
+              }
+              
               setState(() {
                 selectedUnit = null;
                 highlightedTiles.clear();
+                attackableTiles.clear();
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

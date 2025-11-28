@@ -122,6 +122,7 @@ Il porte l'épée sacrée Falchion, transmise de génération en génération.
       'magic': 5,
       'range': 1,
       'luck': 22,
+      'movement': 4, // Warrior - lourd
     },
     starterWeapon: WeaponsDatabase.falchion,
     voiceLines: [
@@ -231,6 +232,7 @@ et protège les innocents contre les oppresseurs.
       'magic': 4,
       'range': 1,
       'luck': 18,
+      'movement': 5, // Warrior rapide
     },
     starterWeapon: WeaponsDatabase.katana,
     voiceLines: [
@@ -333,6 +335,7 @@ Il aspire à ramener la paix dans un monde en proie au chaos.
       'magic': 6,
       'range': 1,
       'luck': 14,
+      'movement': 4, // Warrior tank - lourd
     },
     starterWeapon: WeaponsDatabase.flameBlade,
     voiceLines: [
@@ -430,6 +433,7 @@ des bois à l'agitation des villes.
       'magic': 3,
       'range': 2,
       'luck': 16,
+      'movement': 5, // Archer - mobile
     },
     starterWeapon: WeaponsDatabase.shortBow,
     voiceLines: [
@@ -527,6 +531,7 @@ les secrets oubliés de l'ancienne magie.
       'magic': 22,
       'range': 2,
       'luck': 12,
+      'movement': 5, // Mage - mobilité standard
     },
     starterWeapon: WeaponsDatabase.woodenStaff,
     voiceLines: [

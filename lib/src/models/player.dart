@@ -10,7 +10,7 @@ class Player {
   int summonTokens;
 
   // Progression
-  int storyChapter;
+  int storyChapter; // Chapitre de l'histoire débloqué (based with 1,01 = Chapitre 1 stage 1 ; 1,02 = Chapitre 1 stage 2, etc.)
   int arenaRank;
   int highestRiftFloor;
 

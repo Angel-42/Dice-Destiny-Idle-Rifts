@@ -580,6 +580,7 @@ class CharacterStats {
   int range;
   int luck;
   int gold;
+  int movement; // Portée de déplacement sur la carte tactique
   
   CharacterStats({
     required this.maxHp,
@@ -590,6 +591,7 @@ class CharacterStats {
     required this.range,
     required this.luck,
     this.gold = 100,
+    this.movement = 4, // Valeur par défaut
   });
   
   Map<String, dynamic> toJson() => {
@@ -601,6 +603,7 @@ class CharacterStats {
     'range': range,
     'luck': luck,
     'gold': gold,
+    'movement': movement,
   };
   
   factory CharacterStats.fromJson(Map<String, dynamic> json) => CharacterStats(
@@ -612,6 +615,7 @@ class CharacterStats {
     range: json['range'],
     luck: json['luck'],
     gold: json['gold'] ?? 100,
+    movement: json['movement'] ?? 4,
   );
 }
 

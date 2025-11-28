@@ -48,6 +48,7 @@ class EnemyDatabase {
         magic: 0,
         range: 1,
         luck: 5,
+        movement: 5, // Rapide
       ),
       appearance: CharacterAppearance(
         headshot: '🐺',
@@ -86,6 +87,7 @@ class EnemyDatabase {
         magic: 0,
         range: 1,
         luck: 8,
+        movement: 4, // Standard
       ),
       appearance: CharacterAppearance(
         headshot: '🗡️',
