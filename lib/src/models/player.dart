@@ -10,7 +10,7 @@ class Player {
   int summonTokens;
 
   // Progression
-  int storyChapter; // Chapitre de l'histoire débloqué (based with 1,01 = Chapitre 1 stage 1 ; 1,02 = Chapitre 1 stage 2, etc.)
+  double storyChapter; // Chapitre de l'histoire débloqué (based with 1,01 = Chapitre 1 stage 1 ; 1,02 = Chapitre 1 stage 2, etc.)
   int arenaRank;
   int highestRiftFloor;
 
@@ -48,7 +48,7 @@ class Player {
     this.gold = 100,
     this.gems = 50,
     this.summonTokens = 0,
-    this.storyChapter = 1,
+    this.storyChapter = 1.01,
     this.arenaRank = 0,
     this.highestRiftFloor = 0,
     this.dailyEnemiesDefeated = 0,
@@ -110,7 +110,7 @@ class Player {
       gold: json['gold'] as int? ?? 100,
       gems: json['gems'] as int? ?? 50,
       summonTokens: json['summonTokens'] as int? ?? 0,
-      storyChapter: json['storyChapter'] as int? ?? 1,
+      storyChapter: json['storyChapter'] as double? ?? 1.01,
       arenaRank: json['arenaRank'] as int? ?? 0,
       highestRiftFloor: json['highestRiftFloor'] as int? ?? 0,
       dailyEnemiesDefeated: json['dailyEnemiesDefeated'] as int? ?? 0,
@@ -240,7 +240,7 @@ bool spendGold(int amount) {
     int? gold,
     int? gems,
     int? summonTokens,
-    int? storyChapter,
+    double? storyChapter,
     int? arenaRank,
     int? highestRiftFloor,
     DateTime? lastDailyReward,

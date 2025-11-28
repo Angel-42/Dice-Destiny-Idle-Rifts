@@ -1,5 +1,4 @@
-import 'package:dice_destiny_idle_rifts/src/screens/campaign_screen.dart';
-import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
+import 'package:dice_destiny_idle_rifts/src/screens/campaign_selection_screen.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 class BattleScreen extends StatefulWidget {
@@ -109,28 +108,13 @@ class _BattleScreenState extends State<BattleScreen> {
 
                       // Bouton Campaign
                       ElevatedButton.icon(
-                        onPressed: () async {
-                          try {
-                            final team = await GameDataService.getTeamCharacters();
-                            if (team.isEmpty) {
-                              if (!mounted) return;
-                              return;
-                            }
-                            if (!mounted) return;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CampaignScreen(team: team),
-                              ),
-                            );
-                          } catch (e) {
-                            debugPrint('❌ Erreur ouverture campagne depuis Battle: $e');
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(S.of(context)!.cannotOpenCampaign)),
-                              );
-                            }
-                          }
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CampaignSelectionScreen(),
+                            ),
+                          );
                         },
                         icon: const Icon(Icons.campaign),
                         label: Text(

@@ -432,6 +432,166 @@ class TacticalMapData {
     );
   }
 
+  /// Créer une map de forêt (Chapitre 1)
+  factory TacticalMapData.createForestMap() {
+    const width = 10;
+    const height = 10;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Bordures montagneuses
+          if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Forêts denses (60% de la map)
+          if ((x + y) % 2 == 0 && x > 1 && x < width - 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.forest,
+              walkable: true,
+              moveCost: 2,
+            );
+          }
+
+          // Plaines
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'forest_map',
+      name: 'Forêt Mystérieuse',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Une épaisse forêt où les ennemis se cachent.',
+    );
+  }
+
+  /// Créer une map de plaines (Chapitre 2)
+  factory TacticalMapData.createPlainsMap() {
+    const width = 12;
+    const height = 10;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Route centrale
+          if (y == height ~/ 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Quelques forêts dispersées
+          if ((x * y) % 7 == 0) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.forest,
+              walkable: true,
+              moveCost: 2,
+            );
+          }
+
+          // Plaines majoritaires
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'plains_map',
+      name: 'Plaines Ouvertes',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'De vastes plaines où la stratégie est clé.',
+    );
+  }
+
+  /// Créer une map de montagne (Chapitre 3)
+  factory TacticalMapData.createMountainMap() {
+    const width = 10;
+    const height = 10;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Montagnes aléatoires (30%)
+          if ((x * 3 + y * 2) % 5 == 0) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Forêts sur les pentes
+          if ((x + y) % 3 == 0) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.forest,
+              walkable: true,
+              moveCost: 2,
+            );
+          }
+
+          // Plaines rocheuses
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'mountain_map',
+      name: 'Pics Escarpés',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Des montagnes traîtresses avec des passages étroits.',
+    );
+  }
+
   /// Créer une map personnalisée
   factory TacticalMapData.custom({
     required String id,

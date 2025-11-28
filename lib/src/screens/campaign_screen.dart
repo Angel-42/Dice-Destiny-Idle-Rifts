@@ -4,6 +4,7 @@ import '../models/map_data.dart';
 import '../models/character.dart';
 import '../models/persona.dart';
 import '../models/skill.dart';
+import '../models/campaign_data.dart';
 import '../widgets/tactical_map_widget.dart';
 import '../widgets/character_detail_popup.dart';
 import '../widgets/level_up_animation.dart';
@@ -15,10 +16,12 @@ import '../data/enemy_database.dart';
 /// Écran de campagne avec map tactique et déplacement
 class CampaignScreen extends StatefulWidget {
   final List<Character> team;
+  final CampaignStage? stage; // Stage de campagne (null = mode test)
 
   const CampaignScreen({
     super.key,
     required this.team,
+    this.stage,
   });
 
   @override
@@ -316,17 +319,54 @@ class _CampaignScreenState extends State<CampaignScreen> {
   }
 
   void _showVictoryDialog() {
+    // Donner les récompenses du stage
+    if (widget.stage != null) {
+      // TODO: Ajouter l'or et l'XP au joueur
+      debugPrint('Stage terminé ! Récompenses: ${widget.stage!.rewardGold}G, ${widget.stage!.rewardXP}XP');
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Text(S.of(context)!.victory),
-        content: Text(S.of(context)!.allEnemiesDefeated),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(S.of(context)!.allEnemiesDefeated),
+            if (widget.stage != null) ...[
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.monetization_on, color: Colors.amber),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+${widget.stage!.rewardGold} Or',
+                    style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.star, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+${widget.stage!.rewardXP} XP',
+                    style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Dialog
-              Navigator.pop(context); // Campaign screen
+              Navigator.pop(context, true); // Campaign screen avec succès
             },
             child: Text(S.of(context)!.returnButton),
           ),
@@ -347,7 +387,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Dialog
-              Navigator.pop(context); // Campaign screen
+              Navigator.pop(context, false); // Campaign screen avec échec
             },
             child: Text(S.of(context)!.returnButton),
           ),
