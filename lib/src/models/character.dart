@@ -4,6 +4,7 @@ import '../models/skill.dart';
 import '../models/weapon_mastery.dart';
 import '../models/class_tree.dart';
 import '../models/character_inventory.dart';
+import '../models/dice.dart';
 import 'package:flutter/foundation.dart';
 
 class Character {     // est un personnage jouable (pas le player)
@@ -352,9 +353,13 @@ class Character {     // est un personnage jouable (pas le player)
   // SYSTÈME DE COMBAT
   // ============================================================================
 
-  /// Calcule les dégâts physiques infligés à un adversaire
+  /// Calcule les dégâts physiques infligés à un adversaire (avec critique possible)
   /// Formule: (Attaque * Maîtrise d'arme * Skill multiplicateur) - (Défense adversaire * 0.5)
-  int calculatePhysicalDamage(Character target, {Skill? activeSkill}) {
+  /// Retourne un tuple (dégâts, isCritical)
+  (int damage, bool isCritical) calculatePhysicalDamageWithCrit(Character target, {Skill? activeSkill}) {
+    // Vérifier si c'est un critique (RNG caché influencé par Luck)
+    final isCritical = DiceService.rollCriticalHit(totalLuck);
+    
     // Attaque de base (avec équipement et passives)
     double damage = totalAttack.toDouble();
     
@@ -371,7 +376,7 @@ class Character {     // est un personnage jouable (pas le player)
 
     // Appliquer les boosts de maîtrise spécifiques d'une classe (ex: 'sword', 'unarmed')
     try {
-  final classBoosts = ClassTree.instance.aggregatePassiveBoostsFor(ownedClassIds);
+      final classBoosts = ClassTree.instance.aggregatePassiveBoostsFor(ownedClassIds);
       if (weapon != null) {
         final wt = _getWeaponType(weapon!);
         switch (wt) {
@@ -410,17 +415,32 @@ class Character {     // est un personnage jouable (pas le player)
       damage *= passiveDamageMult;
     }
     
+    // CRITIQUE : ×2.5 dégâts
+    if (isCritical) {
+      damage *= 2.5;
+    }
+    
     // Réduction selon la défense de la cible
     final defense = target.totalDefense * 0.5;
     damage -= defense;
     
     // Dégâts minimum de 1
-    return damage.round().clamp(1, 9999);
+    return (damage.round().clamp(1, 9999), isCritical);
   }
 
-  /// Calcule les dégâts magiques infligés à un adversaire
+  /// Version legacy pour compatibilité (appelle la nouvelle avec critique)
+  int calculatePhysicalDamage(Character target, {Skill? activeSkill}) {
+    final (damage, _) = calculatePhysicalDamageWithCrit(target, activeSkill: activeSkill);
+    return damage;
+  }
+
+  /// Calcule les dégâts magiques infligés à un adversaire (avec critique possible)
   /// Formule: (Magie * Skill multiplicateur) - (Résistance adversaire * 0.3)
-  int calculateMagicDamage(Character target, {Skill? activeSkill}) {
+  /// Retourne un tuple (dégâts, isCritical)
+  (int damage, bool isCritical) calculateMagicDamageWithCrit(Character target, {Skill? activeSkill}) {
+    // Vérifier si c'est un critique (RNG caché influencé par Luck)
+    final isCritical = DiceService.rollCriticalHit(totalLuck);
+    
     // Magie de base (avec équipement et passives)
     double damage = totalMagic.toDouble();
     
@@ -433,12 +453,22 @@ class Character {     // est un personnage jouable (pas le player)
       damage *= passiveDamageMult;
     }
     
+    // CRITIQUE : ×2.5 dégâts
+    if (isCritical) {
+      damage *= 2.5;
+    }
+    
     // Réduction selon la résistance magique de la cible
     final resistance = target.totalMagic * 0.3;
     damage -= resistance;
     
-    // Dégâts minimum de 1
-    return damage.round().clamp(1, 9999);
+    return (damage.round().clamp(1, 9999), isCritical);
+  }
+
+  /// Version legacy pour compatibilité
+  int calculateMagicDamage(Character target, {Skill? activeSkill}) {
+    final (damage, _) = calculateMagicDamageWithCrit(target, activeSkill: activeSkill);
+    return damage;
   }
 
   /// Calcule la quantité de soin fournie par une compétence (activeSkill)

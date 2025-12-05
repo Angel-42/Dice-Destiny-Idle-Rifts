@@ -271,18 +271,23 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
             children: [
               Icon(Icons.person, size: 14, color: Colors.red.shade300),
               const SizedBox(width: 4),
-              Text(
-                '${stage.enemies.length} ennemis',
-                style: TextStyle(color: Colors.red.shade300, fontSize: 11),
+              Flexible(
+                child: Text(
+                  '${stage.enemies.length} ennemis',
+                  style: TextStyle(color: Colors.red.shade300, fontSize: 11),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               const Icon(Icons.monetization_on, size: 14, color: Colors.amber),
               const SizedBox(width: 4),
-              Text(
-                '${stage.rewardGold}G',
-                style: const TextStyle(color: Colors.amber, fontSize: 11),
+              Flexible(
+                child: Text(
+                  '${stage.rewardGold}G',
+                  style: const TextStyle(color: Colors.amber, fontSize: 11),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(width: 12),
               const Icon(Icons.star, size: 14, color: Colors.blue),
               const SizedBox(width: 4),
               Text(

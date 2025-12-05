@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
+import '../models/dice.dart';
+import '../widgets/dice_animation_widget.dart';
 
 /// Écran de combat animé 1v1 inspiré de Fire Emblem
 /// Affiche une scène isolée avec les sprites des deux combattants
@@ -116,7 +118,38 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    final damage = _calculateDamage(attacker, defender);
+    // Calculer les dégâts avec potentiel critique
+    final (damage, isCritical) = _calculateDamageWithCrit(attacker, defender);
+    
+    // Si critique, afficher l'animation du dé D20
+    if (isCritical) {
+      final critRoll = DiceRoll(
+        type: DiceType.d20,
+        result: 20,
+        isCritical: true,
+      );
+      
+      // Afficher brèvement l'animation de dé (1 seconde)
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withOpacity(0.7),
+        builder: (context) => DiceAnimationWidget(
+          roll: critRoll,
+          onComplete: () => Navigator.of(context).pop(),
+          duration: const Duration(milliseconds: 800),
+          size: 100,
+          showDescription: false,
+        ),
+      );
+      
+      setState(() {
+        _currentAction = '✨ CRITIQUE ! ✨';
+        _combatLog.add(_currentAction);
+      });
+      
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
     
     setState(() {
       if (defender.id == widget.defender.id) {
@@ -165,14 +198,20 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     }
   }
 
-  int _calculateDamage(Character attacker, Character defender) {
+  (int, bool) _calculateDamageWithCrit(Character attacker, Character defender) {
     final useSkill = attacker.id == widget.attacker.id ? widget.attackerSkill : null;
     
     if (attacker.persona.characterClass.isMagical) {
-      return attacker.calculateMagicDamage(defender, activeSkill: useSkill);
+      return attacker.calculateMagicDamageWithCrit(defender, activeSkill: useSkill);
     } else {
-      return attacker.calculatePhysicalDamage(defender, activeSkill: useSkill);
+      return attacker.calculatePhysicalDamageWithCrit(defender, activeSkill: useSkill);
     }
+  }
+
+  // Version legacy pour compatibilité
+  int _calculateDamage(Character attacker, Character defender) {
+    final (damage, _) = _calculateDamageWithCrit(attacker, defender);
+    return damage;
   }
 
   /// Calcule la probabilité de double attaque basée sur la vitesse et la chance
