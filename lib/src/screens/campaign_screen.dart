@@ -48,6 +48,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
   int _currentTurnIndex = 0;
   bool _isPlayerPhase = true; // true = phase alliés, false = phase ennemis
   Set<String> _unitsWhoActed = {}; // Unités qui ont déjà agi ce cycle/phase
+  Map<String, int> _remainingMovement = {}; // Mouvement restant pour chaque unité ce tour
   
   @override
   void initState() {
@@ -150,12 +151,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
         duration: const Duration(milliseconds: 1500),
       );
       
-      // Sélectionner automatiquement le premier allié après l'animation
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (_allyTurnOrder.isNotEmpty && mounted) {
-          _startUnitTurn(_allyTurnOrder[_currentTurnIndex]);
-        }
-      });
+      // Le joueur choisira lui-même quel allié jouer
     });
   }
   
@@ -163,6 +159,9 @@ class _CampaignScreenState extends State<CampaignScreen> {
   void _startUnitTurn(String unitId) {
     final unit = units.firstWhere((u) => u.unitId == unitId);
     final character = charactersMap[unitId]!;
+    
+    // Initialiser le mouvement restant
+    _remainingMovement[unitId] = character.stats.movement;
     
     setState(() {
       selectedUnit = unit;
@@ -172,11 +171,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
   
   /// Termine le tour de l'unité courante et passe à la suivante
   void _endCurrentUnitTurn() {
-    final currentOrder = _isPlayerPhase ? _allyTurnOrder : _enemyTurnOrder;
-    if (_currentTurnIndex >= currentOrder.length) return;
+    if (selectedUnit == null) return;
     
-    final currentUnitId = currentOrder[_currentTurnIndex];
-    _unitsWhoActed.add(currentUnitId);
+    // Marquer l'unité comme ayant joué
+    _unitsWhoActed.add(selectedUnit!.unitId);
     
     setState(() {
       selectedUnit = null;
@@ -184,24 +182,36 @@ class _CampaignScreenState extends State<CampaignScreen> {
       attackableTiles.clear();
     });
     
-    // Passer à l'unité suivante
-    _nextTurn();
+    // Si phase ennemie, passer à l'unité suivante automatiquement
+    if (!_isPlayerPhase) {
+      _nextTurn();
+    } else {
+      // Phase alliée : vérifier si tous les alliés ont joué
+      _checkAllAlliesPlayed();
+    }
   }
   
-  /// Passe au tour suivant
+  /// Vérifie si tous les alliés ont joué et passe à la phase ennemie si oui
+  void _checkAllAlliesPlayed() {
+    final allAlliesPlayed = _allyTurnOrder.every((unitId) => _unitsWhoActed.contains(unitId));
+    
+    if (allAlliesPlayed) {
+      _startNewPhase();
+    }
+  }
+  
+  /// Passe au tour suivant (pour phase ennemie uniquement)
   void _nextTurn() {
     _currentTurnIndex++;
     
-    final currentOrder = _isPlayerPhase ? _allyTurnOrder : _enemyTurnOrder;
-    
-    // Si on a terminé tous les tours de la phase actuelle
-    if (_currentTurnIndex >= currentOrder.length) {
+    // Si on a terminé tous les tours ennemis
+    if (_currentTurnIndex >= _enemyTurnOrder.length) {
       _startNewPhase();
       return;
     }
     
-    // Démarrer le tour de l'unité suivante
-    _startUnitTurn(currentOrder[_currentTurnIndex]);
+    // Démarrer le tour de l'ennemi suivant
+    _startUnitTurn(_enemyTurnOrder[_currentTurnIndex]);
   }
   
   /// Démarre une nouvelle phase ou un nouveau cycle
@@ -211,6 +221,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
       _isPlayerPhase = false;
       _currentTurnIndex = 0;
       _unitsWhoActed.clear();
+      _remainingMovement.clear();
       
       PhaseTransitionOverlay.show(
         context: context,
@@ -230,6 +241,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
       _isPlayerPhase = true;
       _currentTurnIndex = 0;
       _unitsWhoActed.clear();
+      _remainingMovement.clear();
       
       PhaseTransitionOverlay.show(
         context: context,
@@ -254,15 +266,14 @@ class _CampaignScreenState extends State<CampaignScreen> {
     if (character == null) return;
 
     if (!unit.isPlayer) {
-      // Afficher l'ennemi dans le header (comme pour les alliés)
-      // Si on a une unité sélectionnée et que l'ennemi est à portée, on peut attaquer
+      // Afficher l'ennemi dans le header
       if (selectedUnit != null && selectedUnit!.isPlayer) {
         final distance = _calculateDistance(selectedUnit!.x, selectedUnit!.y, unit.x, unit.y);
         final selectedChar = charactersMap[selectedUnit!.unitId]!;
         final range = selectedChar.stats.range;
         
         if (distance <= range) {
-          // Attaquer directement
+          // Attaquer directement (termine le tour)
           _startCombat(selectedChar, character, selectedUnit!, unit);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -279,6 +290,21 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     // Pour les alliés: sélection/désélection
     if (unit.isPlayer) {
+      // Bloquer si ce n'est pas la phase joueur
+      if (!_isPlayerPhase) return;
+      
+      // Bloquer si l'unité a déjà agi
+      if (_unitsWhoActed.contains(unit.unitId)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${character.name} a déjà joué ce cycle'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        return;
+      }
+      
       setState(() {
         if (selectedUnit?.unitId == unit.unitId) {
           // Désélectionner
@@ -286,6 +312,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
           highlightedTiles.clear();
           attackableTiles.clear();
         } else {
+          // Sélectionner et initialiser le mouvement restant si première sélection
+          if (!_remainingMovement.containsKey(unit.unitId)) {
+            _remainingMovement[unit.unitId] = character.stats.movement;
+          }
           selectedUnit = unit;
           _highlightMoveAndAttackOptions(unit, character);
         }
@@ -615,8 +645,8 @@ class _CampaignScreenState extends State<CampaignScreen> {
     highlightedTiles.clear();
     attackableTiles.clear();
 
-    // L'unité peut se déplacer de son mouvement total
-    final movementRange = character.stats.movement;
+    // Utiliser le mouvement restant au lieu du mouvement total
+    final movementRange = _remainingMovement[unit.unitId] ?? character.stats.movement;
     
     // Calculer toutes les cases accessibles avec pathfinding
     final reachableTiles = mapData.getReachableTiles(unit.x, unit.y, movementRange);
@@ -645,6 +675,9 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
   void _onTileTap(int x, int y) {
     if (selectedUnit == null) return;
+    
+    // Bloquer les actions pendant la phase ennemie
+    if (!_isPlayerPhase) return;
 
     // Vérifier si la case est dans les mouvements possibles
     if (!highlightedTiles.contains('$x,$y')) {
@@ -653,30 +686,28 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     final character = charactersMap[selectedUnit!.unitId];
     if (character == null) return;
-
-    // Calculer le chemin optimal vers la destination
-    final pathResult = mapData.findPath(
-      selectedUnit!.x, 
-      selectedUnit!.y, 
-      x, 
-      y, 
-      character.stats.movement
-    );
     
-    if (pathResult == null) return;
+    // Vérifier le mouvement restant
+    final remainingMvt = _remainingMovement[selectedUnit!.unitId] ?? 0;
+    if (remainingMvt <= 0) return;
 
-    // Déplacer l'unité directement à la destination
+    // Calculer la distance du déplacement
+    final distance = _calculateDistance(selectedUnit!.x, selectedUnit!.y, x, y);
+    
+    if (distance > remainingMvt) return;
+
+    // Déplacer l'unité
     setState(() {
       final index = units.indexWhere((u) => u.unitId == selectedUnit!.unitId);
       if (index != -1) {
         units[index] = units[index].copyWith(x: x, y: y);
         selectedUnit = units[index];
         
-        // Après déplacement, l'unité a terminé son action
-        // On termine automatiquement son tour
-        Future.delayed(const Duration(milliseconds: 300), () {
-          _endCurrentUnitTurn();
-        });
+        // Déduire le mouvement utilisé
+        _remainingMovement[selectedUnit!.unitId] = remainingMvt - distance;
+        
+        // Rafraîchir les options de mouvement/attaque
+        _highlightMoveAndAttackOptions(selectedUnit!, character);
       }
     });
   }
