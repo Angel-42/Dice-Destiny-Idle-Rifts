@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/map_data.dart';
+import 'animated_pixel_sprite.dart';
 
 /// Widget de grille tactique modulable (style Fire Emblem)
 class TacticalMapWidget extends StatelessWidget {
@@ -12,6 +13,7 @@ class TacticalMapWidget extends StatelessWidget {
   final bool showGrid;
   final Set<String>? highlightedTiles;
   final Set<String>? attackableTiles;
+  final Set<String>? unitsWhoActed; // Unités ayant déjà agi (grisées)
 
   const TacticalMapWidget({
     super.key,
@@ -24,6 +26,7 @@ class TacticalMapWidget extends StatelessWidget {
     this.showGrid = true,
     this.highlightedTiles,
     this.attackableTiles,
+    this.unitsWhoActed,
   });
 
   @override
@@ -59,16 +62,19 @@ class TacticalMapWidget extends StatelessWidget {
                   ),
                 );
                 final hasUnit = unit.x == x && unit.y == y;
+                final unitAtPosition = hasUnit ? unit : null;
                 final isSelected = selectedUnit?.x == x && selectedUnit?.y == y;
                 final isHighlighted = highlightedTiles?.contains('$x,$y') ?? false;
                 final isAttackable = attackableTiles?.contains('$x,$y') ?? false;
+                final hasActed = unitAtPosition != null && (unitsWhoActed?.contains(unitAtPosition.unitId) ?? false);
 
                 return _MapTileWidget(
                   tile: tile,
-                  unit: hasUnit ? unit : null,
+                  unit: unitAtPosition,
                   isSelected: isSelected,
                   isHighlighted: isHighlighted,
                   isAttackable: isAttackable,
+                  hasActed: hasActed,
                   size: tileSize,
                   showGrid: showGrid,
                   onTap: () {
@@ -95,6 +101,7 @@ class _MapTileWidget extends StatelessWidget {
   final bool isSelected;
   final bool isHighlighted;
   final bool isAttackable;
+  final bool hasActed; // L'unité a déjà joué ce cycle
   final double size;
   final bool showGrid;
   final VoidCallback onTap;
@@ -105,6 +112,7 @@ class _MapTileWidget extends StatelessWidget {
     this.isSelected = false,
     this.isHighlighted = false,
     this.isAttackable = false,
+    this.hasActed = false,
     required this.size,
     this.showGrid = true,
     required this.onTap,
@@ -181,32 +189,12 @@ class _MapTileWidget extends StatelessWidget {
             // Unité
             if (unit != null)
               Center(
-                child: unit!.pixelSprite != null
-                    ? Container(
-                        width: size * 0.8,
-                        height: size * 0.8,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isSelected ? Colors.yellow : Colors.transparent,
-                            width: isSelected ? 3 : 0,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Image.asset(
-                          unit!.pixelSprite!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildFallbackUnitIcon(size, isSelected);
-                          },
-                        ),
-                      )
-                    : _buildFallbackUnitIcon(size, isSelected),
+                child: Opacity(
+                  opacity: hasActed ? 0.4 : 1.0,
+                  child: unit!.pixelSprite != null
+                      ? _buildAnimatedSprite(size, isSelected)
+                      : _buildFallbackUnitIcon(size, isSelected),
+                ),
               ),
 
             if (isSelected && unit != null)
@@ -236,6 +224,19 @@ class _MapTileWidget extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedSprite(double size, bool isSelected) {
+    // Utiliser directement AnimatedPixelSprite avec son propre errorBuilder
+    return AnimatedPixelSprite(
+      assetPath: unit!.pixelSprite!,
+      width: size * 0.8,
+      height: size * 0.8,
+      frameCount: 8, // 8 frames d'animation comme Fire Emblem
+      frameDuration: const Duration(milliseconds: 150),
+      isSelected: isSelected,
+      fallbackBuilder: () => _buildFallbackUnitIcon(size, isSelected),
     );
   }
 

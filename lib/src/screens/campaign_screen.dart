@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/map_data.dart';
 import '../models/character.dart';
 import '../models/persona.dart';
 import '../models/skill.dart';
 import '../models/campaign_data.dart';
+import '../models/dice.dart';
 import '../widgets/tactical_map_widget.dart';
 import '../widgets/character_detail_popup.dart';
+import '../widgets/character_compact_view.dart';
 import '../widgets/level_up_animation.dart';
 import '../widgets/icon_display.dart';
+import '../widgets/dice_animation_widget.dart';
+import '../widgets/confirmation_dialog.dart';
+import '../widgets/phase_transition_overlay.dart';
 import '../screens/combat_animation_screen.dart';
 import '../services/game_data_service.dart';
 import '../data/enemy_database.dart';
@@ -35,7 +41,13 @@ class _CampaignScreenState extends State<CampaignScreen> {
   UnitPosition? selectedUnit;
   Set<String> highlightedTiles = {}; // Cases de mouvement (bleues)
   Set<String> attackableTiles = {}; // Cases d'attaque (rouges)
-  Map<String, int> remainingMovement = {}; // Mouvement restant par unité ce tour
+  
+  // Système de tours
+  List<String> _allyTurnOrder = []; // Ordre des tours alliés (triés par Speed)
+  List<String> _enemyTurnOrder = []; // Ordre des tours ennemis (triés par Speed)
+  int _currentTurnIndex = 0;
+  bool _isPlayerPhase = true; // true = phase alliés, false = phase ennemis
+  Set<String> _unitsWhoActed = {}; // Unités qui ont déjà agi ce cycle/phase
   
   @override
   void initState() {
@@ -51,12 +63,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final startX = 1;
     units = [];
     charactersMap = {};
-    remainingMovement = {};
 
     for (var i = 0; i < team.length && i < 4; i++) {
       final c = team[i];
       charactersMap[c.id] = c;
-      remainingMovement[c.id] = c.stats.movement; // Initialiser le mouvement restant
       units.add(UnitPosition(
         unitId: c.id,
         x: startX + i,
@@ -75,7 +85,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     for (final enemy in enemies) {
       charactersMap[enemy.id] = enemy;
-      remainingMovement[enemy.id] = enemy.stats.movement; // Initialiser le mouvement restant
     }
 
     units.addAll([
@@ -98,17 +107,177 @@ class _CampaignScreenState extends State<CampaignScreen> {
         pixelSprite: enemies[1].appearance.pixel,
       ),
     ]);
+    
+    // Initialiser l'ordre des tours
+    _initializeTurnOrder();
   }
+  
+  /// Initialise l'ordre des tours basé sur la vitesse (Speed)
+  void _initializeTurnOrder() {
+    // Séparer alliés et ennemis
+    final allies = units.where((u) => u.isPlayer).toList();
+    final enemies = units.where((u) => !u.isPlayer).toList();
+    
+    // Trier par vitesse (du plus rapide au plus lent)
+    allies.sort((a, b) {
+      final charA = charactersMap[a.unitId]!;
+      final charB = charactersMap[b.unitId]!;
+      return charB.totalSpeed.compareTo(charA.totalSpeed); // Ordre décroissant
+    });
+    
+    enemies.sort((a, b) {
+      final charA = charactersMap[a.unitId]!;
+      final charB = charactersMap[b.unitId]!;
+      return charB.totalSpeed.compareTo(charA.totalSpeed);
+    });
+    
+    // Stocker les ordres séparément
+    _allyTurnOrder = allies.map((u) => u.unitId).toList();
+    _enemyTurnOrder = enemies.map((u) => u.unitId).toList();
+    
+    _currentTurnIndex = 0;
+    _isPlayerPhase = true;
+    _unitsWhoActed.clear();
+    
+    // Démarrer la phase alliés avec message après le build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      
+      PhaseTransitionOverlay.show(
+        context: context,
+        message: 'PLAYER PHASE',
+        color: Colors.blue,
+        duration: const Duration(milliseconds: 1500),
+      );
+      
+      // Sélectionner automatiquement le premier allié après l'animation
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (_allyTurnOrder.isNotEmpty && mounted) {
+          _startUnitTurn(_allyTurnOrder[_currentTurnIndex]);
+        }
+      });
+    });
+  }
+  
+  /// Démarre le tour d'une unité
+  void _startUnitTurn(String unitId) {
+    final unit = units.firstWhere((u) => u.unitId == unitId);
+    final character = charactersMap[unitId]!;
+    
+    setState(() {
+      selectedUnit = unit;
+      _highlightMoveAndAttackOptions(unit, character);
+    });
+  }
+  
+  /// Termine le tour de l'unité courante et passe à la suivante
+  void _endCurrentUnitTurn() {
+    final currentOrder = _isPlayerPhase ? _allyTurnOrder : _enemyTurnOrder;
+    if (_currentTurnIndex >= currentOrder.length) return;
+    
+    final currentUnitId = currentOrder[_currentTurnIndex];
+    _unitsWhoActed.add(currentUnitId);
+    
+    setState(() {
+      selectedUnit = null;
+      highlightedTiles.clear();
+      attackableTiles.clear();
+    });
+    
+    // Passer à l'unité suivante
+    _nextTurn();
+  }
+  
+  /// Passe au tour suivant
+  void _nextTurn() {
+    _currentTurnIndex++;
+    
+    final currentOrder = _isPlayerPhase ? _allyTurnOrder : _enemyTurnOrder;
+    
+    // Si on a terminé tous les tours de la phase actuelle
+    if (_currentTurnIndex >= currentOrder.length) {
+      _startNewPhase();
+      return;
+    }
+    
+    // Démarrer le tour de l'unité suivante
+    _startUnitTurn(currentOrder[_currentTurnIndex]);
+  }
+  
+  /// Démarre une nouvelle phase ou un nouveau cycle
+  void _startNewPhase() {
+    if (_isPlayerPhase) {
+      // Fin de la phase alliés -> Passer à la phase ennemie
+      _isPlayerPhase = false;
+      _currentTurnIndex = 0;
+      _unitsWhoActed.clear();
+      
+      PhaseTransitionOverlay.show(
+        context: context,
+        message: 'ENEMY PHASE',
+        color: Colors.red,
+        duration: const Duration(milliseconds: 1500),
+      );
+      
+      // Démarrer le premier tour ennemi après l'animation
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (_enemyTurnOrder.isNotEmpty && mounted) {
+          _startUnitTurn(_enemyTurnOrder[_currentTurnIndex]);
+        }
+      });
+    } else {
+      // Fin de la phase ennemie -> Nouveau cycle, retour à la phase alliés
+      _isPlayerPhase = true;
+      _currentTurnIndex = 0;
+      _unitsWhoActed.clear();
+      
+      PhaseTransitionOverlay.show(
+        context: context,
+        message: 'PLAYER PHASE',
+        color: Colors.blue,
+        duration: const Duration(milliseconds: 1500),
+      );
+      
+      // Démarrer le premier tour allié après l'animation
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (_allyTurnOrder.isNotEmpty && mounted) {
+          _startUnitTurn(_allyTurnOrder[_currentTurnIndex]);
+        }
+      });
+    }
+  }
+  
+
 
   void _onUnitTap(UnitPosition unit) {
     final character = charactersMap[unit.unitId];
     if (character == null) return;
 
-    if (!unit.isPlayer && selectedUnit != null) {
-      _showEnemyDetailAndAttack(character, unit);
+    if (!unit.isPlayer) {
+      // Afficher l'ennemi dans le header (comme pour les alliés)
+      // Si on a une unité sélectionnée et que l'ennemi est à portée, on peut attaquer
+      if (selectedUnit != null && selectedUnit!.isPlayer) {
+        final distance = _calculateDistance(selectedUnit!.x, selectedUnit!.y, unit.x, unit.y);
+        final selectedChar = charactersMap[selectedUnit!.unitId]!;
+        final range = selectedChar.stats.range;
+        
+        if (distance <= range) {
+          // Attaquer directement
+          _startCombat(selectedChar, character, selectedUnit!, unit);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(S.of(context)!.targetOutOfRange(distance, range)),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
       return;
     }
 
+    // Pour les alliés: sélection/désélection
     if (unit.isPlayer) {
       setState(() {
         if (selectedUnit?.unitId == unit.unitId) {
@@ -121,54 +290,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
           _highlightMoveAndAttackOptions(unit, character);
         }
       });
-    } else {
-      _showCharacterDetail(character, unit, false);
     }
   }
 
-  void _showCharacterDetail(Character character, UnitPosition unit, bool canAttack) {
-    showDialog(
-      context: context,
-      builder: (context) => CharacterDetailPopup(
-        character: character,
-        isEnemy: !unit.isPlayer,
-        onClose: () => Navigator.pop(context),
-      ),
-    );
-  }
 
-  void _showEnemyDetailAndAttack(Character enemy, UnitPosition enemyUnit) {
-    final selectedChar = charactersMap[selectedUnit!.unitId];
-    if (selectedChar == null) return;
-
-    final distance = _calculateDistance(selectedUnit!.x, selectedUnit!.y, enemyUnit.x, enemyUnit.y);
-    final range = selectedChar.stats.range;
-
-    if (distance > range) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(S.of(context)!.targetOutOfRange(distance, range)),
-          backgroundColor: Colors.orange,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    // Afficher le popup avec option d'attaque
-    showDialog(
-      context: context,
-      builder: (context) => CharacterDetailPopup(
-        character: enemy,
-        isEnemy: true,
-        onClose: () => Navigator.pop(context),
-        onAttack: () {
-          Navigator.pop(context);
-          _startCombat(selectedChar, enemy, selectedUnit!, enemyUnit);
-        },
-      ),
-    );
-  }
 
   int _calculateDistance(int x1, int y1, int x2, int y2) {
     return (x1 - x2).abs() + (y1 - y2).abs(); // Distance de Manhattan
@@ -305,6 +430,15 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
     // Vérifier conditions de victoire/défaite
     _checkBattleEnd();
+    
+    // Après le combat, terminer le tour de l'unité attaquante
+    if (attackerUnit.isPlayer) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _endCurrentUnitTurn();
+        }
+      });
+    }
   }
 
   void _checkBattleEnd() {
@@ -318,12 +452,50 @@ class _CampaignScreenState extends State<CampaignScreen> {
     }
   }
 
-  void _showVictoryDialog() {
-    // Donner les récompenses du stage
+  Future<void> _showVictoryDialog() async {
+    // Calculer les récompenses avec un dé si c'est un stage de campagne
+    int finalGold = 0;
+    int finalXP = 0;
+    DiceRoll? lootRoll;
+
     if (widget.stage != null) {
-      // TODO: Ajouter l'or et l'XP au joueur
-      debugPrint('Stage terminé ! Récompenses: ${widget.stage!.rewardGold}G, ${widget.stage!.rewardXP}XP');
+      // Calculer la Luck moyenne de l'équipe
+      final teamLuck = widget.team.isEmpty 
+          ? 0 
+          : widget.team.map((c) => c.totalLuck).reduce((a, b) => a + b) ~/ widget.team.length;
+      
+      // 🎲 Lancer un D12 pour le loot de boss
+      lootRoll = DiceService.roll(DiceType.d12, luckBonus: teamLuck);
+      
+      // Afficher l'animation du dé
+      if (mounted) {
+        await DiceRollDialog.show(
+          context,
+          roll: lootRoll,
+          title: '🎲 Loot de Boss',
+        );
+      }
+
+      // Déterminer le multiplicateur de récompenses selon le résultat
+      double multiplier = 1.0;
+      if (lootRoll.isCritical || lootRoll.total >= 11) {
+        multiplier = 2.0; // Légendaire : ×2 récompenses
+      } else if (lootRoll.total >= 9) {
+        multiplier = 1.5; // Épique : ×1.5 récompenses
+      } else if (lootRoll.total >= 6) {
+        multiplier = 1.25; // Rare : ×1.25 récompenses
+      } else if (lootRoll.total <= 3) {
+        multiplier = 0.75; // Mauvais : ×0.75 récompenses
+      }
+
+      finalGold = (widget.stage!.rewardGold * multiplier).round();
+      finalXP = (widget.stage!.rewardXP * multiplier).round();
+      
+      debugPrint('Stage terminé ! Dé : ${lootRoll.total} -> Multiplicateur: ${multiplier}x');
+      debugPrint('Récompenses: ${finalGold}G, ${finalXP}XP');
     }
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -334,7 +506,24 @@ class _CampaignScreenState extends State<CampaignScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(S.of(context)!.allEnemiesDefeated),
-            if (widget.stage != null) ...[
+            if (widget.stage != null && lootRoll != null) ...[
+              const SizedBox(height: 16),
+              // Afficher le résultat du dé
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DiceResultWidget(roll: lootRoll, size: 50),
+                  const SizedBox(width: 12),
+                  Text(
+                    _getLootQualityText(lootRoll),
+                    style: TextStyle(
+                      color: _getLootQualityColor(lootRoll),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -342,7 +531,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
                   const Icon(Icons.monetization_on, color: Colors.amber),
                   const SizedBox(width: 8),
                   Text(
-                    '+${widget.stage!.rewardGold} Or',
+                    '+$finalGold Or',
                     style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -354,7 +543,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
                   const Icon(Icons.star, color: Colors.blue),
                   const SizedBox(width: 8),
                   Text(
-                    '+${widget.stage!.rewardXP} XP',
+                    '+$finalXP XP',
                     style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -373,6 +562,32 @@ class _CampaignScreenState extends State<CampaignScreen> {
         ],
       ),
     );
+  }
+
+  String _getLootQualityText(DiceRoll roll) {
+    if (roll.isCritical || roll.total >= 11) {
+      return 'Butin Légendaire ! (×2)';
+    } else if (roll.total >= 9) {
+      return 'Butin Épique ! (×1.5)';
+    } else if (roll.total >= 6) {
+      return 'Butin Rare (×1.25)';
+    } else if (roll.total <= 3) {
+      return 'Butin Médiocre... (×0.75)';
+    }
+    return 'Butin Standard';
+  }
+
+  Color _getLootQualityColor(DiceRoll roll) {
+    if (roll.isCritical || roll.total >= 11) {
+      return Colors.amber;
+    } else if (roll.total >= 9) {
+      return Colors.purple;
+    } else if (roll.total >= 6) {
+      return Colors.blue;
+    } else if (roll.total <= 3) {
+      return Colors.grey;
+    }
+    return Colors.white;
   }
 
   void _showDefeatDialog() {
@@ -400,8 +615,8 @@ class _CampaignScreenState extends State<CampaignScreen> {
     highlightedTiles.clear();
     attackableTiles.clear();
 
-    // Obtenir le mouvement RESTANT ce tour (pas le mouvement total)
-    final movementRange = remainingMovement[unit.unitId] ?? character.stats.movement;
+    // L'unité peut se déplacer de son mouvement total
+    final movementRange = character.stats.movement;
     
     // Calculer toutes les cases accessibles avec pathfinding
     final reachableTiles = mapData.getReachableTiles(unit.x, unit.y, movementRange);
@@ -439,21 +654,16 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final character = charactersMap[selectedUnit!.unitId];
     if (character == null) return;
 
-    final currentRemaining = remainingMovement[selectedUnit!.unitId] ?? character.stats.movement;
-    
     // Calculer le chemin optimal vers la destination
     final pathResult = mapData.findPath(
       selectedUnit!.x, 
       selectedUnit!.y, 
       x, 
       y, 
-      currentRemaining
+      character.stats.movement
     );
     
     if (pathResult == null) return;
-    
-    // Déduire le coût total du mouvement restant
-    remainingMovement[selectedUnit!.unitId] = (currentRemaining - pathResult.totalCost).clamp(0, character.stats.movement);
 
     // Déplacer l'unité directement à la destination
     setState(() {
@@ -462,8 +672,11 @@ class _CampaignScreenState extends State<CampaignScreen> {
         units[index] = units[index].copyWith(x: x, y: y);
         selectedUnit = units[index];
         
-        // Mettre à jour les cases en surbrillance avec le mouvement restant
-        _highlightMoveAndAttackOptions(selectedUnit!, character);
+        // Après déplacement, l'unité a terminé son action
+        // On termine automatiquement son tour
+        Future.delayed(const Duration(milliseconds: 300), () {
+          _endCurrentUnitTurn();
+        });
       }
     });
   }
@@ -509,6 +722,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
                         showGrid: true,
                         highlightedTiles: highlightedTiles,
                         attackableTiles: attackableTiles,
+                        unitsWhoActed: _unitsWhoActed,
                       ),
                     ),
                   ),
@@ -525,63 +739,53 @@ class _CampaignScreenState extends State<CampaignScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final currentCharacter = selectedUnit != null ? charactersMap[selectedUnit!.unitId] : null;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: _isPlayerPhase 
+            ? Colors.blue.withOpacity(0.3) 
+            : Colors.red.withOpacity(0.3),
         border: Border(
           bottom: BorderSide(
-            color: Colors.amber.withOpacity(0.3),
-            width: 2,
+            color: _isPlayerPhase ? Colors.blue : Colors.red,
+            width: 3,
           ),
         ),
       ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Ligne supérieure: Character detail ou placeholder
+            if (currentCharacter != null)
+              CharacterCompactView(
+                character: currentCharacter,
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Text(
                   mapData.name,
                   style: const TextStyle(
-                    color: Colors.amber,
-                    fontSize: 20,
+                    color: Colors.white,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                if (mapData.description != null)
-                  Text(
-                    mapData.description!,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 12,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          // Icône d'aide
-          IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.white70),
-            onPressed: () => _showLegend(context),
-          ),
-        ],
+              ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBottomPanel() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withOpacity(0.8),
         border: Border(
           top: BorderSide(
             color: Colors.amber.withOpacity(0.3),
@@ -590,126 +794,68 @@ class _CampaignScreenState extends State<CampaignScreen> {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Info unité sélectionnée
+          // Bouton Exit (porte rouge)
           Expanded(
-            child: selectedUnit != null
-                ? Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: selectedUnit!.color,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: Center(
-                          child: Text(
-                            selectedUnit!.name.substring(0, 1).toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            selectedUnit!.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Position: (${selectedUnit!.x}, ${selectedUnit!.y})',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 12,
-                            ),
-                          ),
-                          // Afficher le mouvement restant
-                          Builder(
-                            builder: (context) {
-                              final character = charactersMap[selectedUnit!.unitId];
-                              if (character == null) return const SizedBox.shrink();
-                              final remaining = remainingMovement[selectedUnit!.unitId] ?? character.stats.movement;
-                              final total = character.stats.movement;
-                              return Row(
-                                children: [
-                                  Icon(
-                                    Icons.directions_run,
-                                    size: 14,
-                                    color: remaining > 0 ? Colors.green : Colors.red,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Mouvement: $remaining/$total',
-                                    style: TextStyle(
-                                      color: remaining > 0 ? Colors.green : Colors.red,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
-                : Text(
-                    'Sélectionnez votre personnage pour vous déplacer',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-          ),
-
-          // Bouton fin de tour
-          ElevatedButton.icon(
-            onPressed: () {
-              // Réinitialiser le mouvement de toutes les unités
-              for (final unitId in remainingMovement.keys.toList()) {
-                final character = charactersMap[unitId];
-                if (character != null) {
-                  remainingMovement[unitId] = character.stats.movement;
-                }
-              }
-              
-              setState(() {
-                selectedUnit = null;
-                highlightedTiles.clear();
-                attackableTiles.clear();
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(S.of(context)!.turnEnded),
-                  duration: const Duration(seconds: 1),
+            child: ElevatedButton.icon(
+              onPressed: () => _showExitConfirmation(context),
+              icon: const Text('🚪', style: TextStyle(fontSize: 20)),
+              label: const Text('Exit'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              );
-            },
-            icon: const Icon(Icons.check),
-            label: Text(S.of(context)!.endTurn),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Bouton End Turn
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: selectedUnit != null && selectedUnit!.isPlayer 
+                  ? () {
+                      _endCurrentUnitTurn();
+                    }
+                  : null,
+              icon: const Icon(Icons.skip_next),
+              label: Text(S.of(context)!.endTurn),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedUnit != null && selectedUnit!.isPlayer 
+                    ? Colors.orange 
+                    : Colors.grey.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _showExitConfirmation(BuildContext context) async {
+    final confirmed = await ConfirmationDialog.show(
+      context: context,
+      title: 'Quitter la mission',
+      message: 'Êtes-vous sûr de vouloir quitter ce stage ? Toute progression non sauvegardée sera perdue.',
+      confirmText: 'Quitter',
+      cancelText: 'Rester',
+      confirmColor: Colors.red,
+      icon: Icons.exit_to_app,
+    );
+    
+    if (confirmed && context.mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void _showLegend(BuildContext context) {
