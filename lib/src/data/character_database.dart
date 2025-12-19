@@ -92,105 +92,148 @@ class CharacterDatabase {
   // LÉGENDAIRES (5★) - 3% de drop
   // ============================================================================
 
-  static final PresetCharacter chromLordOfBlades = PresetCharacter(
-    id: 'chrom_001',
-    name: 'Chrom',
-    title: 'Le Prince Exalté',
+  static final PresetCharacter seleneEcho = PresetCharacter(
+    id: 'selene_001',
+    name: 'Séléné',
+    title: 'L\'Écho d\'Oméga',
     headshot: '👑',
-    colorValue: 0xFF1E88E5,
+    colorValue: 0xFF9C27B0,
     rarity: CharacterRarity.legendary,
-    description: 'Prince héritier d\'Ylisse, il manie Falchion avec bravoure.',
-    backstory: '''
-Chrom est le prince d'Ylisse et le descendant du légendaire Héros-Roi. 
-Après la mort de son père, il prend la tête des Bergers pour protéger son royaume 
-des invasions voisines et des forces obscures qui menacent le continent.
-
-Sa loyauté envers ses compagnons et son sens du devoir en font un leader naturel.
-Il porte l'épée sacrée Falchion, transmise de génération en génération.
-''',
+    description: 'Une entité fragmentée issue d\'une faille temporelle.',
+    backstory: 'Séléné ne se souvient pas de sa création, seulement du silence éternel de l\'Oméga avant son éveil dans le Rift.',
     persona: Persona(
-      race: PersonaRace.human,
-      region: PersonaRegion.west,
-      origin: PersonaOrigin.noble,
-      characterClass: PersonaClass.warrior,
+      race: PersonaRace.human, // Peut-être autre chose, mais pour l'instant humain (=unknown)
+      region: PersonaRegion.west, // Peu importe la région d\'origine (unknown)
+      origin: PersonaOrigin.scholar, // Son origine est mystérieuse
+      characterClass: PersonaClass.mage,
     ),
     baseStats: {
-      'maxHp': 140,
-      'attack': 28,
-      'defense': 20,
-      'speed': 18,
-      'magic': 5,
-      'range': 1,
-      'luck': 22,
-      'movement': 4, // Warrior - lourd
+      'maxHp': 90,
+      'attack': 5,
+      'defense': 12,
+      'speed': 25,
+      'magic': 38,
+      'luck': 45,
+      'movement': 5,
     },
-    starterWeapon: WeaponsDatabase.falchion,
-    voiceLines: [
-      'Tout le monde mérite une seconde chance !',
-      'Je protégerai mes alliés, quoi qu\'il arrive.',
-      'Pour Ylisse !',
-    ],
-    tags: ['Leader', 'DPS', 'Physique'],
+    starterWeapon: WeaponsDatabase.mysticWand,
+    voiceLines: ['Le temps est une boucle... je vais la briser.', 'Ressentez l\'écho du vide.'],
+    tags: ['Mage', 'Time Control', 'Burst'],
     customInventory: _createCustomInventory(
       // ARMES (max 1 équipée)
       weapons: [
-        WeaponsDatabase.falchion,
-        WeaponsDatabase.steelSword,
-        WeaponsDatabase.silverSword,
-        WeaponsDatabase.excalibur,
-        WeaponsDatabase.dragonSlayer,
+        WeaponsDatabase.mysticWand,
+        WeaponsDatabase.crystalStaff,
+        WeaponsDatabase.necronomiconEx,
       ],
       weaponConditions: [
         _alwaysUnlocked,
         _levelCondition(5),
-        _levelCondition(10),
-        _starsCondition(4),
-        _starsCondition(5),
+        _starsCondition(6),
       ],
       // ARMURES (max 1 équipée)
       armors: [
-        ArmorsDatabase.knightArmor,
-        ArmorsDatabase.plateArmor,
-        ArmorsDatabase.dragonScaleArmor,
-        ArmorsDatabase.celestialArmor,
+        ArmorsDatabase.wizardRobe,
+        ArmorsDatabase.astralCloak,
       ],
       armorConditions: [
         _alwaysUnlocked,
-        _levelCondition(10),
         _levelCondition(15),
-        _starsCondition(5),
       ],
       // ACCESSOIRES (max 1 équipé - mutuellement exclusif avec armure)
       accessories: [
-        AccessoriesDatabase.strengthRing,
-        AccessoriesDatabase.championBelt,
-        AccessoriesDatabase.crownOfKings,
+        AccessoriesDatabase.magicRing,
+        AccessoriesDatabase.infinityGauntlet,
       ],
       accessoryConditions: [
         _levelCondition(5),
-        _levelCondition(15),
-        _starsCondition(5),
+        _starsCondition(6),
+      ],
+      // COMPÉTENCES : 1 active + 3 passives max
+      skills: [
+        SkillsDatabase.arcaneBlast,
+        SkillsDatabase.magicMastery,
+        SkillsDatabase.timeStop,
+        SkillsDatabase.apocalypse,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _alwaysUnlocked,
+        _levelCondition(10),
+        _starsCondition(6),
+      ],
+    ),
+  );
+
+  static final PresetCharacter masterZhou = PresetCharacter(
+    id: 'zhou_001',
+    name: 'Maître Zhou',
+    title: 'L\Arbitre du Flux',
+    headshot: '👑',
+    colorValue: 0xFF00BCD4,
+    rarity: CharacterRarity.legendary,
+    description: 'Un moine qui harmonise les énergies instables des Rifts.',
+    backstory: 'Gardien du temple suspendu, il a passé des siècles à méditer sur la nature du destin avant de rejoindre le combat.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.noble,
+      characterClass: PersonaClass.cleric,
+    ),
+    baseStats: {
+      'maxHp': 120,
+      'attack': 10,
+      'defense': 18,
+      'speed': 18,
+      'magic': 30,
+      'luck': 35,
+      'movement': 4,
+    },
+    starterWeapon: WeaponsDatabase.mysticWand,
+    voiceLines: ['Le flux mène à la victoire.', 'Gardez votre calme, le destin s\'occupe du reste.'],
+    tags: ['Healer', 'Buffer', 'Holy'],
+    customInventory: _createCustomInventory(
+      // ARMES (max 1 équipée)
+      weapons: [
+        WeaponsDatabase.mysticWand,
+        WeaponsDatabase.holyGrail,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _starsCondition(6),
+      ],
+      // ARMURES (max 1 équipée)
+      armors: [
+        ArmorsDatabase.mythrilChain,
+        ArmorsDatabase.aegisArmor,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _starsCondition(6),
+      ],
+      // ACCESSOIRES (max 1 équipé - mutuellement exclusif avec armure)
+      accessories: [
+        AccessoriesDatabase.fortuneRing,
+        AccessoriesDatabase.crownOfKings,
+      ],
+      accessoryConditions: [
+        _alwaysUnlocked,
+        _levelCondition(20),
       ],
       // COMPÉTENCES : 1 active + 3 passives max
       skills: [
         // Active (peut en équiper 1 seule)
-        SkillsDatabase.powerStrike,
-        SkillsDatabase.shieldBash,
-        SkillsDatabase.whirlwind,
-        // Passives (peut en équiper 3)
-        SkillsDatabase.nobleLeadership,
-        SkillsDatabase.criticalHit,
-        SkillsDatabase.weaponMaster,
+        SkillsDatabase.regeneration,
+        SkillsDatabase.bless,
+        SkillsDatabase.divineIntervention,
+        SkillsDatabase.massHeal,
       ],
       skillConditions: [
         // Actives
         _alwaysUnlocked,
-        _levelCondition(5),
-        _levelCondition(10),
-        // Passives
-        _alwaysUnlocked, // Passive de noble
-        _starsCondition(3),
-        _starsCondition(4),
+        _alwaysUnlocked,
+        _levelCondition(15),
+        _starsCondition(6),
       ],
     ),
   );
@@ -604,7 +647,8 @@ les secrets oubliés de l'ancienne magie.
 
   static final List<PresetCharacter> allCharacters = [
     // Légendaires
-    chromLordOfBlades,
+    seleneEcho,
+    masterZhou,
     
     // Épiques
     envia,
