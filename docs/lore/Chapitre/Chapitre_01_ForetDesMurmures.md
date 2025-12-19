@@ -1,0 +1,4 @@
+Niveau,Nom & Contexte,Chemin : ÉQUILIBRE (Aider Ragor),Chemin : PUISSANCE (Consommer)
+1-1,Le Fourré,Tu soignes le loup blessé. Effet : Le loup devient un allié temporaire.,Tu tues le loup et absorbes son cristal. Effet : Boost permanent d'Attaque (+5).
+1-2,Le Sentier,"Chemin des Esprits : Flore lumineuse, ennemis pacifiés. Tu ramasses des herbes de soin.","Sentier du Prédateur : Flore flétrie, ennemis agressifs. Tu ramasses des éclats de chaos."
+1-3,L'Arbre Mère,Rituel de Calme : Tu dois tenir 2 min sans mourir. Boss : Manifestation de l'Angoisse.,Abattage : Tu détruis le cœur de l'arbre. Boss : Avatar de la Nature Vengeresse.
