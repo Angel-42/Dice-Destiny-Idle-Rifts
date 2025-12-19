@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math';
 import 'persona_creation_screen.dart';
 import '../../l10n/app_localizations.dart';
+import '../widgets/widgets.dart';
 
 class CinematicScreen extends StatefulWidget {
   const CinematicScreen({super.key});
@@ -187,6 +188,37 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
     _goToPersonaCreation();
   }
 
+  // Demo: start a dialogue sequence from the cinematic screen
+  void _startCinematicDialogue() async {
+    final lines = [
+      DialogueLine(speaker: 'Narrateur', text: 'Les cieux grondent et les dés roulent...', portrait: '📜'),
+      DialogueLine(speaker: 'Voix', text: 'Un héros se lève.', portrait: '🛡️'),
+      DialogueLine(
+        speaker: 'Choix',
+        text: 'Prendrez-vous le chemin périlleux ?',
+        portrait: '❓',
+        choices: [
+          DialogueChoice(id: 'yes', label: 'Oui'),
+          DialogueChoice(id: 'no', label: 'Non'),
+        ],
+      ),
+    ];
+
+    final results = await DialogueManager.showSequence(
+      context,
+      lines,
+      alignment: Alignment.center,
+      charDuration: const Duration(milliseconds: 28),
+      autoAdvance: false,
+      barrierDismissible: false,
+    );
+
+    if (results.isNotEmpty && mounted) {
+      final choice = results.values.first;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Choix: $choice')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scene = _scenes[_currentScene];
@@ -247,23 +279,32 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                     children: [
                       // Bouton Skip en haut à droite
                       if (_canSkip && !isFinalScene)
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: TextButton.icon(
-                            onPressed: _skipCinematic,
-                            icon: const Icon(
-                              Icons.fast_forward,
-                              color: Colors.white54,
-                              size: 20,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Demo dialogue button on the left
+                            IconButton(
+                              tooltip: 'Demo Dialogue',
+                              onPressed: _startCinematicDialogue,
+                              icon: const Icon(Icons.chat_bubble_outline, color: Colors.white54),
                             ),
-                            label: Text(
-                              S.of(context)!.skipCinematic,
-                              style: const TextStyle(
+                            // Skip on the right
+                            TextButton.icon(
+                              onPressed: _skipCinematic,
+                              icon: const Icon(
+                                Icons.fast_forward,
                                 color: Colors.white54,
-                                fontSize: 14,
+                                size: 20,
+                              ),
+                              label: Text(
+                                S.of(context)!.skipCinematic,
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       
                       // Contenu centré

@@ -15,9 +15,11 @@ import '../widgets/icon_display.dart';
 import '../widgets/dice_animation_widget.dart';
 import '../widgets/confirmation_dialog.dart';
 import '../widgets/phase_transition_overlay.dart';
+import '../widgets/widgets.dart';
 import '../screens/combat_animation_screen.dart';
 import '../services/game_data_service.dart';
 import '../data/enemy_database.dart';
+import '../data/story_data.dart';
 
 /// Écran de campagne avec map tactique et déplacement
 class CampaignScreen extends StatefulWidget {
@@ -49,6 +51,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
   bool _isPlayerPhase = true; // true = phase alliés, false = phase ennemis
   Set<String> _unitsWhoActed = {}; // Unités qui ont déjà agi ce cycle/phase
   Map<String, int> _remainingMovement = {}; // Mouvement restant pour chaque unité ce tour
+  bool _isShowingCharacterDetails = false; // true si popup de détails ouvert
   
   @override
   void initState() {
@@ -84,8 +87,35 @@ class _CampaignScreenState extends State<CampaignScreen> {
       EnemyDatabase.createEnemy('wolf', level: 1),
     ];
 
-    for (final enemy in enemies) {
-      charactersMap[enemy.id] = enemy;
+    // Ajouter les ennemis à la map avec des IDs uniques garantis
+    for (var i = 0; i < enemies.length; i++) {
+      final enemy = enemies[i];
+      // S'assurer que l'ID est unique en ajoutant un suffixe si nécessaire
+      var uniqueId = enemy.id;
+      var counter = 0;
+      while (charactersMap.containsKey(uniqueId)) {
+        counter++;
+        uniqueId = '${enemy.id}_$counter';
+      }
+      // Mettre à jour l'ID si modifié
+      if (uniqueId != enemy.id) {
+        // On doit recréer le character avec le nouvel ID
+        final newEnemy = Character(
+          id: uniqueId,
+          name: enemy.name,
+          persona: enemy.persona,
+          stats: enemy.stats,
+          appearance: enemy.appearance,
+          level: enemy.level,
+          xp: enemy.xp,
+          weapon: enemy.weapon,
+          armorOrAccessory: enemy.armorOrAccessory,
+          equippedSkills: enemy.equippedSkills,
+          weaponMasteries: enemy.weaponMasteries,
+        );
+        enemies[i] = newEnemy;
+      }
+      charactersMap[enemies[i].id] = enemies[i];
     }
 
     units.addAll([
@@ -111,6 +141,18 @@ class _CampaignScreenState extends State<CampaignScreen> {
     
     // Initialiser l'ordre des tours
     _initializeTurnOrder();
+
+    // Si c'est un stage de campagne, jouer l'introduction narrative associée
+    if (widget.stage != null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final results = await StoryService.playStoryForStage(context, widget.stage!);
+        if (results.isNotEmpty) {
+          debugPrint('Story choices: $results');
+          // TODO: appliquer effets des choix (branching) si nécessaire
+        }
+      });
+    }
   }
   
   /// Initialise l'ordre des tours basé sur la vitesse (Speed)
@@ -230,10 +272,11 @@ class _CampaignScreenState extends State<CampaignScreen> {
         duration: const Duration(milliseconds: 1500),
       );
       
-      // Démarrer le premier tour ennemi après l'animation
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (_enemyTurnOrder.isNotEmpty && mounted) {
-          _startUnitTurn(_enemyTurnOrder[_currentTurnIndex]);
+      // TODO: Implémenter l'IA ennemie
+      // Pour l'instant, skip la phase ennemie et retourner à la phase alliée
+      Future.delayed(const Duration(milliseconds: 1800), () {
+        if (mounted) {
+          _startNewPhase(); // Retour immédiat à la phase alliée
         }
       });
     } else {
@@ -250,12 +293,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
         duration: const Duration(milliseconds: 1500),
       );
       
-      // Démarrer le premier tour allié après l'animation
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (_allyTurnOrder.isNotEmpty && mounted) {
-          _startUnitTurn(_allyTurnOrder[_currentTurnIndex]);
-        }
-      });
+      // Le joueur choisira lui-même quel allié jouer (pas d'auto-sélection)
     }
   }
   
@@ -312,7 +350,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
           highlightedTiles.clear();
           attackableTiles.clear();
         } else {
-          // Sélectionner et initialiser le mouvement restant si première sélection
           if (!_remainingMovement.containsKey(unit.unitId)) {
             _remainingMovement[unit.unitId] = character.stats.movement;
           }
@@ -331,6 +368,18 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
   Future<void> _startCombat(Character attacker, Character defender, 
       UnitPosition attackerUnit, UnitPosition defenderUnit) async {
+    // If this is a campaign stage, play the episode story before the combat starts
+    if (widget.stage != null) {
+      try {
+        final storyResults = await StoryService.playStoryForStage(context, widget.stage!);
+        if (storyResults.isNotEmpty) {
+          debugPrint('Story choices before combat: $storyResults');
+          // TODO: apply story effects/branching here when implemented
+        }
+      } catch (e) {
+        debugPrint('Error playing story before combat: $e');
+      }
+    }
     // Calculer la distance entre l'attaquant et le défenseur
     final distance = _calculateDistance(
       attackerUnit.x, attackerUnit.y, 
@@ -733,7 +782,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
               // Header
               _buildHeader(context),
 
-              const SizedBox(height: 20),
+              _isShowingCharacterDetails ? const SizedBox(height: 20) : const SizedBox(height: 0),
 
               // Map avec scroll
               Expanded(
@@ -777,21 +826,31 @@ class _CampaignScreenState extends State<CampaignScreen> {
         color: _isPlayerPhase 
             ? Colors.blue.withOpacity(0.3) 
             : Colors.red.withOpacity(0.3),
-        border: Border(
-          bottom: BorderSide(
-            color: _isPlayerPhase ? Colors.blue : Colors.red,
-            width: 3,
-          ),
-        ),
       ),
       child: SafeArea(
         bottom: false,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // Top row: optional action buttons (demo dialogue)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Demo Dialogue',
+                    icon: const Icon(Icons.chat_bubble_outline, color: Colors.white70),
+                    onPressed: () => _startDemoDialogue(),
+                  ),
+                ],
+              ),
+            ),
             // Ligne supérieure: Character detail ou placeholder
             if (currentCharacter != null)
               CharacterCompactView(
                 character: currentCharacter,
+                isEnemy: !selectedUnit!.isPlayer,
               )
             else
               Container(
@@ -827,7 +886,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Bouton Exit (porte rouge)
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () => _showExitConfirmation(context),
@@ -846,7 +904,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
           
           const SizedBox(width: 16),
           
-          // Bouton End Turn
           Expanded(
             child: ElevatedButton.icon(
               onPressed: selectedUnit != null && selectedUnit!.isPlayer 
@@ -898,6 +955,36 @@ class _CampaignScreenState extends State<CampaignScreen> {
       ),
     );
   }
+  
+  // Demo dialogue launcher used for testing / cinematic snippets
+  void _startDemoDialogue() async {
+    final lines = [
+      DialogueLine(speaker: 'Narrateur', text: 'Il y avait une fois, dans un monde façonné par les dés...', portrait: '📜'),
+      DialogueLine(speaker: 'Elio', text: 'Nous devons rejoindre le sanctuaire avant la nuit.', portrait: '🛡️'),
+      DialogueLine(
+        speaker: 'Choix',
+        text: 'Que faites-vous ?',
+        portrait: '❓',
+        choices: [
+          DialogueChoice(id: 'advance', label: 'Avancer'),
+          DialogueChoice(id: 'wait', label: 'Attendre'),
+        ],
+      ),
+      DialogueLine(speaker: 'Narrateur', text: 'La décision est prise. Le destin vous observe...', portrait: '✨'),
+    ];
+
+    final results = await DialogueManager.showSequence(context, lines);
+    if (results.isNotEmpty) {
+      debugPrint('Dialogue choices: $results');
+      // Exemple: agir selon le choix (placeholder)
+      final choice = results.values.first;
+      if (choice == 'advance') {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vous avancez...')));
+      } else if (choice == 'wait') {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vous attendez...')));
+      }
+    }
+  }
   Future<Skill?> _showAttackChoiceDialog(Character character, Skill activeSkill) async {
     return showDialog<Skill?>(
       context: context,
@@ -910,7 +997,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Attaque avec arme
             ListTile(
               leading: IconDisplay(
                 icon: character.weapon?.displayIcon ?? '⚔️',
@@ -927,7 +1013,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
               onTap: () => Navigator.pop(context, null), // null = attaque normale
             ),
             const Divider(color: Colors.white24),
-            // Attaque avec compétence
             ListTile(
               leading: IconDisplay(
                 icon: activeSkill.displayIcon,

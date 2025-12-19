@@ -88,16 +88,13 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     await _fadeController.forward();
 
     // L'ATTAQUANT (celui qui a initié le combat) attaque TOUJOURS en premier
-    // On ne se base PAS sur la vitesse pour l'ordre initial
     await _performAttack(widget.attacker, widget.defender);
 
-    // Le défenseur riposte seulement s'il est vivant ET s'il peut riposter (portée suffisante)
     if (_defenderCurrentHp > 0 && _attackerCurrentHp > 0) {
       if (widget.canDefenderCounter) {
         await Future.delayed(const Duration(milliseconds: 800));
         await _performAttack(widget.defender, widget.attacker);
       } else {
-        // Afficher un message indiquant que le défenseur ne peut pas riposter
         setState(() {
           _currentAction = '${widget.defender.name} est hors de portée pour riposter !';
           _combatLog.add(_currentAction);
@@ -118,10 +115,8 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Calculer les dégâts avec potentiel critique
     final (damage, isCritical) = _calculateDamageWithCrit(attacker, defender);
     
-    // Si critique, afficher l'animation du dé D20
     if (isCritical) {
       final critRoll = DiceRoll(
         type: DiceType.d20,
@@ -129,7 +124,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
         isCritical: true,
       );
       
-      // Afficher brèvement l'animation de dé (1 seconde)
       await showDialog(
         context: context,
         barrierDismissible: false,
@@ -192,7 +186,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
         
         await Future.delayed(const Duration(milliseconds: 600));
         
-        // Effectuer la deuxième attaque (sans permettre de triple attaque)
         await _performAttack(attacker, defender, allowDoubleAttack: false);
       }
     }
@@ -222,10 +215,8 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     final speed = attacker.totalSpeed;
     final luck = attacker.totalLuck;
     
-    // Formule: (Speed/2 + Luck/3)
     final doubleAttackChance = (speed / 2.0) + (luck / 3.0);
     
-    // Génère un nombre aléatoire entre 0 et 100
     final random = (DateTime.now().microsecondsSinceEpoch % 10000) / 100.0;
     
     return random < doubleAttackChance;
@@ -240,10 +231,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     setState(() {
       _phase = CombatPhase.result;
     });
-
-    // ⚠️ NE PAS modifier directement les HP des personnages originaux!
-    // Les HP finaux sont retournés dans CombatResult
-    // C'est le campaign_screen qui mettra à jour les HP
 
     final result = CombatResult(
       attackerWon: attackerWon,

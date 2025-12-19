@@ -20,26 +20,34 @@ class CharacterDetailPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Contenu principal - utilise le widget réutilisable
-            CharacterCompactView(
-              character: character,
-              isEnemy: isEnemy,
-            ),
-            
-            // Boutons d'action en bas
-            if (onAttack != null || onClose != null) ...[
-              const SizedBox(height: 16),
-              _buildFooter(context),
-            ],
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.9),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
+        border: Border.all(
+          color: isEnemy ? Colors.red.withOpacity(0.5) : Colors.amber.withOpacity(0.5),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Contenu principal - utilise le widget réutilisable
+          CharacterCompactView(
+            character: character,
+            isEnemy: isEnemy,
+          ),
+          
+          // Boutons d'action en bas
+          if (onAttack != null || onClose != null) ...[
+            const SizedBox(height: 8),
+            _buildFooter(context),
+          ],
+        ],
       ),
     );
   }
@@ -47,14 +55,14 @@ class CharacterDetailPopup extends StatelessWidget {
   Widget _buildFooter(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isEnemy ? Colors.red.withOpacity(0.5) : Colors.amber.withOpacity(0.5),
-          width: 2,
+          color: isEnemy ? Colors.red.withOpacity(0.3) : Colors.amber.withOpacity(0.3),
+          width: 1,
         ),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           if (onClose != null)
@@ -64,22 +72,24 @@ class CharacterDetailPopup extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey.shade800,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  minimumSize: const Size(0, 32),
                 ),
                 child: Text(S.of(context)!.close),
               ),
             ),
-          if (onClose != null && onAttack != null) const SizedBox(width: 12),
+          if (onClose != null && onAttack != null) const SizedBox(width: 8),
           if (onAttack != null)
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: onAttack,
-                icon: const Icon(Icons.gps_fixed),
+                icon: const Icon(Icons.gps_fixed, size: 16),
                 label: Text(S.of(context)!.attack),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  minimumSize: const Size(0, 32),
                 ),
               ),
             ),

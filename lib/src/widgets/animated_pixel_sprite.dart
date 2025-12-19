@@ -105,7 +105,6 @@ class _AnimatedPixelSpriteState extends State<AnimatedPixelSprite> {
               fit: BoxFit.contain, // Contenir l'image dans la zone
               filterQuality: FilterQuality.none, // Pixel art sans lissage
               errorBuilder: (context, error, stackTrace) {
-                // Marquer l'erreur et retourner widget vide (le build suivant affichera le fallback)
                 _onImageError();
                 return const SizedBox.shrink();
               },
