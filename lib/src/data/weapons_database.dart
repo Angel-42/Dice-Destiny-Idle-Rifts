@@ -93,7 +93,16 @@ class WeaponsDatabase {
     bonuses: {'attack': 28, 'defense': 5, 'magic': 3},
     attackRange: 1,
   );
-
+  static const Equipment goldSword = Equipment(
+    id: 'gold_sword',
+    name: 'Gold Sword',
+    emoji: '⚔️',
+    sprite: 'assets/weapons/swords/gold_sword_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.legendary,
+    bonuses: {'attack': 22, 'defense': 5, 'luck': 10},
+    attackRange: 1,
+  );
   // ============================================================================
   // HACHES (Axes) - Pour Guerriers
   // ============================================================================
@@ -150,6 +159,39 @@ class WeaponsDatabase {
     type: EquipmentType.weapon,
     rarity: EquipmentRarity.legendary,
     bonuses: {'attack': 26, 'defense': 6, 'magic': 5},
+    attackRange: 1,
+  );
+
+  static const Equipment battleAxe = Equipment(
+    id: 'battle_axe',
+    name: 'Battle Axe',
+    emoji: '🪓',
+    sprite: 'assets/weapons/axes/battle_axe_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'attack': 20, 'defense': 2},
+    attackRange: 1,
+  );
+
+  static const Equipment greatAxe = Equipment(
+    id: 'great_axe',
+    name: 'Great Axe',
+    emoji: '🪓',
+    sprite: 'assets/weapons/axes/great_axe_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'attack': 25, 'defense': 3},
+    attackRange: 1,
+  );
+
+  static const Equipment demonAxe = Equipment(
+    id: 'demon_axe',
+    name: 'Demon Axe',
+    emoji: '💀',
+    sprite: 'assets/weapons/axes/demon_axe_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.legendary,
+    bonuses: {'attack': 35, 'magic': 5, 'luck': -5},
     attackRange: 1,
   );
 
@@ -248,7 +290,49 @@ class WeaponsDatabase {
     bonuses: {'magic': 32, 'speed': 4, 'luck': 5},
     attackRange: 2,
   );
+  static const Equipment flameStaff = Equipment(
+    id: 'flame_staff',
+    name: 'Flame Staff',
+    emoji: '🔥',
+    sprite: 'assets/weapons/staffs/flame_staff_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'magic': 20, 'attack': 5},
+    attackRange: 2,
+  );
 
+  static const Equipment infernalTome = Equipment(
+    id: 'infernal_tome',
+    name: 'Infernal Tome',
+    emoji: '📚',
+    sprite: 'assets/weapons/books/infernal_tome_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'magic': 25, 'speed': 3},
+    attackRange: 2,
+  );
+
+  static const Equipment phoenixWand = Equipment(
+    id: 'phoenix_wand',
+    name: 'Phoenix Wand',
+    emoji: '🔥',
+    sprite: 'assets/weapons/staffs/phoenix_wand_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.legendary,
+    bonuses: {'magic': 30, 'attack': 8, 'speed': 6},
+    attackRange: 2,
+  );
+
+  static const Equipment goldStaff = Equipment(
+    id: 'gold_staff',
+    name: 'Gold Staff',
+    emoji: '💰',
+    sprite: 'assets/weapons/staffs/gold_staff_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'magic': 15, 'luck': 20},
+    attackRange: 2,
+  );
   // ============================================================================
   // ARCS (Bows) - Pour Archers
   // ============================================================================
@@ -495,7 +579,60 @@ class WeaponsDatabase {
     bonuses: {'magic': 24, 'defense': 10, 'luck': 8},
     attackRange: 2,
   );
+  static const Equipment holySymbol = Equipment(
+    id: 'holy_symbol',
+    name: 'Holy Symbol',
+    emoji: '✝️',
+    sprite: 'assets/weapons/rods/holy_symbol_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.common,
+    bonuses: {'magic': 8, 'defense': 3, 'luck': 5},
+    attackRange: 2,
+  );
 
+  static const Equipment priestStaff = Equipment(
+    id: 'priest_staff',
+    name: 'Priest Staff',
+    emoji: '⚕️',
+    sprite: 'assets/weapons/rods/priest_staff_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.uncommon,
+    bonuses: {'magic': 12, 'defense': 4},
+    attackRange: 2,
+  );
+
+  static const Equipment warHammer = Equipment(
+    id: 'war_hammer',
+    name: 'War Hammer',
+    emoji: '🔨',
+    sprite: 'assets/weapons/axes/war_hammer_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'attack': 18, 'defense': 8},
+    attackRange: 1,
+  );
+
+  static const Equipment ironMace = Equipment(
+    id: 'iron_mace',
+    name: 'Iron Mace',
+    emoji: '🔨',
+    sprite: 'assets/weapons/axes/iron_mace_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.uncommon,
+    bonuses: {'attack': 12, 'defense': 5},
+    attackRange: 1,
+  );
+
+  static const Equipment giantClub = Equipment(
+    id: 'giant_club',
+    name: 'Giant Club',
+    emoji: '🏏',
+    sprite: 'assets/weapons/axes/giant_club_save.png',
+    type: EquipmentType.weapon,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'attack': 22, 'defense': 3},
+    attackRange: 1,
+  );
   // ============================================================================
   // ARMES SPÉCIALES/EXOTIQUES
   // ============================================================================
@@ -558,6 +695,7 @@ class WeaponsDatabase {
       falchion,
       excalibur,
       dragonSlayer,
+      goldSword,
     ],
     'axes': [
       bronzeAxe,
@@ -565,6 +703,12 @@ class WeaponsDatabase {
       battleHammer,
       titanAxe,
       stormbreaker,
+      battleAxe,
+      greatAxe,
+      demonAxe,
+      warHammer,
+      ironMace,
+      giantClub,
     ],
     'staffs': [
       woodenStaff,
@@ -572,11 +716,15 @@ class WeaponsDatabase {
       crystalStaff,
       elderWand,
       staffOfEternity,
+      flameStaff,
+      phoenixWand,
+      goldStaff,
     ],
     'tomes': [
       apprenticeTome,
       archmageGrimoire,
       necronomiconEx,
+      infernalTome,
     ],
     'bows': [
       shortBow,
@@ -606,6 +754,8 @@ class WeaponsDatabase {
       sacredStaff,
       divineScepter,
       holyGrail,
+      holySymbol,
+      priestStaff,
     ],
     'special': [
       katana,

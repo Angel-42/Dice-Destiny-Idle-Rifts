@@ -222,6 +222,76 @@ class ArmorsDatabase {
     bonuses: {'defense': 30, 'magic': 5, 'luck': 5},
   );
 
+  static const Equipment barbarianFur = Equipment(
+    id: 'barbarian_fur',
+    name: 'Barbarian Fur',
+    emoji: '🐻',
+    sprite: 'assets/equipments/armors/lightarmors/barbarian_fur_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.uncommon,
+    bonuses: {'defense': 10, 'attack': 3},
+  );
+
+  static const Equipment emberRobe = Equipment(
+    id: 'ember_robe',
+    name: 'Ember Robe',
+    emoji: '🔥',
+    sprite: 'assets/equipments/armors/magicalarmors/ember_robe_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'defense': 12, 'magic': 15, 'attack': 5},
+  );
+
+  static const Equipment merchantRobe = Equipment(
+    id: 'merchant_robe',
+    name: 'Merchant Robe',
+    emoji: '💼',
+    sprite: 'assets/equipments/armors/lightarmors/merchant_robe_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.uncommon,
+    bonuses: {'defense': 6, 'luck': 10},
+  );
+
+  static const Equipment luckyVest = Equipment(
+    id: 'lucky_vest',
+    name: 'Lucky Vest',
+    emoji: '🍀',
+    sprite: 'assets/equipments/armors/lightarmors/lucky_vest_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'defense': 8, 'luck': 15, 'speed': 3},
+  );
+
+  static const Equipment bearPelt = Equipment(
+    id: 'bear_pelt',
+    name: 'Bear Pelt',
+    emoji: '🐻',
+    sprite: 'assets/equipments/armors/heavyarmors/bear_pelt_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'defense': 16, 'attack': 5, 'maxHp': 20},
+  );
+
+  static const Equipment priestRobe = Equipment(
+    id: 'priest_robe',
+    name: 'Priest Robe',
+    emoji: '✝️',
+    sprite: 'assets/equipments/armors/magicalarmors/priest_robe_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.uncommon,
+    bonuses: {'defense': 9, 'magic': 6, 'luck': 3},
+  );
+
+  static const Equipment holyVestments = Equipment(
+    id: 'holy_vestments',
+    name: 'Holy Vestments',
+    emoji: '✨',
+    sprite: 'assets/equipments/armors/magicalarmors/holy_vestments_save.png',
+    type: EquipmentType.armor,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'defense': 14, 'magic': 12, 'luck': 8},
+  );
+
   // ============================================================================
   // LISTE COMPLÈTE DES ARMURES
   // ============================================================================
@@ -233,11 +303,16 @@ class ArmorsDatabase {
     reinforcedLeather,
     shadowCloak,
     elvenRobe,
+    barbarianFur,
+    merchantRobe,
+    luckyVest,
+    priestRobe,
     // Moyennes
     chainmail,
     scaleArmor,
     knightArmor,
     mythrilChain,
+    bearPelt,
     // Lourdes
     plateArmor,
     fullPlate,
@@ -247,6 +322,8 @@ class ArmorsDatabase {
     wizardRobe,
     archmageRobe,
     astralCloak,
+    emberRobe,
+    holyVestments,
     // Légendaires
     celestialArmor,
     demonPlate,
@@ -429,6 +506,66 @@ class AccessoriesDatabase {
     bonuses: {'attack': 10, 'magic': 10, 'speed': 8, 'luck': 6},
   );
 
+  static const Equipment rageRing = Equipment(
+    id: 'rage_ring',
+    name: 'Ring of Rage',
+    emoji: '🔴',
+    sprite: 'assets/equipments/accessories/rings/rage_ring_save.png',
+    type: EquipmentType.accessory,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'attack': 12, 'speed': 5, 'defense': -2},
+  );
+
+  static const Equipment berserkerTotem = Equipment(
+    id: 'berserker_totem',
+    name: 'Berserker Totem',
+    emoji: '💀',
+    sprite: 'assets/equipments/accessories/amulets/berserker_totem_save.png',
+    type: EquipmentType.accessory,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'attack': 15, 'maxHp': 25, 'luck': -5},
+  );
+
+  static const Equipment flameOrb = Equipment(
+    id: 'flame_orb',
+    name: 'Flame Orb',
+    emoji: '🔥',
+    sprite: 'assets/equipments/accessories/orbs/flame_orb_save.png',
+    type: EquipmentType.accessory,
+    rarity: EquipmentRarity.epic,
+    bonuses: {'magic': 15, 'attack': 8},
+  );
+
+  static const Equipment goldPouch = Equipment(
+    id: 'gold_pouch',
+    name: 'Gold Pouch',
+    emoji: '💰',
+    sprite: 'assets/equipments/accessories/misc/gold_pouch_save.png',
+    type: EquipmentType.accessory,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'luck': 20},
+  );
+
+  static const Equipment holyAmulet = Equipment(
+    id: 'holy_amulet',
+    name: 'Holy Amulet',
+    emoji: '✨',
+    sprite: 'assets/equipments/accessories/amulets/holy_amulet_save.png',
+    type: EquipmentType.accessory,
+    rarity: EquipmentRarity.uncommon,
+    bonuses: {'magic': 6, 'defense': 4, 'luck': 3},
+  );
+
+  static const Equipment blessedRing = Equipment(
+    id: 'blessed_ring',
+    name: 'Blessed Ring',
+    emoji: '🌟',
+    sprite: 'assets/equipments/accessories/rings/blessed_ring_save.png',
+    type: EquipmentType.accessory,
+    rarity: EquipmentRarity.rare,
+    bonuses: {'magic': 8, 'luck': 6, 'defense': 3},
+  );
+
   // ============================================================================
   // CEINTURES (Belts)
   // ============================================================================
@@ -596,6 +733,8 @@ class AccessoriesDatabase {
     powerRing,
     dragonRing,
     phoenixRing,
+    rageRing,
+    blessedRing,
     // Amulettes
     leatherCharm,
     vitalityAmulet,
@@ -603,6 +742,8 @@ class AccessoriesDatabase {
     sagesAmulet,
     holySymbol,
     soulCrystal,
+    berserkerTotem,
+    holyAmulet,
     // Ceintures
     leatherBelt,
     championBelt,
@@ -619,6 +760,8 @@ class AccessoriesDatabase {
     magicOrb,
     crownOfKings,
     infinityGauntlet,
+    flameOrb,
+    goldPouch,
   ];
 
   /// Récupère un accessoire par son ID

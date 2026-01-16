@@ -103,6 +103,13 @@ class _SummonScreenState extends State<SummonScreen> {
       // Sauvegarder dans Firestore
       await GameDataService.createCharacter(character);
 
+      // 📔 TRACKER DANS LE CODEX
+      final player = await GameDataService.getPlayer();
+      if (player != null) {
+        player.unlockCharacter(character.name, character.level);
+        await GameDataService.savePlayer(player);
+      }
+
       if (mounted) {
         setState(() {
           _isSummoning = false;

@@ -233,6 +233,86 @@ class SkillsDatabase {
     statBonuses: {'damageMultiplier': 0.90},
   );
 
+  static const Skill berserkerRage = Skill(
+    id: 'berserker_rage',
+    name: 'Berserker Rage',
+    emoji: '💀',
+    sprite: 'assets/skills/warrior/berserker_rage_save.png',
+    description: 'Rage dévastatrice : +100% attaque, -50% défense, +20% vitesse',
+    type: SkillType.active,
+    statBonuses: {'attack': 1.00, 'defense': -0.50, 'speed': 0.20},
+  );
+
+  static const Skill bloodthirst = Skill(
+    id: 'bloodthirst',
+    name: 'Bloodthirst',
+    emoji: '🩸',
+    sprite: 'assets/skills/warrior/bloodthirst_save.png',
+    description: 'Récupère de la vie en infligeant des dégâts critiques',
+    type: SkillType.active,
+    statBonuses: {'criticalHit': 0.25, 'healMultiplier': 0.30},
+  );
+
+  static const Skill earthShaker = Skill(
+    id: 'earth_shaker',
+    name: 'Earth Shaker',
+    emoji: '🌍',
+    sprite: 'assets/skills/warrior/earth_shaker_save.png',
+    description: 'Frappe du sol créant une onde de choc',
+    type: SkillType.active,
+    statBonuses: {'damageMultiplier': 0.70},
+  );
+
+  static const Skill brutality = Skill(
+    id: 'brutality',
+    name: 'Brutality',
+    emoji: '🗡️',
+    sprite: 'assets/skills/warrior/brutality_save.png',
+    description: '+40% chance de critique, +30% dégâts critiques',
+    type: SkillType.passive,
+    statBonuses: {'criticalHit': 0.40, 'criticalDamage': 0.30},
+  );
+
+  static const Skill goldRush = Skill(
+    id: 'gold_rush',
+    name: 'Gold Rush',
+    emoji: '💰',
+    sprite: 'assets/skills/general/gold_rush_save.png',
+    description: '+50% d\'or obtenu après les combats',
+    type: SkillType.active,
+    statBonuses: {'goldMultiplier': 0.50},
+  );
+
+  static const Skill luckBoost = Skill(
+    id: 'luck_boost',
+    name: 'Luck Boost',
+    emoji: '🍀',
+    sprite: 'assets/skills/general/luck_boost_save.png',
+    description: '+30% chance pour tous les événements aléatoires',
+    type: SkillType.passive,
+    statBonuses: {'luck': 0.30},
+  );
+
+  static const Skill guardianSpirit = Skill(
+    id: 'guardian_spirit',
+    name: 'Guardian Spirit',
+    emoji: '👼',
+    sprite: 'assets/skills/ultimate/guardian_spirit_save.png',
+    description: 'Protège tous les alliés : +50% défense de l\'équipe',
+    type: SkillType.passive,
+    statBonuses: {'defense': 0.50},
+  );
+
+  static const Skill divineProtection = Skill(
+    id: 'divine_protection',
+    name: 'Divine Protection',
+    emoji: '✨',
+    sprite: 'assets/skills/cleric/divine_protection_save.png',
+    description: 'Bénédiction : +25% résistance magique et physique',
+    type: SkillType.passive,
+    statBonuses: {'defense': 0.25, 'magic': 0.25},
+  );
+
   // ============================================================================
   // COMPÉTENCES PASSIVES - RACE
   // ============================================================================
@@ -486,6 +566,9 @@ class SkillsDatabase {
       berserk,
       shieldBash,
       executionStrike,
+      berserkerRage,
+      bloodthirst,
+      earthShaker,
     ],
     'mage_active': [
       fireball,
@@ -508,6 +591,7 @@ class SkillsDatabase {
       resurrection,
       bless,
       holySmite,
+      goldRush,
     ],
     'race_passive': [
       humanAdaptability,
@@ -532,6 +616,9 @@ class SkillsDatabase {
       fortuneFavor,
       magicMastery,
       weaponMaster,
+      brutality,
+      luckBoost,
+      divineProtection,
     ],
     'ultimate': [
       divineIntervention,
@@ -540,6 +627,7 @@ class SkillsDatabase {
       timeStop,
       meteor,
       resurrection,
+      guardianSpirit,
     ],
   };
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/campaign_data.dart';
 import '../models/character.dart';
 import '../data/campaign_database.dart';
@@ -17,6 +18,8 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
   double currentStageId = 1.01; // Stage débloqué actuel (depuis les saves)
   List<Character> team = [];
   bool isLoading = true;
+  List<CampaignChapter> chapters = [];
+  StoryPath playerPath = StoryPath.order;
 
   @override
   void initState() {
@@ -35,6 +38,32 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
     if (player != null) {
       currentStageId = player.storyChapter.toDouble();
     }
+        // Charger le chemin narratif sauvegardé
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString('currentStoryPath');
+    if (savedPath != null) {
+      // Convertir la string en StoryPath
+      playerPath = StoryPath.values.firstWhere(
+        (p) => p.toString() == savedPath,
+        orElse: () => StoryPath.order,
+      );
+      debugPrint('📖 Chemin narratif chargé: $playerPath');
+    }
+        // Déterminer les chapitres à afficher selon la région du personnage principal
+    final mainCharacter = await GameDataService.getMainCharacter();
+    if (mainCharacter?.persona != null) {
+      final regionName = mainCharacter!.persona!.region.name;
+      chapters = CampaignDatabase.getChaptersForRegion(regionName);
+      
+      // Déterminer le chemin narratif du joueur
+      final originName = mainCharacter.persona!.origin.name;
+      final className = mainCharacter.persona!.characterClass.name;
+      playerPath = CampaignDatabase.getInitialPath(originName, className);
+    } else {
+      // Par défaut si pas de persona
+      chapters = CampaignDatabase.chapters;
+      playerPath = StoryPath.order;
+    }
     
     setState(() => isLoading = false);
   }
@@ -50,13 +79,19 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
       return;
     }
 
-    // Naviguer vers l'écran de combat avec le stage sélectionné
+    // Utiliser le chemin narratif actuel du joueur
+    // Pour le premier stage, il sera déterminé par le choix du joueur
+    // Pour les stages suivants, on garde le path déjà choisi
+    final storyPath = playerPath;
+
+    // Naviguer vers l'écran de combat avec le stage sélectionné et le chemin narratif
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => CampaignScreen(
           team: team,
           stage: stage,
+          storyPath: storyPath,
         ),
       ),
     );
@@ -66,6 +101,7 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
       // Progression vers le stage suivant
       final nextStage = CampaignDatabase.getNextStage(stage.stageId);
       if (nextStage != null) {
+        debugPrint('✅ Stage ${stage.stageId} terminé ! Déverrouillage du stage ${nextStage.stageId}');
         setState(() {
           currentStageId = nextStage.stageId;
         });
@@ -75,8 +111,13 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
         if (player != null) {
           final updatedPlayer = player.copyWith(storyChapter: nextStage.stageId.toDouble());
           await GameDataService.savePlayer(updatedPlayer);
+          debugPrint('💾 Progression sauvegardée: ${nextStage.stageId}');
         }
+      } else {
+        debugPrint('🏆 Dernier stage du chapitre terminé !');
       }
+    } else {
+      debugPrint('❌ Stage échoué ou abandonné');
     }
 
     // Recharger les données après retour
@@ -111,9 +152,9 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: CampaignDatabase.chapters.length,
+                  itemCount: chapters.length,
                   itemBuilder: (context, index) {
-                    final chapter = CampaignDatabase.chapters[index];
+                    final chapter = chapters[index];
                     return _buildChapterCard(chapter);
                   },
                 ),
@@ -173,7 +214,11 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
 
   Widget _buildChapterCard(CampaignChapter chapter) {
     final currentChapter = currentStageId.floor();
-    final isUnlocked = chapter.chapterNumber <= currentChapter;
+    
+    // Tous les chapitres 1 (de départ) sont déverrouillés
+    // Les autres chapitres suivent la progression normale
+    final isStartingChapter = chapter.chapterNumber == 1;
+    final isUnlocked = isStartingChapter || (chapter.chapterNumber <= currentChapter);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -241,8 +286,14 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
 
   Widget _buildStageItem(CampaignStage stage) {
     final isUnlocked = stage.stageId <= currentStageId;
-    final isCompleted = stage.stageId < currentStageId;
-
+    final isCompleted = stage.stageId < currentStageId;    
+    // Déterminer le chemin narratif selon la persona du premier personnage
+    final playerPath = team.isNotEmpty 
+        ? CampaignDatabase.getInitialPath(
+            team.first.persona.origin.name,
+            team.first.persona.characterClass.name,
+          )
+        : StoryPath.order;
     return ListTile(
       enabled: isUnlocked,
       leading: Icon(
@@ -250,7 +301,7 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
         color: isCompleted ? Colors.green : (isUnlocked ? Colors.amber : Colors.grey),
       ),
       title: Text(
-        '${stage.chapter}-${stage.stage}: ${stage.name}',
+        '${stage.chapter}-${stage.stage}: ${stage.getName(playerPath)}',
         style: TextStyle(
           color: isUnlocked ? Colors.white : Colors.grey,
           fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
@@ -260,7 +311,7 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            stage.description,
+            stage.getDescription(playerPath),
             style: TextStyle(
               color: isUnlocked ? Colors.white60 : Colors.grey,
               fontSize: 12,
@@ -273,7 +324,7 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
-                  '${stage.enemies.length} ennemis',
+                  '${stage.getEnemies(playerPath).length} ennemis',
                   style: TextStyle(color: Colors.red.shade300, fontSize: 11),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -283,7 +334,7 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
-                  '${stage.rewardGold}G',
+                  '${stage.getRewards(playerPath).$1}G',
                   style: const TextStyle(color: Colors.amber, fontSize: 11),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -291,7 +342,7 @@ class _CampaignSelectionScreenState extends State<CampaignSelectionScreen> {
               const Icon(Icons.star, size: 14, color: Colors.blue),
               const SizedBox(width: 4),
               Text(
-                '${stage.rewardXP}XP',
+                '${stage.getRewards(playerPath).$2}XP',
                 style: const TextStyle(color: Colors.blue, fontSize: 11),
               ),
             ],

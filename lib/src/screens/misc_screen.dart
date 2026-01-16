@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
+import 'bestiary_screen.dart';
+import 'codex_screen.dart';
 import 'settings_screen.dart';
-import 'welcome_screen.dart'; // 👈 AJOUTER
+import 'welcome_screen.dart';
 
 class MiscScreen extends StatelessWidget {
   const MiscScreen({super.key});
@@ -84,6 +86,34 @@ class MiscScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildMiscCard(
+                        context: context,
+                        icon: Icons.menu_book,
+                        label: 'Bestiary',
+                        color: Colors.deepPurple,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BestiaryScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildMiscCard(
+                        context: context,
+                        icon: Icons.people,
+                        label: 'Codex',
+                        color: Colors.amber,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CodexScreen(),
                             ),
                           );
                         },

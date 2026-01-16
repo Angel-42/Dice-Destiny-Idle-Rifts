@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'typewriter_text.dart';
 
 class DialogueLine {
@@ -53,6 +54,7 @@ class _DialogueBoxState extends State<DialogueBox> with SingleTickerProviderStat
   bool _textComplete = false;
   late final AnimationController _appearCtrl;
   Timer? _autoAdvanceTimer;
+  String? _resolvedPortrait; // resolved asset path for large fullsize background
 
   void _onComplete() {
     if (!mounted) return;
@@ -71,6 +73,40 @@ class _DialogueBoxState extends State<DialogueBox> with SingleTickerProviderStat
     super.initState();
     _appearCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
     _appearCtrl.forward();
+    _resolvePortraitIfNeeded();
+  }
+
+  void _resolvePortraitIfNeeded() {
+    // If a portrait asset path is provided explicitly (contains '/'), use that.
+    if (widget.line.portrait != null && widget.line.portrait!.contains('/')) {
+      _resolvedPortrait = widget.line.portrait!;
+      return;
+    }
+
+    // Otherwise try to find a character fullsize image in assets following the convention:
+    // assets/characters/<Speaker>/fullsize.png
+    final speaker = widget.line.speaker;
+    if (speaker.isEmpty) return;
+
+    final candidates = <String>[
+      'assets/characters/$speaker/fullsize.png',
+      'assets/characters/${speaker.replaceAll(' ', '')}/fullsize.png',
+      'assets/characters/${speaker.toLowerCase()}/fullsize.png',
+      'assets/characters/${speaker[0].toUpperCase()}${speaker.substring(1)}/fullsize.png',
+    ];
+
+    // Try loads sequentially; existence is determined by whether rootBundle.load throws.
+    for (final path in candidates) {
+      rootBundle.load(path).then((_) {
+        if (!mounted) return;
+        setState(() {
+          _resolvedPortrait = path;
+        });
+      }).catchError((_) {
+        // ignore missing asset and continue trying others
+      });
+      if (_resolvedPortrait != null) break;
+    }
   }
 
   @override
@@ -88,19 +124,17 @@ class _DialogueBoxState extends State<DialogueBox> with SingleTickerProviderStat
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Background sprite (large, semi-transparent) if portrait is an asset path
-          if (widget.line.portrait != null && widget.line.portrait!.contains('/'))
+          // Background sprite (large, semi-transparent) when a resolved portrait asset exists.
+          if (_resolvedPortrait != null)
             Positioned.fill(
               child: IgnorePointer(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Opacity(
-                    opacity: 0.12,
-                    child: FractionallySizedBox(
-                      widthFactor: 0.6,
-                      alignment: Alignment.centerLeft,
-                      child: Image.asset(widget.line.portrait!, fit: BoxFit.contain, alignment: Alignment.centerLeft, errorBuilder: (_, __, ___) => const SizedBox()),
-                    ),
+                child: Opacity(
+                  opacity: 0.14,
+                  child: Image.asset(
+                    _resolvedPortrait!,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.centerRight,
+                    errorBuilder: (_, __, ___) => const SizedBox(),
                   ),
                 ),
               ),

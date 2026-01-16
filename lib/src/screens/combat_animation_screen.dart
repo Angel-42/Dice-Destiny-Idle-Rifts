@@ -4,7 +4,10 @@ import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
 import '../models/skill.dart';
 import '../models/dice.dart';
+import '../models/animation_state.dart';
 import '../widgets/dice_animation_widget.dart';
+import '../widgets/combat_animated_sprite.dart';
+import '../services/game_data_service.dart';
 
 /// Écran de combat animé 1v1 inspiré de Fire Emblem
 /// Affiche une scène isolée avec les sprites des deux combattants
@@ -46,11 +49,18 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
   CombatPhase _phase = CombatPhase.intro;
   int _xpGained = 0;
 
+  // États d'animation pour les combattants
+  AnimationState _attackerAnimState = AnimationState.idle;
+  AnimationState _defenderAnimState = AnimationState.idle;
+
   @override
   void initState() {
     super.initState();
     _attackerCurrentHp = widget.attacker.currentHp;
     _defenderCurrentHp = widget.defender.currentHp;
+
+    // Enregistrer la rencontre avec le défenseur dans le bestiaire
+    _trackEnemyEncounter();
 
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -78,6 +88,32 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     _shakeController.dispose();
     _fadeController.dispose();
     super.dispose();
+  }
+
+  /// Enregistre la rencontre avec l'ennemi dans le bestiaire
+  Future<void> _trackEnemyEncounter() async {
+    try {
+      final player = await GameDataService.getPlayer();
+      if (player != null) {
+        player.encounterEnemy(widget.defender.id);
+        await GameDataService.savePlayer(player);
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de l\'enregistrement de la rencontre: $e');
+    }
+  }
+
+  /// Enregistre la défaite de l'ennemi dans le bestiaire
+  Future<void> _trackEnemyDefeat() async {
+    try {
+      final player = await GameDataService.getPlayer();
+      if (player != null) {
+        player.defeatEnemy(widget.defender.id);
+        await GameDataService.savePlayer(player);
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de l\'enregistrement de la défaite: $e');
+    }
   }
 
   Future<void> _startCombat() async {
@@ -108,7 +144,15 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
   }
 
   Future<void> _performAttack(Character attacker, Character defender, {bool allowDoubleAttack = true}) async {
+    final isAttackerPlayer = attacker.id == widget.attacker.id;
+    
+    // Animation d'attaque pour l'attaquant
     setState(() {
+      if (isAttackerPlayer) {
+        _attackerAnimState = AnimationState.attack;
+      } else {
+        _defenderAnimState = AnimationState.attack;
+      }
       _currentAction = '${attacker.name} attaque !';
       _combatLog.add(_currentAction);
     });
@@ -145,10 +189,13 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
       await Future.delayed(const Duration(milliseconds: 300));
     }
     
+    // Animation de dégâts pour le défenseur
     setState(() {
-      if (defender.id == widget.defender.id) {
+      if (isAttackerPlayer) {
+        _defenderAnimState = AnimationState.hit;
         _defenderDamagePopup = damage;
       } else {
+        _attackerAnimState = AnimationState.hit;
         _attackerDamagePopup = damage;
       }
     });
@@ -168,9 +215,12 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
 
     await Future.delayed(const Duration(milliseconds: 800));
     
+    // Revenir à l'état idle
     setState(() {
       _attackerDamagePopup = null;
       _defenderDamagePopup = null;
+      _attackerAnimState = AnimationState.idle;
+      _defenderAnimState = AnimationState.idle;
     });
 
     // Vérifier si le défenseur est toujours vivant ET si la double attaque est autorisée
@@ -201,12 +251,6 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     }
   }
 
-  // Version legacy pour compatibilité
-  int _calculateDamage(Character attacker, Character defender) {
-    final (damage, _) = _calculateDamageWithCrit(attacker, defender);
-    return damage;
-  }
-
   /// Calcule la probabilité de double attaque basée sur la vitesse et la chance
   /// Formule: (Speed/2 + Luck/3) / 100
   /// Avec des stats élevées (Speed 30, Luck 30), on obtient ~25% de chance
@@ -227,6 +271,23 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
     final defenderDefeated = _defenderCurrentHp <= 0;
 
     _xpGained = defenderDefeated ? 50 : 20;
+
+    // Enregistrer la défaite de l'ennemi dans le bestiaire
+    if (defenderDefeated) {
+      _trackEnemyDefeat();
+    }
+
+    // Animations de fin
+    if (defenderDefeated) {
+      setState(() {
+        _defenderAnimState = AnimationState.death;
+        _attackerAnimState = AnimationState.victory;
+      });
+    } else if (_attackerCurrentHp <= 0) {
+      setState(() {
+        _attackerAnimState = AnimationState.death;
+      });
+    }
 
     setState(() {
       _phase = CombatPhase.result;
@@ -439,7 +500,22 @@ class _CombatAnimationScreenState extends State<CombatAnimationScreen>
   }
 
   Widget _buildCombatant(Character character, bool isDefender) {
-    // Utiliser le fullsize sprite s'il existe
+    final currentAnimState = isDefender ? _defenderAnimState : _attackerAnimState;
+    
+    // Si le personnage a des animations de combat configurées, les utiliser
+    if (character.appearance.combatAnimations != null && 
+        character.appearance.combatAnimations!.hasAnimations) {
+      return CombatAnimatedSprite(
+        animationSet: character.appearance.combatAnimations!,
+        currentState: currentAnimState,
+        width: 150,
+        height: 250,
+        flipHorizontal: !isDefender, // L'attaquant regarde vers la droite
+        fallbackBuilder: () => _buildFallbackCombatant(character, isDefender),
+      );
+    }
+    
+    // Sinon, utiliser le fullsize sprite statique s'il existe
     if (character.appearance.fullsize != null) {
       return Container(
         width: 150,

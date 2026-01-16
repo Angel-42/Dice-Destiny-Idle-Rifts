@@ -11,6 +11,49 @@ class Persona {
     required this.characterClass,
   });
 
+  // Personas prédéfinies courantes
+  static const Persona mystic = Persona(
+    race: PersonaRace.elf,
+    region: PersonaRegion.east,
+    origin: PersonaOrigin.scholar,
+    characterClass: PersonaClass.mage,
+  );
+
+  static const Persona noble = Persona(
+    race: PersonaRace.human,
+    region: PersonaRegion.west,
+    origin: PersonaOrigin.noble,
+    characterClass: PersonaClass.warrior,
+  );
+
+  static const Persona loneWolf = Persona(
+    race: PersonaRace.human,
+    region: PersonaRegion.north,
+    origin: PersonaOrigin.peasant,
+    characterClass: PersonaClass.peasant,
+  );
+
+  static const Persona aggressive = Persona(
+    race: PersonaRace.orc,
+    region: PersonaRegion.north,
+    origin: PersonaOrigin.peasant,
+    characterClass: PersonaClass.warrior,
+  );
+
+  static const Persona greedy = Persona(
+    race: PersonaRace.dwarf,
+    region: PersonaRegion.south,
+    origin: PersonaOrigin.merchant,
+    characterClass: PersonaClass.warrior,
+  );
+
+  static const Persona studious = Persona(
+    race: PersonaRace.elf,
+    region: PersonaRegion.west,
+    origin: PersonaOrigin.scholar,
+    characterClass: PersonaClass.mage,
+  );
+
   Map<String, dynamic> toJson() {
     return {
       'race': race.name,

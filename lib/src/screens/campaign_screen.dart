@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:collection/collection.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/map_data.dart';
 import '../models/character.dart';
@@ -19,17 +21,20 @@ import '../widgets/widgets.dart';
 import '../screens/combat_animation_screen.dart';
 import '../services/game_data_service.dart';
 import '../data/enemy_database.dart';
-import '../data/story_data.dart';
+import '../data/campaign_database.dart';
+import '../ai/enemy_ai.dart';
 
 /// Écran de campagne avec map tactique et déplacement
 class CampaignScreen extends StatefulWidget {
   final List<Character> team;
   final CampaignStage? stage; // Stage de campagne (null = mode test)
+  final StoryPath? storyPath; // Chemin narratif du joueur
 
   const CampaignScreen({
     super.key,
     required this.team,
     this.stage,
+    this.storyPath,
   });
 
   @override
@@ -37,17 +42,26 @@ class CampaignScreen extends StatefulWidget {
 }
 
 class _CampaignScreenState extends State<CampaignScreen> {
-  late TacticalMapData mapData;
+  TacticalMapData mapData = TacticalMapData.createTestMap(); // Valeur par défaut avant initialisation async
   late List<UnitPosition> units;
   late Map<String, Character> charactersMap;
   UnitPosition? selectedUnit;
   Set<String> highlightedTiles = {}; // Cases de mouvement (bleues)
   Set<String> attackableTiles = {}; // Cases d'attaque (rouges)
   
+  // Chemin narratif actuel (peut changer selon les choix)
+  late StoryPath currentStoryPath;
+  
+  // Flag pour masquer les ennemis pendant les dialogues initiaux
+  bool _hideEnemiesUntilDialoguesDone = true;
+  
   // Système de tours
   List<String> _allyTurnOrder = []; // Ordre des tours alliés (triés par Speed)
   List<String> _enemyTurnOrder = []; // Ordre des tours ennemis (triés par Speed)
   int _currentTurnIndex = 0;
+  
+  // IA ennemis
+  final EnemyAI _enemyAI = EnemyAI();
   bool _isPlayerPhase = true; // true = phase alliés, false = phase ennemis
   Set<String> _unitsWhoActed = {}; // Unités qui ont déjà agi ce cycle/phase
   Map<String, int> _remainingMovement = {}; // Mouvement restant pour chaque unité ce tour
@@ -56,12 +70,79 @@ class _CampaignScreenState extends State<CampaignScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeMap();
+    // Initialiser le chemin narratif
+    currentStoryPath = widget.storyPath ?? StoryPath.order;
+    _initializeMapAsync();
   }
 
-  void _initializeMap() {
-    mapData = TacticalMapData.createTestMap();
+  Future<void> _initializeMapAsync() async {
+    await _initializeMap();
+    
+    // Initialiser les unités avec le chemin par défaut
+    _initializeUnits();
+    _initializeTurnOrder();
+    
+    // Si c'est un stage de campagne, jouer l'introduction narrative
+    // Les choix peuvent modifier currentStoryPath et réinitialiser les unités
+    if (widget.stage != null) {
+      // Attendre que le widget soit monté avant de lancer les dialogues
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await _playStoryEvents();
+        // Réinitialiser les unités après les choix du joueur
+        if (mounted) {
+          _initializeUnits();
+          _initializeTurnOrder();
+          setState(() {
+            _hideEnemiesUntilDialoguesDone = false; // Afficher les ennemis maintenant
+          });
+        }
+      });
+    } else {
+      // Pas de dialogues, afficher les ennemis immédiatement
+      _hideEnemiesUntilDialoguesDone = false;
+    }
+    
+    setState(() {}); // Déclencher un rebuild après l'initialisation async
+  }
 
+  Future<void> _initializeMap() async {
+    // Pour le chapitre 1, utiliser la région de spawn du joueur
+    if (widget.stage != null && widget.stage!.chapter == 1) {
+      final mainCharacter = await GameDataService.getMainCharacter();
+      if (mainCharacter?.persona != null) {
+        final spawnRegion = CampaignDatabase.getSpawnRegion(mainCharacter!.persona.region.name);
+        // Générer la map selon la région de spawn
+        switch (spawnRegion) {
+          case 'aethelgard':
+            mapData = TacticalMapData.createTownMap(); // Château/ville
+            break;
+          case 'flux_celeste':
+            mapData = TacticalMapData.createCelestialMap(); // Temple mystique
+            break;
+          case 'foret_murmures':
+            mapData = TacticalMapData.createForestMap(); // Forêt dense
+            break;
+          case 'desert_osiris':
+            mapData = TacticalMapData.createCanyonMap(); // Désert/canyon
+            break;
+          default:
+            mapData = TacticalMapData.createTestMap();
+        }
+      } else {
+        // Pas de persona, utiliser le système normal
+        mapData = widget.stage!.generateMap(currentStoryPath);
+      }
+    } else if (widget.stage != null) {
+      // Pour les autres chapitres, utiliser le système normal
+      mapData = widget.stage!.generateMap(currentStoryPath);
+    } else {
+      // Mode test par défaut
+      mapData = TacticalMapData.createTestMap();
+    }
+  }
+
+  void _initializeUnits() {
     final team = widget.team;
     final baseY = mapData.height - 2;
     final startX = 1;
@@ -82,10 +163,25 @@ class _CampaignScreenState extends State<CampaignScreen> {
       ));
     }
 
-    final enemies = [
-      EnemyDatabase.createEnemy('wolf', level: 1),
-      EnemyDatabase.createEnemy('wolf', level: 1),
-    ];
+    // Utiliser les ennemis du stage ou des ennemis par défaut
+    List<Character> enemies = [];
+    if (widget.stage != null) {
+      // Obtenir la variante du stage selon le chemin narratif actuel
+      final variant = widget.stage!.getVariant(currentStoryPath);
+      if (variant != null && variant.enemies.isNotEmpty) {
+        enemies = variant.enemies.map((spawn) {
+          return EnemyDatabase.createEnemy(spawn.enemyId, level: spawn.level);
+        }).toList();
+      }
+    }
+    
+    // Si pas d'ennemis spécifiques, utiliser des loups par défaut
+    if (enemies.isEmpty) {
+      enemies = [
+        EnemyDatabase.createEnemy('wolf', level: 1),
+        EnemyDatabase.createEnemy('wolf', level: 1),
+      ];
+    }
 
     // Ajouter les ennemis à la map avec des IDs uniques garantis
     for (var i = 0; i < enemies.length; i++) {
@@ -118,40 +214,46 @@ class _CampaignScreenState extends State<CampaignScreen> {
       charactersMap[enemies[i].id] = enemies[i];
     }
 
-    units.addAll([
-      UnitPosition(
-        unitId: enemies[0].id,
-        x: 5,
-        y: 2,
-        name: enemies[0].name,
-        color: Color(enemies[0].appearance.colorValue),
-        isPlayer: false,
-        pixelSprite: enemies[0].appearance.pixel,
-      ),
-      UnitPosition(
-        unitId: enemies[1].id,
-        x: 6,
-        y: 3,
-        name: enemies[1].name,
-        color: Color(enemies[1].appearance.colorValue),
-        isPlayer: false,
-        pixelSprite: enemies[1].appearance.pixel,
-      ),
-    ]);
-    
-    // Initialiser l'ordre des tours
-    _initializeTurnOrder();
-
-    // Si c'est un stage de campagne, jouer l'introduction narrative associée
+    // Ajouter les ennemis aux unités selon leurs positions définies
     if (widget.stage != null) {
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return;
-        final results = await StoryService.playStoryForStage(context, widget.stage!);
-        if (results.isNotEmpty) {
-          debugPrint('Story choices: $results');
-          // TODO: appliquer effets des choix (branching) si nécessaire
+      final variant = widget.stage!.getVariant(currentStoryPath);
+      if (variant != null && variant.enemies.isNotEmpty) {
+        // Utiliser les positions définies dans le stage
+        for (var i = 0; i < enemies.length && i < variant.enemies.length; i++) {
+          final spawn = variant.enemies[i];
+          final enemy = enemies[i];
+          units.add(UnitPosition(
+            unitId: enemy.id,
+            x: spawn.x,
+            y: spawn.y,
+            name: enemy.name,
+            color: Color(enemy.appearance.colorValue),
+            isPlayer: false,
+            pixelSprite: enemy.appearance.pixel,
+          ));
         }
-      });
+      } else {
+        // Positions par défaut si pas de stage défini
+        _addDefaultEnemyPositions(enemies);
+      }
+    } else {
+      // Mode test sans stage
+      _addDefaultEnemyPositions(enemies);
+    }
+  }
+
+  void _addDefaultEnemyPositions(List<Character> enemies) {
+    for (var i = 0; i < enemies.length; i++) {
+      final enemy = enemies[i];
+      units.add(UnitPosition(
+        unitId: enemy.id,
+        x: 5 + (i % 2), // Position par défaut: (5,2), (6,3), etc.
+        y: 2 + (i ~/ 2),
+        name: enemy.name,
+        color: Color(enemy.appearance.colorValue),
+        isPlayer: false,
+        pixelSprite: enemy.appearance.pixel,
+      ));
     }
   }
   
@@ -195,6 +297,180 @@ class _CampaignScreenState extends State<CampaignScreen> {
       
       // Le joueur choisira lui-même quel allié jouer
     });
+  }
+
+  /// Joue les événements narratifs du stage
+  Future<void> _playStoryEvents() async {
+    if (widget.stage == null) return;
+    
+    // Déterminer le thème selon la région du personnage
+    String? theme;
+    final mainCharacter = await GameDataService.getMainCharacter();
+    if (mainCharacter?.persona != null && widget.stage!.chapter == 1) {
+      final regionName = mainCharacter!.persona.region.name;
+      theme = CampaignDatabase.getSpawnRegion(regionName);
+    }
+    
+    // 1. Jouer les événements du CHAPITRE seulement pour le PREMIER STAGE (1-1)
+    if (widget.stage!.stage == 1) {
+      final chapterData = CampaignDatabase.getChapter(widget.stage!.chapter, theme: theme);
+      if (chapterData != null) {
+        for (final event in chapterData.chapterEvents) {
+          if (!mounted) return;
+          
+          final dialogueLine = DialogueLine(
+            speaker: event.speaker,
+            text: event.text,
+            portrait: event.speakerAvatar,
+            choices: event.choices.map((choice) => DialogueChoice(
+              id: choice.id,
+              label: choice.text,
+            )).toList(),
+          );
+          
+          final results = await DialogueManager.showSequence(
+            context,
+            [dialogueLine],
+            barrierDismissible: false,
+          );
+          
+          // Traiter les choix du joueur (met à jour currentStoryPath)
+          if (results.isNotEmpty) {
+            _processStoryChoices(results, event);
+          }
+        }
+      }
+    }
+    
+    // 2. Jouer les événements du STAGE (tous les stages)
+    final chapterData = CampaignDatabase.getChapter(widget.stage!.chapter, theme: theme);
+    final stageData = chapterData?.getStage(widget.stage!.stage);
+    if (stageData != null) {
+      // Jouer les événements communs du stage
+      for (final event in stageData.commonEvents) {
+        if (!mounted) return;
+        
+        final dialogueLine = DialogueLine(
+          speaker: event.speaker,
+          text: event.text,
+          portrait: event.speakerAvatar,
+          choices: event.choices.map((choice) => DialogueChoice(
+            id: choice.id,
+            label: choice.text,
+          )).toList(),
+        );
+        
+        await DialogueManager.showSequence(
+          context,
+          [dialogueLine],
+          barrierDismissible: false,
+        );
+      }
+      
+      // Jouer les événements de la variante sélectionnée (seulement intro, pas outro)
+      final variant = stageData.getVariant(currentStoryPath);
+      if (variant != null && variant.events.isNotEmpty) {
+        for (final event in variant.events.where((e) => e.type != DialogueType.outro)) {
+          if (!mounted) return;
+          
+          final dialogueLine = DialogueLine(
+            speaker: event.speaker,
+            text: event.text,
+            portrait: event.speakerAvatar,
+            choices: [],
+          );
+          
+          await DialogueManager.showSequence(
+            context,
+            [dialogueLine],
+            barrierDismissible: false,
+          );
+        }
+      }
+    }
+  }
+
+  /// Traite les choix du joueur dans les événements narratifs
+  void _processStoryChoices(Map<String, String> results, StoryEvent event) {
+    for (final entry in results.entries) {
+      final choiceId = entry.value;
+      final choice = event.choices.firstWhere(
+        (c) => c.id == choiceId,
+        orElse: () => event.choices.first,
+      );
+      
+      // Mettre à jour le chemin narratif selon le choix
+      if (choice.path != currentStoryPath) {
+        setState(() {
+          currentStoryPath = choice.path;
+        });
+        debugPrint('Chemin narratif mis à jour vers: ${choice.path}');
+        
+        // Sauvegarder le nouveau chemin dans les données du joueur
+        _saveStoryPath(choice.path);
+      }
+      
+      // Appliquer les récompenses du choix
+      if (choice.rewards.isNotEmpty) {
+        debugPrint('Récompenses du choix ${choice.text}: ${choice.rewards}');
+        _applyChoiceRewards(choice.rewards);
+      }
+      
+      // Modifier la liste des ennemis selon le choix
+      if (choice.unlocksEnemies.isNotEmpty) {
+        debugPrint('Nouveaux ennemis: ${choice.unlocksEnemies}');
+        _addEnemiesFromChoice(choice.unlocksEnemies);
+      }
+      
+      if (choice.removeEnemies.isNotEmpty) {
+        debugPrint('Ennemis supprimés: ${choice.removeEnemies}');
+        _removeEnemiesFromChoice(choice.removeEnemies);
+      }
+    }
+  }
+
+  /// Sauvegarde le nouveau chemin narratif
+  Future<void> _saveStoryPath(StoryPath newPath) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('currentStoryPath', newPath.toString());
+      debugPrint('💾 Chemin narratif sauvegardé: $newPath');
+    } catch (e) {
+      debugPrint('Erreur lors de la sauvegarde du chemin: $e');
+    }
+  }
+
+  /// Applique les récompenses d'un choix (or, XP, bonus)
+  void _applyChoiceRewards(Map<String, int> rewards) {
+    // TODO: Implémenter l'application des récompenses
+    for (final entry in rewards.entries) {
+      switch (entry.key) {
+        case 'gold':
+          debugPrint('+ ${entry.value} gold');
+          break;
+        case 'xp':
+          debugPrint('+ ${entry.value} XP');
+          break;
+        default:
+          debugPrint('Bonus ${entry.key}: +${entry.value}');
+      }
+    }
+  }
+
+  /// Ajoute de nouveaux ennemis selon le choix
+  void _addEnemiesFromChoice(List<String> enemyIds) {
+    // TODO: Ajouter les nouveaux ennemis sur la carte
+    for (final enemyId in enemyIds) {
+      debugPrint('Ajout de l\'ennemi: $enemyId');
+    }
+  }
+
+  /// Supprime des ennemis selon le choix
+  void _removeEnemiesFromChoice(List<String> enemyIds) {
+    // TODO: Supprimer les ennemis de la carte
+    for (final enemyId in enemyIds) {
+      debugPrint('Suppression de l\'ennemi: $enemyId');
+    }
   }
   
   /// Démarre le tour d'une unité
@@ -272,11 +548,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
         duration: const Duration(milliseconds: 1500),
       );
       
-      // TODO: Implémenter l'IA ennemie
-      // Pour l'instant, skip la phase ennemie et retourner à la phase alliée
+      // Démarrer l'IA ennemie après la transition
       Future.delayed(const Duration(milliseconds: 1800), () {
-        if (mounted) {
-          _startNewPhase(); // Retour immédiat à la phase alliée
+        if (mounted && _enemyTurnOrder.isNotEmpty) {
+          _executeEnemyPhase();
         }
       });
     } else {
@@ -295,6 +570,104 @@ class _CampaignScreenState extends State<CampaignScreen> {
       
       // Le joueur choisira lui-même quel allié jouer (pas d'auto-sélection)
     }
+  }
+  
+  /// Exécute automatiquement tous les tours ennemis
+  Future<void> _executeEnemyPhase() async {
+    for (final enemyId in _enemyTurnOrder) {
+      if (!mounted) return;
+      
+      // Vérifier si l'ennemi existe encore (pas mort)
+      final enemyUnit = units.firstWhereOrNull((u) => u.unitId == enemyId);
+      if (enemyUnit == null) continue;
+      
+      final enemy = charactersMap[enemyId];
+      if (enemy == null || enemy.currentHp <= 0) continue;
+      
+      // L'IA décide de l'action
+      final action = _enemyAI.decideAction(
+        enemy: enemy,
+        enemyUnit: enemyUnit,
+        allUnits: units,
+        map: mapData,
+        behavior: EnemyBehavior.aggressive,
+      );
+      
+      // Exécuter l'action
+      await _executeEnemyAction(enemy, enemyUnit, action);
+      
+      // Pause entre chaque action pour que le joueur puisse suivre
+      await Future.delayed(const Duration(milliseconds: 800));
+    }
+    
+    // Tous les ennemis ont joué, retour à la phase joueur
+    if (mounted) {
+      _startNewPhase();
+    }
+  }
+  
+  /// Exécute l'action décidée par l'IA
+  Future<void> _executeEnemyAction(
+    Character enemy,
+    UnitPosition enemyUnit,
+    EnemyAction action,
+  ) async {
+    if (!mounted) return;
+    
+    setState(() {
+      selectedUnit = enemyUnit;
+    });
+    
+    switch (action.type) {
+      case EnemyActionType.move:
+        // Déplacer l'ennemi
+        setState(() {
+          final index = units.indexWhere((u) => u.unitId == enemyUnit.unitId);
+          if (index != -1) {
+            units[index] = units[index].copyWith(
+              x: action.targetX!,
+              y: action.targetY!,
+            );
+          }
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${enemy.name} se déplace...'),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(milliseconds: 800),
+          ),
+        );
+        break;
+        
+      case EnemyActionType.attack:
+        // Attaquer une cible
+        final targetUnit = units.firstWhereOrNull(
+          (u) => u.unitId == action.targetUnitId,
+        );
+        if (targetUnit != null) {
+          final target = charactersMap[action.targetUnitId];
+          if (target != null && target.currentHp > 0) {
+            await _startCombat(enemy, target, enemyUnit, targetUnit);
+          }
+        }
+        break;
+        
+      case EnemyActionType.idle:
+        // Ne rien faire
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${enemy.name} attend...'),
+            backgroundColor: Colors.grey.shade700,
+            duration: const Duration(milliseconds: 600),
+          ),
+        );
+        break;
+    }
+    
+    setState(() {
+      selectedUnit = null;
+    });
   }
   
 
@@ -368,18 +741,8 @@ class _CampaignScreenState extends State<CampaignScreen> {
 
   Future<void> _startCombat(Character attacker, Character defender, 
       UnitPosition attackerUnit, UnitPosition defenderUnit) async {
-    // If this is a campaign stage, play the episode story before the combat starts
-    if (widget.stage != null) {
-      try {
-        final storyResults = await StoryService.playStoryForStage(context, widget.stage!);
-        if (storyResults.isNotEmpty) {
-          debugPrint('Story choices before combat: $storyResults');
-          // TODO: apply story effects/branching here when implemented
-        }
-      } catch (e) {
-        debugPrint('Error playing story before combat: $e');
-      }
-    }
+    // Les dialogues narratifs sont maintenant joués AVANT l'initialisation des unités
+    // dans _initializeMapAsync(), pas au début du combat
     // Calculer la distance entre l'attaquant et le défenseur
     final distance = _calculateDistance(
       attackerUnit.x, attackerUnit.y, 
@@ -532,12 +895,42 @@ class _CampaignScreenState extends State<CampaignScreen> {
   }
 
   Future<void> _showVictoryDialog() async {
+    // Jouer les événements de fin (outro) de la variante AVANT le dialogue de victoire
+    if (widget.stage != null) {
+      final stageData = CampaignDatabase.getChapter(widget.stage!.chapter)?.getStage(widget.stage!.stage);
+      if (stageData != null) {
+        final variant = stageData.getVariant(currentStoryPath);
+        if (variant != null && variant.events.isNotEmpty) {
+          for (final event in variant.events.where((e) => e.type == DialogueType.outro)) {
+            if (!mounted) return;
+            
+            final dialogueLine = DialogueLine(
+              speaker: event.speaker,
+              text: event.text,
+              portrait: event.speakerAvatar,
+              choices: [],
+            );
+            
+            await DialogueManager.showSequence(
+              context,
+              [dialogueLine],
+              barrierDismissible: false,
+            );
+          }
+        }
+      }
+    }
+    
     // Calculer les récompenses avec un dé si c'est un stage de campagne
     int finalGold = 0;
     int finalXP = 0;
     DiceRoll? lootRoll;
 
     if (widget.stage != null) {
+      // Récupérer les récompenses selon le chemin du joueur
+      final playerPath = currentStoryPath;
+      final (rewardGold, rewardXP) = widget.stage!.getRewards(playerPath);
+      
       // Calculer la Luck moyenne de l'équipe
       final teamLuck = widget.team.isEmpty 
           ? 0 
@@ -567,8 +960,8 @@ class _CampaignScreenState extends State<CampaignScreen> {
         multiplier = 0.75; // Mauvais : ×0.75 récompenses
       }
 
-      finalGold = (widget.stage!.rewardGold * multiplier).round();
-      finalXP = (widget.stage!.rewardXP * multiplier).round();
+      finalGold = (rewardGold * multiplier).round();
+      finalXP = (rewardXP * multiplier).round();
       
       debugPrint('Stage terminé ! Dé : ${lootRoll.total} -> Multiplicateur: ${multiplier}x');
       debugPrint('Récompenses: ${finalGold}G, ${finalXP}XP');
@@ -634,7 +1027,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Dialog
-              Navigator.pop(context, true); // Campaign screen avec succès
+              Navigator.pop(context, true); // Retourner succès (on pourrait retourner un objet avec le path aussi)
             },
             child: Text(S.of(context)!.returnButton),
           ),
@@ -794,7 +1187,9 @@ class _CampaignScreenState extends State<CampaignScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: TacticalMapWidget(
                         mapData: mapData,
-                        units: units,
+                        units: _hideEnemiesUntilDialoguesDone 
+                            ? units.where((u) => u.isPlayer).toList() // Masquer les ennemis pendant les dialogues
+                            : units, // Afficher toutes les unités après les dialogues
                         selectedUnit: selectedUnit,
                         onUnitTap: _onUnitTap,
                         onTileTap: _onTileTap,
@@ -832,20 +1227,6 @@ class _CampaignScreenState extends State<CampaignScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top row: optional action buttons (demo dialogue)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-              child: Row(
-                children: [
-                  const Spacer(),
-                  IconButton(
-                    tooltip: 'Demo Dialogue',
-                    icon: const Icon(Icons.chat_bubble_outline, color: Colors.white70),
-                    onPressed: () => _startDemoDialogue(),
-                  ),
-                ],
-              ),
-            ),
             // Ligne supérieure: Character detail ou placeholder
             if (currentCharacter != null)
               CharacterCompactView(

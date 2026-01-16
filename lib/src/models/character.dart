@@ -5,6 +5,7 @@ import '../models/weapon_mastery.dart';
 import '../models/class_tree.dart';
 import '../models/character_inventory.dart';
 import '../models/dice.dart';
+import '../models/animation_state.dart';
 import 'package:flutter/foundation.dart';
 
 class Character {     // est un personnage jouable (pas le player)
@@ -657,6 +658,9 @@ class CharacterAppearance {
   final String? pixel;        // Spritesheet pour les combats (optionnel)
   final String? fullsize;     // Image plein écran (optionnel)
   
+  // Animations de combat (optionnel - utilise AnimationSet)
+  final AnimationSet? combatAnimations;
+  
   // Autres propriétés d'apparence
   final int colorValue;
   final String description;
@@ -666,6 +670,7 @@ class CharacterAppearance {
     this.lheadshot,
     this.pixel,
     this.fullsize,
+    this.combatAnimations,
     required this.colorValue,
     required this.description,
   });

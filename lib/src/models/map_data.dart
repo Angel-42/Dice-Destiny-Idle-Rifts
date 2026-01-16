@@ -627,4 +627,561 @@ class TacticalMapData {
       description: description,
     );
   }
+
+  /// Créer une map de donjon
+  factory TacticalMapData.createDungeonMap() {
+    const width = 8;
+    const height = 8;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Murs extérieurs
+          if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Couloirs en croix
+          if (x == width ~/ 2 || y == height ~/ 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.plains,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Salles dans les coins
+          if ((x < 3 && y < 3) || (x > width - 4 && y < 3) ||
+              (x < 3 && y > height - 4) || (x > width - 4 && y > height - 4)) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.plains,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Murs intérieurs
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.mountain,
+            walkable: false,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'dungeon_map',
+      name: 'Geôles Sombres',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Un donjon sombre avec des couloirs étroits.',
+    );
+  }
+
+  /// Créer une map de ville
+  factory TacticalMapData.createTownMap() {
+    const width = 10;
+    const height = 8;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Route principale horizontale
+          if (y == height ~/ 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Routes verticales
+          if (x == 2 || x == 5 || x == 8) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Bâtiments (châteaux)
+          if ((x == 1 || x == 3 || x == 6 || x == 9) && 
+              (y == 1 || y == height - 2)) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.castle,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Plaines (places publiques)
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'town_map',
+      name: 'Place du Marché',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Une ville animée avec des routes et des bâtiments.',
+    );
+  }
+
+  /// Créer une map de brèche
+  factory TacticalMapData.createBreachMap() {
+    const width = 12;
+    const height = 10;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Faille chaotique au centre
+          if (x >= width ~/ 2 - 1 && x <= width ~/ 2 + 1 && 
+              y >= height ~/ 2 - 2 && y <= height ~/ 2 + 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.water, // Représente le vide
+              walkable: false,
+            );
+          }
+
+          // Montagnes déformées autour
+          if ((x + y) % 4 == 0 && 
+              (x < width ~/ 2 - 2 || x > width ~/ 2 + 2)) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Terrain corrompu (forêt sombre)
+          if ((x * y) % 5 == 0) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.forest,
+              walkable: true,
+              moveCost: 2,
+            );
+          }
+
+          // Plaines désolées
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'breach_map',
+      name: 'Brèche Dimensionnelle',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Une faille dans la réalité déforme le paysage.',
+    );
+  }
+
+  /// Créer une map d'escaliers (Confluence)
+  factory TacticalMapData.createStairsMap() {
+    const width = 8;
+    const height = 12;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Escalier central en diagonale
+          if (x == y ~/ 2 + 1 || x == y ~/ 2 + 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Plateformes aux niveaux
+          if (y % 3 == 0 && x > 0 && x < width - 1) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.castle,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Vide de chaque côté
+          if (x == 0 || x == width - 1) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.water,
+              walkable: false,
+            );
+          }
+
+          // Remplissage par défaut
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'stairs_map',
+      name: 'Marches Grises',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Des marches infinies s\'élèvent vers l\'inconnu.',
+    );
+  }
+
+  /// Créer une map de relais technologique
+  factory TacticalMapData.createRelayMap() {
+    const width = 8;
+    const height = 8;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Serveur central
+          if (x >= 3 && x <= 4 && y >= 3 && y <= 4) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.castle,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Conduits de données
+          if (x == 1 || x == 6 || y == 1 || y == 6) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Barrières énergétiques
+          if (x == 0 || x == 7 || y == 0 || y == 7) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Sol métallique
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'relay_map',
+      name: 'Relais Oméga',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Un complexe technologique aux circuits complexes.',
+    );
+  }
+
+  /// Créer une map de canyon
+  factory TacticalMapData.createCanyonMap() {
+    const width = 12;
+    const height = 8;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Crevasse centrale
+          if (x >= 5 && x <= 6 && y >= 2 && y <= 5) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.water,
+              walkable: false,
+            );
+          }
+
+          // Parois du canyon
+          if (x == 4 || x == 7) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Pont au milieu
+          if (x >= 5 && x <= 6 && y == height ~/ 2) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Terrain rocailleux
+          if ((x + y) % 3 == 0) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.mountain,
+              walkable: false,
+            );
+          }
+
+          // Plaines désertiques
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'canyon_map',
+      name: 'Canyon des Murmures',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Un canyon profond où résonnent les échos du passé.',
+    );
+  }
+
+  /// Créer une map du vide cosmique
+  factory TacticalMapData.createVoidMap() {
+    const width = 10;
+    const height = 10;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Îlots de réalité
+          if ((x == 2 && y == 2) || (x == 7 && y == 2) ||
+              (x == 2 && y == 7) || (x == 7 && y == 7) ||
+              (x == 5 && y == 5)) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.castle,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Ponts d'énergie
+          if ((x == 5 && (y >= 2 && y <= 7)) ||
+              (y == 5 && (x >= 2 && x <= 7))) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Vide intersidéral
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.water,
+            walkable: false,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'void_map',
+      name: 'Escalier du Vide',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Fragments de réalité flottent dans le néant.',
+    );
+  }
+
+  /// Créer une map céleste
+  factory TacticalMapData.createCelestialMap() {
+    const width = 8;
+    const height = 8;
+
+    final tiles = List.generate(
+      height,
+      (y) => List.generate(
+        width,
+        (x) {
+          // Pavillon central
+          if (x >= 3 && x <= 4 && y >= 3 && y <= 4) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.castle,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Jardins de méditation
+          if ((x + y) % 2 == 0 && x > 1 && x < 6 && y > 1 && y < 6) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.forest,
+              walkable: true,
+              moveCost: 2,
+            );
+          }
+
+          // Sentiers dorés
+          if (x == 1 || x == 6 || y == 1 || y == 6) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.road,
+              walkable: true,
+              moveCost: 1,
+            );
+          }
+
+          // Nuages étincelants (infranchissables)
+          if (x == 0 || x == 7 || y == 0 || y == 7) {
+            return MapTile(
+              x: x,
+              y: y,
+              terrain: TerrainType.water,
+              walkable: false,
+            );
+          }
+
+          // Plateformes de jade
+          return MapTile(
+            x: x,
+            y: y,
+            terrain: TerrainType.plains,
+            walkable: true,
+            moveCost: 1,
+          );
+        },
+      ),
+    );
+
+    return TacticalMapData(
+      id: 'celestial_map',
+      name: 'Pavillon de Jade',
+      width: width,
+      height: height,
+      tiles: tiles,
+      description: 'Un lieu de méditation aux énergies divines.',
+    );
+  }
+
+  /// Génère une map selon le thème spécifié
+  static TacticalMapData generateMap(String theme) {
+    switch (theme) {
+      case 'forest':
+        return TacticalMapData.createForestMap();
+      case 'plains':
+        return TacticalMapData.createPlainsMap();
+      case 'mountain':
+        return TacticalMapData.createMountainMap();
+      case 'dungeon':
+        return TacticalMapData.createDungeonMap();
+      case 'town':
+        return TacticalMapData.createTownMap();
+      case 'breach':
+        return TacticalMapData.createBreachMap();
+      case 'stairs':
+        return TacticalMapData.createStairsMap();
+      case 'relay':
+        return TacticalMapData.createRelayMap();
+      case 'canyon':
+        return TacticalMapData.createCanyonMap();
+      case 'void':
+        return TacticalMapData.createVoidMap();
+      case 'celestial':
+        return TacticalMapData.createCelestialMap();
+      default:
+        return TacticalMapData.createTestMap();
+    }
+  }
 }

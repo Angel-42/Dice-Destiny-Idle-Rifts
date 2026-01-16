@@ -238,6 +238,75 @@ class CharacterDatabase {
     ),
   );
 
+  static final PresetCharacter valerius = PresetCharacter(
+    id: 'valerius_001',
+    name: 'Valerius',
+    title: 'Le Lion d\'Or',
+    headshot: '👑',
+    colorValue: 0xFFFFD700,
+    rarity: CharacterRarity.legendary,
+    description: 'Ancien commandant de la garde solaire, dernier rempart contre le chaos.',
+    backstory: 'Son armure a été forgée dans les forges stellaires pour briller même dans l\'obscurité des failles.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.noble,
+      characterClass: PersonaClass.warrior,
+    ),
+    baseStats: {
+      'maxHp': 200,
+      'attack': 25,
+      'defense': 30,
+      'speed': 10,
+      'magic': 15,
+      'luck': 25,
+      'movement': 3,
+    },
+    starterWeapon: WeaponsDatabase.goldSword,
+    voiceLines: ['La lumière guide mes pas.', 'Je suis le bouclier du royaume.'],
+    tags: ['Tank', 'Leader', 'Holy'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.goldSword,
+        WeaponsDatabase.holyGrail,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _starsCondition(6),
+      ],
+      armors: [
+        ArmorsDatabase.plateArmor,
+        ArmorsDatabase.aegisArmor,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _starsCondition(6),
+      ],
+      accessories: [
+        AccessoriesDatabase.crownOfKings,
+        AccessoriesDatabase.championBelt,
+      ],
+      accessoryConditions: [
+        _alwaysUnlocked,
+        _levelCondition(20),
+      ],
+      skills: [
+        SkillsDatabase.shieldBash,
+        SkillsDatabase.divineIntervention,
+        SkillsDatabase.nobleLeadership,
+        SkillsDatabase.ironSkin,
+        SkillsDatabase.guardianSpirit,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+        _alwaysUnlocked,
+        _levelCondition(15),
+        _starsCondition(6),
+      ],
+    ),
+  );
+
   // ============================================================================
   // ÉPIQUES (4★) - 12% de drop
   // ============================================================================
@@ -342,6 +411,144 @@ et protège les innocents contre les oppresseurs.
     ),
   );
 
+  static final PresetCharacter skar = PresetCharacter(
+    id: 'skar_001',
+    name: 'Skar',
+    title: 'Dévoreur de Failles',
+    headshot: '💀',
+    colorValue: 0xFF8B0000,
+    rarity: CharacterRarity.epic,
+    description: 'Survivant d\'une exposition directe au noyau d\'un Rift.',
+    backstory: 'Une rage dévorante coule dans ses veines, le rendant plus fort à chaque blessure reçue.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.east,
+      origin: PersonaOrigin.peasant,
+      characterClass: PersonaClass.warrior,
+    ),
+    baseStats: {
+      'maxHp': 170,
+      'attack': 38,
+      'defense': 10,
+      'speed': 12,
+      'magic': 0,
+      'luck': 5,
+      'movement': 4,
+    },
+    starterWeapon: WeaponsDatabase.battleAxe,
+    voiceLines: ['RAGE!', 'Plus fort... PLUS FORT!'],
+    tags: ['DPS', 'Berserker', 'Brute'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.battleAxe,
+        WeaponsDatabase.greatAxe,
+        WeaponsDatabase.demonAxe,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _starsCondition(5),
+      ],
+      armors: [
+        ArmorsDatabase.leatherArmor,
+        ArmorsDatabase.barbarianFur,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+      ],
+      accessories: [
+        AccessoriesDatabase.rageRing,
+        AccessoriesDatabase.berserkerTotem,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _starsCondition(4),
+      ],
+      skills: [
+        SkillsDatabase.berserkerRage,
+        SkillsDatabase.bloodthirst,
+        SkillsDatabase.peasantEndurance,
+        SkillsDatabase.criticalHit,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+        _alwaysUnlocked,
+        _starsCondition(4),
+      ],
+    ),
+  );
+
+  static final PresetCharacter ignis = PresetCharacter(
+    id: 'ignis_001',
+    name: 'Ignis',
+    title: 'L\'Étincelle du Chaos',
+    headshot: '🔥',
+    colorValue: 0xFFFF4500,
+    rarity: CharacterRarity.epic,
+    description: 'Pyromancien volatile aux pouvoirs destructeurs.',
+    backstory: 'Son contrôle du feu est instable, mais sa puissance brute est redoutable.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.east,
+      origin: PersonaOrigin.scholar,
+      characterClass: PersonaClass.mage,
+    ),
+    baseStats: {
+      'maxHp': 100,
+      'attack': 10,
+      'defense': 8,
+      'speed': 20,
+      'magic': 35,
+      'luck': 15,
+      'movement': 5,
+    },
+    starterWeapon: WeaponsDatabase.flameStaff,
+    voiceLines: ['Brûlez!', 'Le feu purifie tout!'],
+    tags: ['Mage', 'Fire', 'AOE'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.flameStaff,
+        WeaponsDatabase.infernalTome,
+        WeaponsDatabase.phoenixWand,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _starsCondition(5),
+      ],
+      armors: [
+        ArmorsDatabase.wizardRobe,
+        ArmorsDatabase.emberRobe,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(12),
+      ],
+      accessories: [
+        AccessoriesDatabase.magicRing,
+        AccessoriesDatabase.flameOrb,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _starsCondition(4),
+      ],
+      skills: [
+        SkillsDatabase.fireball,
+        SkillsDatabase.meteor,
+        SkillsDatabase.scholarWisdom,
+        SkillsDatabase.magicMastery,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _levelCondition(12),
+        _alwaysUnlocked,
+        _starsCondition(4),
+      ],
+    ),
+  );
+
   // ============================================================================
   // RARES (3★) - 25% de drop
   // ============================================================================
@@ -437,6 +644,146 @@ Il aspire à ramener la paix dans un monde en proie au chaos.
         _alwaysUnlocked,
         _starsCondition(3),
         _starsCondition(4),
+      ],
+    ),
+  );
+
+  static final PresetCharacter nyx = PresetCharacter(
+    id: 'nyx_001',
+    name: 'Nyx',
+    title: 'Colporteur de Failles',
+    headshot: '💰',
+    colorValue: 0xFFDAA520,
+    rarity: CharacterRarity.rare,
+    description: 'Opportuniste rusé qui parcourt les dimensions.',
+    backstory: 'Pour lui, les monstres sont simplement des coffres sur pattes.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.peasant,
+      characterClass: PersonaClass.cleric,
+    ),
+    baseStats: {
+      'maxHp': 100,
+      'attack': 8,
+      'defense': 12,
+      'speed': 15,
+      'magic': 20,
+      'luck': 55,
+      'movement': 5,
+    },
+    starterWeapon: WeaponsDatabase.mysticWand,
+    voiceLines: ['L\'or brille plus que l\'acier!', 'Mes poches sont pleines!'],
+    tags: ['Support', 'Loot', 'Luck'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.mysticWand,
+        WeaponsDatabase.goldStaff,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+      ],
+      armors: [
+        ArmorsDatabase.merchantRobe,
+        ArmorsDatabase.luckyVest,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+      ],
+      accessories: [
+        AccessoriesDatabase.fortuneRing,
+        AccessoriesDatabase.luckyClover,
+        AccessoriesDatabase.goldPouch,
+      ],
+      accessoryConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(15),
+      ],
+      skills: [
+        SkillsDatabase.goldRush,
+        SkillsDatabase.fortuneFavor,
+        SkillsDatabase.peasantEndurance,
+        SkillsDatabase.luckBoost,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _alwaysUnlocked,
+        _starsCondition(3),
+      ],
+    ),
+  );
+
+  static final PresetCharacter bjorne = PresetCharacter(
+    id: 'bjorne_001',
+    name: 'Bjorne',
+    title: 'Le Mur du Nord',
+    headshot: '🐻',
+    colorValue: 0xFF8B4513,
+    rarity: CharacterRarity.rare,
+    description: 'Guerrier massif du nord aux méthodes brutales.',
+    backstory: 'Sa force brute et son endurance légendaire en font un rempart infranchissable.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.north,
+      origin: PersonaOrigin.peasant,
+      characterClass: PersonaClass.warrior,
+    ),
+    baseStats: {
+      'maxHp': 180,
+      'attack': 22,
+      'defense': 20,
+      'speed': 8,
+      'magic': 0,
+      'luck': 10,
+      'movement': 3,
+    },
+    starterWeapon: WeaponsDatabase.warHammer,
+    voiceLines: ['ROOOOAR!', 'Bjorne écrase!'],
+    tags: ['Tank', 'Bruiser'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.warHammer,
+        WeaponsDatabase.ironMace,
+        WeaponsDatabase.giantClub,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(12),
+      ],
+      armors: [
+        ArmorsDatabase.leatherArmor,
+        ArmorsDatabase.chainmail,
+        ArmorsDatabase.bearPelt,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      accessories: [
+        AccessoriesDatabase.giantBelt,
+        AccessoriesDatabase.strengthRing,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(10),
+      ],
+      skills: [
+        SkillsDatabase.earthShaker,
+        SkillsDatabase.brutality,
+        SkillsDatabase.peasantEndurance,
+        SkillsDatabase.ironSkin,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _levelCondition(10),
+        _alwaysUnlocked,
+        _starsCondition(3),
       ],
     ),
   );
@@ -641,6 +988,77 @@ les secrets oubliés de l'ancienne magie.
     ),
   );
 
+  static final PresetCharacter liana = PresetCharacter(
+    id: 'liana_001',
+    name: 'Liana',
+    title: 'Novice de l\'Aube',
+    headshot: '🌅',
+    colorValue: 0xFFFFA500,
+    rarity: CharacterRarity.common,
+    description: 'Jeune guérisseuse aux pouvoirs naissants.',
+    backstory: 'Étudiante dans un monastère, elle apprend l\'art de la guérison divine.',
+    persona: Persona(
+      race: PersonaRace.human,
+      region: PersonaRegion.west,
+      origin: PersonaOrigin.noble,
+      characterClass: PersonaClass.cleric,
+    ),
+    baseStats: {
+      'maxHp': 90,
+      'attack': 4,
+      'defense': 12,
+      'speed': 14,
+      'magic': 20,
+      'luck': 22,
+      'movement': 4,
+    },
+    starterWeapon: WeaponsDatabase.holySymbol,
+    voiceLines: ['La lumière nous guide.', 'Je vais vous soigner!'],
+    tags: ['Healer', 'Support'],
+    customInventory: _createCustomInventory(
+      weapons: [
+        WeaponsDatabase.holySymbol,
+        WeaponsDatabase.priestStaff,
+        WeaponsDatabase.holyGrail,
+      ],
+      weaponConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _levelCondition(15),
+      ],
+      armors: [
+        ArmorsDatabase.clothArmor,
+        ArmorsDatabase.priestRobe,
+        ArmorsDatabase.holyVestments,
+      ],
+      armorConditions: [
+        _alwaysUnlocked,
+        _levelCondition(8),
+        _levelCondition(15),
+      ],
+      accessories: [
+        AccessoriesDatabase.holyAmulet,
+        AccessoriesDatabase.blessedRing,
+      ],
+      accessoryConditions: [
+        _levelCondition(5),
+        _levelCondition(10),
+      ],
+      skills: [
+        SkillsDatabase.heal,
+        SkillsDatabase.bless,
+        SkillsDatabase.nobleLeadership,
+        SkillsDatabase.divineProtection,
+      ],
+      skillConditions: [
+        _alwaysUnlocked,
+        _levelCondition(5),
+        _alwaysUnlocked,
+        _starsCondition(2),
+      ],
+    ),
+  );
+
   // ============================================================================
   // LISTE COMPLÈTE
   // ============================================================================
@@ -649,16 +1067,22 @@ les secrets oubliés de l'ancienne magie.
     // Légendaires
     seleneEcho,
     masterZhou,
+    valerius,
     
     // Épiques
     envia,
+    skar,
+    ignis,
     
     // Rares
     elio,
+    nyx,
+    bjorne,
     
     // Communs
     ragor,
-    mca,
+    mca, // Aria
+    liana,
   ];
 
   static PresetCharacter? getById(String id) {
