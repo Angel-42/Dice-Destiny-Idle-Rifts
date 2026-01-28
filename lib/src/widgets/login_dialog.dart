@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class LoginDialog extends StatefulWidget {
   const LoginDialog({super.key});
@@ -67,13 +68,13 @@ class _LoginDialogState extends State<LoginDialog> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Connexion',
-                            style: TextStyle(
+                            S.of(context)!.loginTitle,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -81,8 +82,8 @@ class _LoginDialogState extends State<LoginDialog> {
                             ),
                           ),
                           Text(
-                            'Choisissez votre mode',
-                            style: TextStyle(
+                            S.of(context)!.chooseYourMode,
+                            style: const TextStyle(
                               color: Colors.white60,
                               fontSize: 14,
                             ),
@@ -133,8 +134,8 @@ class _LoginDialogState extends State<LoginDialog> {
                 if (!_isLoading)
                   _buildPrimaryButton(
                     icon: Icons.email,
-                    label: 'Email & Mot de passe',
-                    subtitle: 'Compte permanent',
+                    label: S.of(context)!.emailAndPassword,
+                    subtitle: S.of(context)!.permanentAccount,
                     color: Colors.blue,
                     onTap: () => _showEmailLoginDialog(context),
                   ),
@@ -153,7 +154,7 @@ class _LoginDialogState extends State<LoginDialog> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'OU',
+                        S.of(context)!.or,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.5),
                           fontSize: 12,
@@ -176,7 +177,7 @@ class _LoginDialogState extends State<LoginDialog> {
                 if (!_isLoading)
                   _buildSecondaryButton(
                     icon: Icons.g_mobiledata,
-                    label: 'Google',
+                    label: S.of(context)!.google,
                     color: Colors.red,
                     onTap: () => _handleGoogleSignIn(context),
                   ),
@@ -187,7 +188,7 @@ class _LoginDialogState extends State<LoginDialog> {
                 if (!_isLoading)
                   _buildSecondaryButton(
                     icon: Icons.person_outline,
-                    label: 'Continuer sans compte',
+                    label: S.of(context)!.continueWithoutAccount,
                     color: Colors.amber,
                     onTap: () => _handleAnonymousSignIn(context),
                   ),
@@ -202,7 +203,7 @@ class _LoginDialogState extends State<LoginDialog> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Connexion en cours...',
+                        S.of(context)!.connectingInProgress,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 14,
@@ -230,7 +231,7 @@ class _LoginDialogState extends State<LoginDialog> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Vous pourrez lier votre compte plus tard dans les paramètres',
+                          S.of(context)!.linkAccountLater,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
                             fontSize: 11,
@@ -413,7 +414,7 @@ class _LoginDialogState extends State<LoginDialog> {
       
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Erreur de connexion: ${e.toString()}';
+        _errorMessage = S.of(context)!.connectionError(e.toString());
       });
     }
   }
@@ -441,7 +442,7 @@ class _LoginDialogState extends State<LoginDialog> {
       
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Erreur de connexion: ${e.toString()}';
+        _errorMessage = S.of(context)!.connectionError(e.toString());
       });
     }
   }
@@ -534,7 +535,7 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
               children: [
                 // Titre
                 Text(
-                  _isSignUp ? 'CRÉER UN COMPTE' : 'CONNEXION EMAIL',
+                  _isSignUp ? S.of(context)!.createAccount : S.of(context)!.emailLogin,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
@@ -567,7 +568,7 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                   keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: S.of(context)!.email,
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
                     prefixIcon: const Icon(Icons.email, color: Colors.deepPurple),
                     enabledBorder: OutlineInputBorder(
@@ -581,10 +582,10 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Email requis';
+                      return S.of(context)!.emailRequired;
                     }
                     if (!value.contains('@')) {
-                      return 'Email invalide';
+                      return S.of(context)!.invalidEmail;
                     }
                     return null;
                   },
@@ -597,7 +598,7 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                   obscureText: true,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    labelText: 'Mot de passe',
+                    labelText: S.of(context)!.password,
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
                     prefixIcon: const Icon(Icons.lock, color: Colors.deepPurple),
                     enabledBorder: OutlineInputBorder(
@@ -611,10 +612,10 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Mot de passe requis';
+                      return S.of(context)!.passwordRequired;
                     }
                     if (value.length < 6) {
-                      return 'Minimum 6 caractères';
+                      return S.of(context)!.minimumSixCharacters;
                     }
                     return null;
                   },
@@ -643,7 +644,7 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                             ),
                           )
                         : Text(
-                            _isSignUp ? 'Créer le compte' : 'Se connecter',
+                            _isSignUp ? S.of(context)!.createAccountButton : S.of(context)!.signIn,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -658,8 +659,8 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                   onPressed: () => setState(() => _isSignUp = !_isSignUp),
                   child: Text(
                     _isSignUp
-                        ? 'Déjà un compte ? Se connecter'
-                        : 'Pas de compte ? S\'inscrire',
+                        ? S.of(context)!.alreadyHaveAccount
+                        : S.of(context)!.noAccount,
                     style: TextStyle(
                       color: Colors.amber.shade300,
                       fontSize: 14,
@@ -676,9 +677,9 @@ class _EmailLoginDialogState extends State<EmailLoginDialog> {
                       builder: (context) => const LoginDialog(),
                     );
                   },
-                  child: const Text(
-                    '← Retour aux options',
-                    style: TextStyle(
+                  child: Text(
+                    S.of(context)!.backToOptions,
+                    style: const TextStyle(
                       color: Colors.white54,
                       fontSize: 14,
                     ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../models/persona.dart';
-import '../services/character_factory.dart';
+import '../services/mc_character_factory.dart';
 import '../services/game_data_service.dart';
 import '../widgets/game_navbar.dart';
+import '../../l10n/app_localizations.dart';
 
 class PersonaCreationScreen extends StatefulWidget {
   const PersonaCreationScreen({super.key});
@@ -30,15 +31,14 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
   PersonaClass? _selectedClass;
   bool _isCreating = false;
 
-  // Étapes du processus
-  final List<String> _stepTitles = [
-    'VOTRE NOM',
-    'VOTRE RACE',
-    'VOTRE RÉGION',
-    'VOTRE ORIGINE',
-    'VOTRE CLASSE',
-    'CONFIRMATION',
-  ];
+  List<String> get _stepTitles => [
+        S.of(context)!.stepYourName,
+        S.of(context)!.stepYourRace,
+        S.of(context)!.stepYourRegion,
+        S.of(context)!.stepYourOrigin,
+        S.of(context)!.stepYourClass,
+        S.of(context)!.stepConfirmation,
+      ];
 
   @override
   void initState() {
@@ -149,7 +149,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
         characterClass: _selectedClass!,
       );
       
-      final character = CharacterFactory.createFromPersona(
+      final character = MCCharacterFactory.createMC(
         persona,
         _nameController.text.trim(),
       );
@@ -172,7 +172,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -337,7 +337,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Vos choix façonneront votre destin',
+                    S.of(context)!.choicesShapeDestiny,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 14,
@@ -379,16 +379,12 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
     int lowercase = name.replaceAll(RegExp(r'[^a-z]'), '').length;
     int total = name.length;
     int maxAllowed;
-    String hint;
     if (uppercase == 0 && lowercase == total) {
       maxAllowed = 11;
-      hint = 'Minuscules uniquement : max 11 caractères';
     } else if (lowercase == 0 && uppercase == total) {
       maxAllowed = 8;
-      hint = 'Majuscules uniquement : max 8 caractères';
     } else {
       maxAllowed = 11 - (uppercase * 0.375).round();
-      hint = 'Mélange : max $maxAllowed caractères';
     }
     final isValid = total >= 3 && total <= maxAllowed;
     final counterColor = isValid ? Colors.green : Colors.red;
@@ -404,7 +400,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
           ),
           const SizedBox(height: 32),
           Text(
-            'Comment vous nomme-t-on dans les légendes ?',
+            S.of(context)!.nameInLegends,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
@@ -436,7 +432,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                   ),
                   textAlign: TextAlign.center,
                   decoration: InputDecoration(
-                    hintText: 'Votre nom',
+                    hintText: S.of(context)!.yourNameHint,
                     hintStyle: TextStyle(
                       color: Colors.white.withOpacity(0.3),
                       fontWeight: FontWeight.normal,
@@ -481,7 +477,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
             child: Column(
               children: [
                 Text(
-                  'Minimum 3 caractères',
+                  S.of(context)!.minimumCharacters,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.5),
                     fontSize: 12,
@@ -501,7 +497,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
       child: Column(
         children: [
           Text(
-            'Quelle est votre nature ?',
+            S.of(context)!.whatIsYourNature,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
@@ -529,7 +525,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
       child: Column(
         children: [
           Text(
-            'D\'où venez-vous ?',
+            S.of(context)!.whereAreYouFrom,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
@@ -557,7 +553,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
       child: Column(
         children: [
           Text(
-            'Quelle est votre histoire ?',
+            S.of(context)!.whatIsYourStory,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
@@ -585,7 +581,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
       child: Column(
         children: [
           Text(
-            'Quelle voie empruntez-vous ?',
+            S.of(context)!.whatPathDoYouTake,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
@@ -619,7 +615,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
           ),
           const SizedBox(height: 32),
           Text(
-            'Votre légende est prête à s\'écrire',
+            S.of(context)!.legendReady,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24,
@@ -642,15 +638,15 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
             ),
             child: Column(
               children: [
-                _buildSummaryRow('Nom', _nameController.text.trim()),
+                _buildSummaryRow(S.of(context)!.nameSummary, _nameController.text.trim()),
                 const Divider(color: Colors.white24, height: 32),
-                _buildSummaryRow('Race', _selectedRace!.displayName),
+                _buildSummaryRow(S.of(context)!.raceSummary, _selectedRace!.displayName),
                 const Divider(color: Colors.white24, height: 32),
-                _buildSummaryRow('Région', _selectedRegion!.displayName),
+                _buildSummaryRow(S.of(context)!.regionSummary, _selectedRegion!.displayName),
                 const Divider(color: Colors.white24, height: 32),
-                _buildSummaryRow('Origine', _selectedOrigin!.displayName),
+                _buildSummaryRow(S.of(context)!.originSummary, _selectedOrigin!.displayName),
                 const Divider(color: Colors.white24, height: 32),
-                _buildSummaryRow('Classe', _selectedClass!.displayName),
+                _buildSummaryRow(S.of(context)!.classSummary, _selectedClass!.displayName),
               ],
             ),
           ),
@@ -676,7 +672,7 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'Ces choix sont définitifs et influenceront votre parcours dans les Rifts',
+                    S.of(context)!.choicesFinal,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -835,16 +831,16 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.arrow_back, size: 18),
-                    SizedBox(width: 6),
+                    const Icon(Icons.arrow_back, size: 18),
+                    const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Retour',
-                        style: TextStyle(
+                        S.of(context)!.back,
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -894,8 +890,8 @@ class _PersonaCreationScreenState extends State<PersonaCreationScreen>
                     Flexible(
                       child: Text(
                         _currentStep == _stepTitles.length - 1
-                            ? 'Forger mon destin'
-                            : 'Continuer',
+                            ? S.of(context)!.forgeDestiny
+                            : S.of(context)!.continueButton,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

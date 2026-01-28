@@ -1,6 +1,9 @@
 import 'persona.dart';
 import 'character.dart';
 import 'equipment.dart';
+import 'skill.dart';
+import 'class_tree.dart';
+import 'character_inventory.dart';
 
 /// Personnage prédéfini (template) pour le système de gacha
 class PresetCharacter {
@@ -23,6 +26,8 @@ class PresetCharacter {
   final Equipment? starterWeapon;
   final List<String> voiceLines; // Phrases du personnage
   final List<String> tags; // Ex: ['Tank', 'Leader', 'DPS']
+  
+  final CharacterInventory? customInventory;
 
   const PresetCharacter({
     required this.id,
@@ -41,6 +46,7 @@ class PresetCharacter {
     this.starterWeapon,
     this.voiceLines = const [],
     this.tags = const [],
+    this.customInventory,
   });
 
   /// Convertit le preset en personnage jouable
@@ -54,6 +60,7 @@ class PresetCharacter {
       range: baseStats['range'] ?? 1,
       luck: baseStats['luck'] ?? 5,
       gold: 100,
+      movement: baseStats['movement'] ?? 4, // Portée de déplacement par défaut
     );
 
     final appearance = CharacterAppearance(
@@ -65,14 +72,70 @@ class PresetCharacter {
       description: description,
     );
 
+    // Déterminer les classes initiales selon le persona et la rareté
+  final tree = ClassTree.instance;
+    final noviceId = persona.characterClass.noviceId;
+    final owned = <String>{noviceId};
+    String? active = noviceId;
+
+    if (rarity == CharacterRarity.epic || rarity == CharacterRarity.legendary) {
+      final noviceNode = tree.get(noviceId);
+      if (noviceNode != null && noviceNode.children.isNotEmpty) {
+        final advId = noviceNode.children.first;
+        owned.add(advId);
+        active = advId;
+
+        if (rarity == CharacterRarity.legendary) {
+          final advNode = tree.get(advId);
+          if (advNode != null && advNode.children.isNotEmpty) {
+            final eliteId = advNode.children.first;
+            owned.add(eliteId);
+            active = eliteId;
+          }
+        }
+      }
+    }
+
+    // Équiper les compétences de départ depuis l'inventaire custom
+    List<Skill>? startingSkills;
+    if (customInventory != null) {
+      final allSkills = customInventory!.getAllSkills();
+      
+      // Prendre la première compétence active débloquée (toujours disponible)
+      final activeSkills = allSkills
+          .where((item) => 
+              item.item.type == SkillType.active && 
+              item.condition.type == UnlockConditionType.always)
+          .map((item) => item.item)
+          .toList();
+      
+      // Prendre les premières compétences passives débloquées (toujours disponibles)
+      final passiveSkills = allSkills
+          .where((item) => 
+              item.item.type == SkillType.passive && 
+              item.condition.type == UnlockConditionType.always)
+          .map((item) => item.item)
+          .toList();
+      
+      // Construire la liste : 1 active + jusqu'à 3 passives
+      startingSkills = [
+        if (activeSkills.isNotEmpty) activeSkills.first,
+        ...passiveSkills.take(3),
+      ];
+    }
+
     return Character(
       name: name,
       persona: persona,
       stats: stats,
       appearance: appearance,
       weapon: starterWeapon,
+      equippedSkills: startingSkills, // Utilise les compétences de l'inventaire custom
       basedRarity: rarity,
       currentRarity: rarity,
+      initialOwnedClassIds: owned,
+      activeClassId: active,
+      inventory: customInventory, // Utilise l'inventaire personnalisé si fourni
     );
   }
 }

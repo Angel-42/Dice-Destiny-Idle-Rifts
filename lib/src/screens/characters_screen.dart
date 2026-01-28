@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/character.dart';
-import '../models/skill.dart';
 import '../services/game_data_service.dart';
+import '../widgets/character_compact_view.dart';
+import 'character_full_detail_screen.dart';
 
 class CharactersScreen extends StatefulWidget {
   const CharactersScreen({super.key});
@@ -28,19 +30,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
   bool _selectedFromTeam = false;
 
   void _showFullsizeImage(String? fullsizeSprite) {
-    if (fullsizeSprite == null) return;
+    if (fullsizeSprite == null || _selectedCharacter == null) return;
     
-    final cleanPath = fullsizeSprite.startsWith('~/') 
-        ? fullsizeSprite.substring(2) 
-        : fullsizeSprite;
-    
-    showDialog(
-      context: context,
-      builder: (context) => GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: InteractiveViewer(
-          child: Image.asset(cleanPath),
-        ),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CharacterFullDetailScreen(character: _selectedCharacter!),
       ),
     );
   }
@@ -51,7 +45,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
     });
   }
 
-  /// Helper pour afficher soit un emoji, soit une image sprite
   Widget _buildCharacterSprite(String sprite, double size) {
     final cleanSprite = sprite.startsWith('~/') ? sprite.substring(2) : sprite;
     
@@ -171,8 +164,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  /// Gère la sélection/échange de personnages dans la team
-  /// [fromTeamSlot] = true si le clic vient de EDIT TEAM, false si de ALL HEROES
   Future<void> _handleCharacterSelection(
     Character character, 
     List<Character> teamCharacters,
@@ -251,19 +242,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
   await GameDataService.saveCharactersBatch([updatedChar1, updatedChar2]);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('🔄 ${char1.name} ↔ ${char2.name} (positions ${pos1 + 1} ↔ ${pos2 + 1})'),
-            backgroundColor: Colors.blue,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        // Message supprimé - pas besoin d'afficher de notification
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -304,23 +289,15 @@ class _CharactersScreenState extends State<CharactersScreen> {
         teamPosition: position,
       );
 
-  // Sauvegarder les deux atomiquement
-  await GameDataService.saveCharactersBatch([updatedCharInTeam, updatedCharOutTeam]);
+      // Sauvegarder les deux atomiquement
+      await GameDataService.saveCharactersBatch([updatedCharInTeam, updatedCharOutTeam]);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ ${updatedCharOutTeam.name} remplace ${updatedCharInTeam.name} (Position ${position + 1})'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      // Message supprimé - pas besoin d'afficher de notification
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -345,8 +322,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
       x: character.x,
       y: character.y,
       weapon: character.weapon,
-      armor: character.armor,
-      accessory: character.accessory,
+      armorOrAccessory: character.armorOrAccessory,
       equippedSkills: character.equippedSkills,
       weaponMasteries: character.weaponMasteries,
       basedRarity: character.basedRarity,
@@ -354,412 +330,22 @@ class _CharactersScreenState extends State<CharactersScreen> {
       isInTeam: isInTeam,
       teamPosition: teamPosition,
       obtainedAt: character.obtainedAt,
+      inventory: character.inventory, // ⚠️ Conserver l'inventaire!
+      initialOwnedClassIds: character.ownedClassIds, // ⚠️ Conserver les classes possédées!
+      activeClassId: character.activeClassId, // ⚠️ Conserver la classe active!
     );
     updated.currentHp = character.currentHp;
     return updated;
   }
 
   Widget _buildSelectedCharacterDetail(Character character) {
-    final String image = character.appearance.lheadshot ?? character.appearance.headshot;
-    return Container(
-      padding: const EdgeInsets.only(left: 0, right: 6, top: 6, bottom: 0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(character.appearance.colorValue).withOpacity(0.3),
-            const Color(0xFF1E2A47),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withOpacity(0.5), width: 2),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-          GestureDetector(
-            onTap: () => _showFullsizeImage(character.appearance.fullsize),
-            child: SizedBox(
-              width: 80,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: _buildCharacterSprite(image, 120),
-              ),
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                  ),
-                  child: Text(
-                    character.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'HP',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            Container(
-                              height: 18,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(9),
-                              ),
-                            ),
-                            FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: character.hpPercentage,
-                              child: Container(
-                                height: 18,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.green.shade400,
-                                      Colors.green.shade700,
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: Center(
-                                child: Text(
-                                  '${character.currentHp} / ${character.stats.maxHp}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black,
-                                        offset: Offset(1, 1),
-                                        blurRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  character.offensiveStatName,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  character.totalOffensive.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Spd',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  character.totalSpeed.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Def',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  character.totalDefense.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Lck',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  character.totalLuck.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 7),
-          Flexible(
-            flex: 1,
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 68,
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                      ),
-                      child:Text(
-                          'Lv. ${character.level}',
-                          style: const TextStyle(
-                            color: Colors.amber,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                    ),
-                    const SizedBox(width: 4),  // passives
-                    Expanded(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: () {
-                          final passives = character.equippedSkills
-                              .where((s) => s.type == SkillType.passive)
-                              .take(3)
-                              .toList();
-                          
-                          return List.generate(3, (index) {
-                            if (index < passives.length) {
-                              return Flexible(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 2),
-                                  child: _buildCharDetailPassiveIcon(passives[index].emoji),
-                                ),
-                              );
-                            }
-                            return Flexible(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 2),
-                                child: _buildCharDetailEmptyPassiveSlot(),
-                              ),
-                            );
-                          });
-                        }(),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8), // stuff équipement
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: _buildCharDetailEquipmentSlot(
-                  character.weapon?.emoji ?? '⚔️',
-                  character.weapon?.name ?? '-',
-                  character.weapon != null,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: _buildCharDetailEquipmentSlot(
-                  character.armor?.emoji ?? '🛡️',
-                  character.armor?.name ?? '-',
-                  character.armor != null,
-                ),
-              ),
-              () {
-                final activeSkill = character.equippedSkills
-                    .where((s) => s.type == SkillType.active)
-                    .firstOrNull;
-                
-                return _buildCharDetailEquipmentSlot(
-                  activeSkill?.emoji ?? '✨',
-                  activeSkill?.name ?? '-',
-                  activeSkill != null,
-                );
-              }(),
-            ],
-          ),
-          ),
-        ],
-        ),
-      ),
+    return CharacterCompactView(
+      character: character,
+      onImageTap: () => _showFullsizeImage(character.appearance.fullsize),
     );
   }
 
-  // Icône de passive pour le détail du personnage (circulaire)
-  Widget _buildCharDetailPassiveIcon(String emoji) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
-        border: Border.all(color: Colors.amber.withOpacity(0.5), width: 1.5),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          emoji,
-          style: const TextStyle(fontSize: 14),
-        ),
-      ),
-    );
-  }
 
-  // Slot vide pour passive (circulaire)
-  Widget _buildCharDetailEmptyPassiveSlot() {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
-        border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1.5),
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-
-  // Slot d'équipement pour le détail
-  Widget _buildCharDetailEquipmentSlot(String icon, String name, bool hasItem) {
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        color: hasItem ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.2),
-        border: Border.all(
-          color: hasItem ? Colors.amber.withOpacity(0.5) : Colors.grey.withOpacity(0.3),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        children: [
-          Text(icon, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              name,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: hasItem ? Colors.white : Colors.grey,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildEditTeamSection(BuildContext context, List<Character> teamCharacters) {
     return Container(
@@ -772,9 +358,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
             children: [
               const Icon(Icons.groups, color: Colors.amber, size: 24),
               const SizedBox(width: 8),
-              const Text(
-                'EDIT TEAM',
-                style: TextStyle(
+              Text(
+                S.of(context)!.editTeam,
+                style: const TextStyle(
                   color: Colors.amber,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -820,13 +406,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.list, color: Colors.amber, size: 24),
-              SizedBox(width: 8),
+              const Icon(Icons.list, color: Colors.amber, size: 24),
+              const SizedBox(width: 8),
               Text(
-                'ALL HEROES',
-                style: TextStyle(
+                S.of(context)!.allHeroes,
+                style: const TextStyle(
                   color: Colors.amber,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1042,20 +628,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
       await GameDataService.saveCharacter(updatedChar);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ ${character.name} ajouté au slot $position !'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -1074,20 +651,11 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
       await GameDataService.saveCharacter(updatedChar);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ ${character.name} déplacé au slot $position !'),
-            backgroundColor: Colors.blue,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text(S.of(context)!.error(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -1249,3 +817,4 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 }
+

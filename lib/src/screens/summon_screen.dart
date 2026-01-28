@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../../l10n/app_localizations.dart';
 import '../services/game_data_service.dart';
 import '../models/character.dart';
 import '../models/preset_character.dart';
+import '../models/dice.dart';
 import '../data/character_database.dart';
+import '../widgets/dice_animation_widget.dart';
 
 class SummonScreen extends StatefulWidget {
   const SummonScreen({super.key});
@@ -52,26 +55,36 @@ class _SummonScreenState extends State<SummonScreen> {
     });
 
     try {
-      // 🎲 Système de gacha avec vraies chances
-      final random = Random();
-      final roll = random.nextDouble(); // 0.0 - 1.0
+      // 🎲 Lance un D20 pour déterminer la rareté
+      final roll = DiceService.roll(DiceType.d20);
+      
+      // Afficher l'animation du dé
+      if (mounted) {
+        await DiceRollDialog.show(
+          context,
+          roll: roll,
+          title: '🎲 Lancer de Gacha',
+        );
+      }
 
+      // Déterminer la rareté selon le résultat du dé
       PresetCharacter? preset;
+      final random = Random();
 
-      if (roll <= 0.03) {
-        // 3% Légendaire
+      if (roll.total >= 19) {
+        // 10% Légendaire (19-20)
         final legendaries = CharacterDatabase.getByRarity(CharacterRarity.legendary);
         preset = legendaries[random.nextInt(legendaries.length)];
-      } else if (roll <= 0.15) {
-        // 12% Épique (3% + 12% = 15%)
+      } else if (roll.total >= 15) {
+        // 20% Épique (15-18)
         final epics = CharacterDatabase.getByRarity(CharacterRarity.epic);
         preset = epics[random.nextInt(epics.length)];
-      } else if (roll <= 0.40) {
-        // 25% Rare (15% + 25% = 40%)
+      } else if (roll.total >= 8) {
+        // 35% Rare (8-14)
         final rares = CharacterDatabase.getByRarity(CharacterRarity.rare);
         preset = rares[random.nextInt(rares.length)];
       } else {
-        // 60% Commun (le reste)
+        // 35% Commun (1-7)
         final commons = CharacterDatabase.getByRarity(CharacterRarity.common);
         preset = commons[random.nextInt(commons.length)];
       }
@@ -90,6 +103,13 @@ class _SummonScreenState extends State<SummonScreen> {
       // Sauvegarder dans Firestore
       await GameDataService.createCharacter(character);
 
+      // 📔 TRACKER DANS LE CODEX
+      final player = await GameDataService.getPlayer();
+      if (player != null) {
+        player.unlockCharacter(character.name, character.level);
+        await GameDataService.savePlayer(player);
+      }
+
       if (mounted) {
         setState(() {
           _isSummoning = false;
@@ -106,7 +126,7 @@ class _SummonScreenState extends State<SummonScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors de l\'invocation : $e'),
+            content: Text(S.of(context)!.summonError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );

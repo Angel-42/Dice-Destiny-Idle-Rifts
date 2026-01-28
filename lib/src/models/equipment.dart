@@ -3,18 +3,28 @@ class Equipment {
   final String id;
   final String name;
   final String emoji;
+  final String? sprite; // Chemin vers le sprite (optionnel)
   final EquipmentType type;
   final EquipmentRarity rarity;
   final Map<String, int> bonuses; // 'attack', 'defense', 'magic', 'speed', 'luck'
+  final int attackRange; // Portée d'attaque (1 = mêlée, 2+ = distance)
 
   const Equipment({
     required this.id,
     required this.name,
     required this.emoji,
+    this.sprite,
     required this.type,
     this.rarity = EquipmentRarity.common,
     this.bonuses = const {},
+    this.attackRange = 1, // Mêlée par défaut
   });
+
+  /// Retourne le sprite si disponible, sinon l'emoji
+  String get displayIcon => sprite ?? emoji;
+  
+  /// Vérifie si c'est un sprite (chemin de fichier)
+  bool get hasSprite => sprite != null && sprite!.isNotEmpty;
 
   String get bonusDescription {
     if (bonuses.isEmpty) return '';
@@ -38,18 +48,22 @@ class Equipment {
     'id': id,
     'name': name,
     'emoji': emoji,
+    'sprite': sprite,
     'type': type.name,
     'rarity': rarity.name,
     'bonuses': bonuses,
+    'attackRange': attackRange,
   };
 
   factory Equipment.fromJson(Map<String, dynamic> json) => Equipment(
     id: json['id'],
     name: json['name'],
     emoji: json['emoji'],
+    sprite: json['sprite'],
     type: EquipmentType.values.byName(json['type']),
     rarity: EquipmentRarity.values.byName(json['rarity'] ?? 'common'),
     bonuses: Map<String, int>.from(json['bonuses'] ?? {}),
+    attackRange: json['attackRange'] ?? 1,
   );
 }
 
@@ -76,6 +90,7 @@ class DefaultWeapons {
       emoji: '⚔️',
       type: EquipmentType.weapon,
       bonuses: {'attack': 5},
+      attackRange: 1, // Mêlée
     ),
     'mage': Equipment(
       id: 'wooden_staff',
@@ -83,6 +98,7 @@ class DefaultWeapons {
       emoji: '🪄',
       type: EquipmentType.weapon,
       bonuses: {'magic': 5},
+      attackRange: 2, // Distance
     ),
     'rogue': Equipment(
       id: 'iron_dagger',
@@ -90,6 +106,7 @@ class DefaultWeapons {
       emoji: '🗡️',
       type: EquipmentType.weapon,
       bonuses: {'attack': 3, 'speed': 2},
+      attackRange: 1, // Mêlée
     ),
     'cleric': Equipment(
       id: 'healing_rod',
@@ -97,6 +114,7 @@ class DefaultWeapons {
       emoji: '⚕️',
       type: EquipmentType.weapon,
       bonuses: {'magic': 3, 'defense': 2},
+      attackRange: 2, // Distance
     ),
   };
 

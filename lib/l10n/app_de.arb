@@ -1,0 +1,266 @@
+{
+    "@@locale": "de",
+    
+    "appTitle": "Dice Destiny: Idle Rifts",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+
+    "welcome": "Willkommen",
+    "welcomeMessage": "Willkommen! Nutze die untere Navigationsleiste zum Erkunden.",
+    "diceDestiny": "DICE DESTINY",
+    "idleRifts": "IDLE RIFTS",
+
+    "navHome": "Start",
+    "navBattle": "Kampf",
+    "navAllies": "Verbündete",
+    "navSummon": "Beschwörung",
+    "navShop": "Laden",
+    "navMisc": "Sonstiges",
+
+    "editTeam": "TEAM BEARBEITEN",
+    "allHeroes": "ALLE HELDEN",
+    "slot": "Platz",
+    "cancel": "Abbrechen",
+    "error": "Fehler: {message}",
+    "@error": {
+        "placeholders": {
+            "message": {"type": "String"}
+        }
+    },
+
+    "level": "Lv.",
+    "hp": "LP",
+    "atk": "Ang",
+    "mag": "Mag",
+    "spd": "Ges",
+    "def": "Def",
+    "lck": "Glk",
+    "res": "Res",
+
+    "rarityCommon": "Gewöhnlich",
+    "rarityRare": "Selten",
+    "rarityEpic": "Episch",
+    "rarityLegendary": "Legendär",
+
+    "equipmentWeapon": "Waffe",
+    "equipmentArmor": "Rüstung",
+    "equipmentAccessory": "Accessoire",
+    "equipmentSkill": "Fähigkeit",
+
+    "warrior": "Krieger",
+    "mage": "Magier",
+    "rogue": "Schurke",
+    "cleric": "Kleriker",
+
+    "ironSword": "Eisenschwert",
+    "woodenStaff": "Holzstab",
+    "ironDagger": "Eisendolch",
+    "healingRod": "Heilstab",
+
+    "noPlayerData": "Keine Spielerdaten",
+    "loading": "Lädt...",
+
+    "gold": "Gold",
+    "gems": "Edelsteine",
+    "summonTokens": "Beschwörungsmarken",
+
+    "idleIncomeOnline": "+{amount} Gold (Idle-Einkommen)",
+    "@idleIncomeOnline": {
+        "placeholders": {
+            "amount": {"type": "int"}
+        }
+    },
+    "idleIncomeOffline": "Offline-Einkommen: +{amount} Gold ({hours}h Abwesenheit)",
+    "@idleIncomeOffline": {
+        "placeholders": {
+            "amount": {"type": "int"},
+            "hours": {"type": "String"}
+        }
+    },
+    "firstConnection": "Erste Verbindung, kein Offline-Einkommen",
+    "noOfflineIncome": "Kein Offline-Einkommen (letzte Verbindung: {seconds}s)",
+    "@noOfflineIncome": {
+        "placeholders": {
+            "seconds": {"type": "int"}
+        }
+    },
+
+    "stamina": "Ausdauer",
+
+    "battleTitle": "KAMPF",
+    "battleSystem": "Kampfsystem",
+    "campaignMode": "Kampagnenmodus",
+    "rifts": "Risse",
+    "dungeons": "Verliese",
+    "arena": "Arena",
+    "needCharacterFirst": "Du musst zuerst einen Charakter erstellen!",
+    "cannotOpenCampaign": "Kampagne kann nicht geöffnet werden",
+
+    "miscTitle": "SONSTIGES",
+    "settings": "Einstellungen",
+    "gifts": "Geschenke",
+    "events": "Ereignisse",
+    "logout": "Abmelden",
+    "rankings": "Ranglisten",
+    "news": "Neuigkeiten",
+    "help": "Hilfe",
+    "friends": "Freunde",
+    "logoutConfirm": "Möchtest du dich wirklich abmelden?",
+    "confirm": "Bestätigen",
+
+    "epicUniverseTagline": "Tauche ein in ein episches Universum",
+    "epicUniverseDescription": "wo das Schicksal von kosmischen Würfeln bestimmt wird.\nStelle dich den Rissen und rette die Welten!",
+    "initializingPortal": "Portal wird initialisiert...",
+    "startAdventure": "Abenteuer starten",
+    "versionInfo": "Version 1.0.0 • Erstellt mit Flutter",
+    "connectionError": "Verbindungsfehler",
+
+    "stepYourName": "DEIN NAME",
+    "stepYourRace": "DEINE RASSE",
+    "stepYourRegion": "DEINE REGION",
+    "stepYourOrigin": "DEINE HERKUNFT",
+    "stepYourClass": "DEINE KLASSE",
+    "stepConfirmation": "BESTÄTIGUNG",
+    "choicesShapeDestiny": "Deine Entscheidungen werden dein Schicksal prägen",
+    "lowercaseOnly": "Nur Kleinbuchstaben: max. 11 Zeichen",
+    "uppercaseOnly": "Nur Großbuchstaben: max. 8 Zeichen",
+    "mixedCase": "Gemischt: max. {max} Zeichen",
+    "@mixedCase": {
+        "placeholders": {
+            "max": {"type": "int"}
+        }
+    },
+    "nameInLegends": "Wie bist du in Legenden bekannt?",
+    "yourNameHint": "Dein Name",
+    "minimumCharacters": "Mindestens 3 Zeichen",
+    "whatIsYourNature": "Was ist deine Natur?",
+    "whereAreYouFrom": "Woher kommst du?",
+    "whatIsYourStory": "Was ist deine Geschichte?",
+    "whatPathDoYouTake": "Welchen Weg schlägst du ein?",
+    "legendReady": "Deine Legende ist bereit, geschrieben zu werden",
+    "nameSummary": "Name",
+    "raceSummary": "Rasse",
+    "regionSummary": "Region",
+    "originSummary": "Herkunft",
+    "classSummary": "Klasse",
+    "choicesFinal": "Diese Entscheidungen sind endgültig und werden deine Reise durch die Risse beeinflussen",
+    "back": "Zurück",
+    "forgeDestiny": "Mein Schicksal schmieden",
+    "continueButton": "Weiter",
+
+    "cinematicTitle1": "AM ANFANG",
+    "cinematicText1": "War die Leere.\nEine unendliche Leere, in der nichts existierte.",
+    "cinematicSubtitle1": "Dann erschienen die Kosmischen Würfel...",
+    "cinematicTitle2": "DIE WÜRFEL DES SCHICKSALS",
+    "cinematicText2": "Diese göttlichen Artefakte formten\ndie Realität selbst.",
+    "cinematicSubtitle2": "Jede Seite, jeder Wurf erschuf Welten.",
+    "cinematicTitle3": "ZERBROCHENES GLEICHGEWICHT",
+    "cinematicText3": "Äonen lang herrschte Gleichgewicht.",
+    "cinematicSubtitle3": "Doch eine dunkle Macht begehrte ihre Kraft.\nDie Risse öffneten sich.",
+    "cinematicTitle4": "DIE RISSE",
+    "cinematicText4": "Risse in der Realität,\ndie alles auf ihrem Weg verschlingen.",
+    "cinematicSubtitle4": "Welten kollabieren. Zivilisationen sterben.",
+    "cinematicTitle5": "EINE LETZTE HOFFNUNG",
+    "cinematicText5": "Die Kosmischen Würfel suchen\nChampions.",
+    "cinematicSubtitle5": "Seelen, die ihre Macht ausüben können.",
+    "cinematicTitle6": "WER BIST DU?",
+    "cinematicText6": "Das Schicksal ruft dich.\nDie Macht der Würfel fließt durch dich.",
+    "cinematicSubtitle6": "Deine Geschichte beginnt jetzt...",
+    "skipCinematic": "Überspringen",
+    "nextScene": "Weiter",
+    "loginTitle": "Anmeldung",
+    "chooseYourMode": "Wähle deine Methode",
+    "emailAndPassword": "E-Mail & Passwort",
+    "permanentAccount": "Dauerhaftes Konto",
+    "or": "ODER",
+    "google": "Google",
+    "continueWithoutAccount": "Ohne Konto fortfahren",
+    "connectingInProgress": "Verbinde...",
+    "linkAccountLater": "Du kannst dein Konto später in den Einstellungen verknüpfen",
+    "createAccount": "KONTO ERSTELLEN",
+    "emailLogin": "E-MAIL ANMELDUNG",
+    "email": "E-Mail",
+    "emailRequired": "E-Mail erforderlich",
+    "invalidEmail": "Ungültige E-Mail",
+    "password": "Passwort",
+    "passwordRequired": "Passwort erforderlich",
+    "minimumSixCharacters": "Mindestens 6 Zeichen",
+    "createAccountButton": "Konto erstellen",
+    "signIn": "Anmelden",
+    "alreadyHaveAccount": "Bereits ein Konto? Anmelden",
+    "noAccount": "Kein Konto? Registrieren",
+    "backToOptions": "← Zurück zu den Optionen",
+    "connectionError": "Verbindungsfehler: {error}",
+    "@connectionError": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+
+    "settingsAudio": "Audio",
+    "settingsMusic": "Musik",
+    "settingsMusicSubtitle": "Hintergrundmusik aktivieren",
+    "settingsMusicVolume": "Musiklautstärke",
+    "settingsSfx": "Soundeffekte",
+    "settingsSfxSubtitle": "Spiel-Soundeffekte aktivieren",
+    "settingsSfxVolume": "Effektlautstärke",
+    "settingsLanguage": "Sprache",
+    "settingsLanguageTitle": "Sprache",
+    "settingsSelectLanguage": "Sprache Auswählen",
+    "settingsResetDefaults": "Zurücksetzen",
+    "settingsResetTitle": "Einstellungen Zurücksetzen?",
+    "settingsResetMessage": "Dies setzt alle Einstellungen auf ihre Standardwerte zurück.",
+    "settingsResetSuccess": "Einstellungen zurückgesetzt",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Konto",
+  "settingsLinkEmail": "E-Mail verknüpfen",
+  "settingsLinkEmailSubtitle": "E-Mail-Authentifizierung hinzufügen",
+  "settingsLinkGoogle": "Google verknüpfen",
+  "settingsLinkGoogleSubtitle": "Google-Authentifizierung hinzufügen",
+  "settingsDeleteAccount": "Konto löschen",
+  "settingsDeleteAccountTitle": "Konto löschen?",
+  "settingsDeleteAccountMessage": "Dies löscht Ihr Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "settingsDeleteAccountSuccess": "Konto erfolgreich gelöscht",
+  "settingsLinkSuccess": "Konto erfolgreich verknüpft",
+  "settingsAlreadyLinked": "Bereits verknüpft",
+  "settingsAnonymous": "Anonymes Konto",
+
+  "close": "SCHLIESSEN",
+  "attack": "ANGREIFEN",
+  "targetOutOfRange": "Ziel außer Reichweite! (Entfernung: {distance}, Reichweite: {range})",
+  "chooseAttack": "Angriff wählen",
+  "basicAttack": "Grundangriff",
+  "damage": "Schaden",
+  "victory": "🎉 SIEG!",
+  "allEnemiesDefeated": "Du hast alle Feinde besiegt!",
+  "returnButton": "ZURÜCK",
+  "defeat": "💀 NIEDERLAGE",
+  "allCharactersDefeated": "Alle deine Charaktere wurden besiegt...",
+  "turnEnded": "Runde beendet!",
+  "endTurn": "RUNDE BEENDEN",
+  "combatLog": "KAMPFPROTOKOLL",
+  "combatFinished": "KAMPF BEENDET",
+  "combatVictorious": "Kampf gewonnen!",
+  "enemyDefeated": "{name} besiegt!",
+  "forgeMyDestiny": "Mein Schicksal schmieden",
+  "tapToContinue": "Tippen zum Fortfahren",
+  "soundSettings": "🎵 Soundeinstellungen",
+  "music": "Musik",
+  "sfx": "Soundeffekte",
+  "emailLabel": "E-Mail",
+  "passwordLabel": "Passwort",
+  "expMax": "EXP MAX",
+  "exp": "EXP {current}/{max}",
+  "emptySlot": "Leerer Slot",
+  "noBonus": "Kein Bonus",
+  "notLoggedIn": "Nicht angemeldet",
+  "summonError": "Fehler beim Beschwören: {error}",
+  "slot": "Platz"
+}

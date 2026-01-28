@@ -1,3 +1,6 @@
+import 'bestiary_entry.dart';
+import 'codex_entry.dart';
+
 class Player {
   final String userId;
   String displayName;
@@ -10,9 +13,15 @@ class Player {
   int summonTokens;
 
   // Progression
-  int storyChapter;
+  double storyChapter; // Chapitre de l'histoire débloqué (based with 1,01 = Chapitre 1 stage 1 ; 1,02 = Chapitre 1 stage 2, etc.)
   int arenaRank;
   int highestRiftFloor;
+
+  // Bestiaire - Ennemis découverts
+  Map<String, BestiaryEntry> bestiary;
+
+  // Codex - Personnages obtenus
+  Map<String, CodexEntry> codex;
 
   // Daily Missions (reset daily)
   int dailyEnemiesDefeated;
@@ -48,9 +57,11 @@ class Player {
     this.gold = 100,
     this.gems = 50,
     this.summonTokens = 0,
-    this.storyChapter = 1,
+    this.storyChapter = 1.01,
     this.arenaRank = 0,
     this.highestRiftFloor = 0,
+    Map<String, BestiaryEntry>? bestiary,
+    Map<String, CodexEntry>? codex,
     this.dailyEnemiesDefeated = 0,
     this.dailyGoldCollected = 0,
     this.dailyAdventuresCompleted = 0,
@@ -67,7 +78,9 @@ class Player {
     this.notificationsEnabled = true,
     DateTime? createdAt,
     DateTime? lastLogin,
-  })  : createdAt = createdAt ?? DateTime.now(),
+  })  : bestiary = bestiary ?? {},
+        codex = codex ?? {},
+        createdAt = createdAt ?? DateTime.now(),
         lastLogin = lastLogin ?? DateTime.now();
 
   // Convert to JSON for Firestore
@@ -82,6 +95,8 @@ class Player {
         'storyChapter': storyChapter,
         'arenaRank': arenaRank,
         'highestRiftFloor': highestRiftFloor,
+        'bestiary': bestiary.map((key, value) => MapEntry(key, value.toJson())),
+        'codex': codex.map((key, value) => MapEntry(key, value.toJson())),
         'dailyEnemiesDefeated': dailyEnemiesDefeated,
         'dailyGoldCollected': dailyGoldCollected,
         'dailyAdventuresCompleted': dailyAdventuresCompleted,
@@ -102,6 +117,24 @@ class Player {
 
   // Create from JSON
   factory Player.fromJson(Map<String, dynamic> json) {
+    // Désérialiser le bestiaire
+    Map<String, BestiaryEntry> bestiaryMap = {};
+    if (json['bestiary'] != null) {
+      final bestiaryData = json['bestiary'] as Map<String, dynamic>;
+      bestiaryMap = bestiaryData.map(
+        (key, value) => MapEntry(key, BestiaryEntry.fromJson(value as Map<String, dynamic>)),
+      );
+    }
+    
+    // Désérialiser le codex
+    Map<String, CodexEntry> codexMap = {};
+    if (json['codex'] != null) {
+      final codexData = json['codex'] as Map<String, dynamic>;
+      codexMap = codexData.map(
+        (key, value) => MapEntry(key, CodexEntry.fromJson(value as Map<String, dynamic>)),
+      );
+    }
+    
     return Player(
       userId: json['userId'] as String,
       displayName: json['displayName'] as String,
@@ -110,9 +143,11 @@ class Player {
       gold: json['gold'] as int? ?? 100,
       gems: json['gems'] as int? ?? 50,
       summonTokens: json['summonTokens'] as int? ?? 0,
-      storyChapter: json['storyChapter'] as int? ?? 1,
+      storyChapter: json['storyChapter'] as double? ?? 1.01,
       arenaRank: json['arenaRank'] as int? ?? 0,
       highestRiftFloor: json['highestRiftFloor'] as int? ?? 0,
+      bestiary: bestiaryMap,
+      codex: codexMap,
       dailyEnemiesDefeated: json['dailyEnemiesDefeated'] as int? ?? 0,
       dailyGoldCollected: json['dailyGoldCollected'] as int? ?? 0,
       dailyAdventuresCompleted: json['dailyAdventuresCompleted'] as int? ?? 0,
@@ -232,6 +267,94 @@ bool spendGold(int amount) {
     totalBattlesWon++;
   }
 
+  // === BESTIARY METHODS ===
+  
+  /// Enregistre une rencontre avec un ennemi
+  void encounterEnemy(String enemyId) {
+    if (!bestiary.containsKey(enemyId)) {
+      bestiary[enemyId] = BestiaryEntry.initial();
+    }
+    bestiary[enemyId] = bestiary[enemyId]!.copyWith(
+      discovered: true,
+      encounterCount: bestiary[enemyId]!.encounterCount + 1,
+      lastEncounter: DateTime.now(),
+    );
+  }
+  
+  /// Enregistre la défaite d'un ennemi
+  void defeatEnemy(String enemyId) {
+    if (!bestiary.containsKey(enemyId)) {
+      bestiary[enemyId] = BestiaryEntry.initial();
+    }
+    bestiary[enemyId] = bestiary[enemyId]!.copyWith(
+      discovered: true,
+      defeatedCount: bestiary[enemyId]!.defeatedCount + 1,
+      lastEncounter: DateTime.now(),
+    );
+  }
+  
+  /// Vérifie si un ennemi a été découvert
+  bool hasDiscovered(String enemyId) {
+    return bestiary.containsKey(enemyId) && bestiary[enemyId]!.discovered;
+  }
+  
+  /// Nombre total d'ennemis découverts
+  int get totalEnemiesDiscovered {
+    return bestiary.values.where((entry) => entry.discovered).length;
+  }
+  
+  /// Calcule le pourcentage de complétion du bestiaire
+  double bestiaryCompletion(int totalEnemies) {
+    if (totalEnemies == 0) return 0.0;
+    return (totalEnemiesDiscovered / totalEnemies) * 100;
+  }
+  
+  // === CODEX METHODS ===
+  
+  /// Enregistre l'obtention d'un personnage
+  void unlockCharacter(String characterName, int level) {
+    if (!codex.containsKey(characterName)) {
+      codex[characterName] = CodexEntry.initial();
+    }
+    codex[characterName] = codex[characterName]!.copyWith(
+      unlockCount: codex[characterName]!.unlockCount + 1,
+      maxLevel: level > codex[characterName]!.maxLevel ? level : codex[characterName]!.maxLevel,
+      lastUnlock: DateTime.now(),
+    );
+  }
+  
+  /// Met à jour le niveau maximum d'un personnage
+  void updateCharacterLevel(String characterName, int newLevel) {
+    if (codex.containsKey(characterName) && newLevel > codex[characterName]!.maxLevel) {
+      codex[characterName] = codex[characterName]!.copyWith(maxLevel: newLevel);
+    }
+  }
+  
+  /// Incrémente le nombre de combats avec un personnage
+  void incrementCharacterBattles(String characterName) {
+    if (codex.containsKey(characterName)) {
+      codex[characterName] = codex[characterName]!.copyWith(
+        totalBattles: codex[characterName]!.totalBattles + 1,
+      );
+    }
+  }
+  
+  /// Vérifie si un personnage a été débloqué
+  bool hasUnlocked(String characterName) {
+    return codex.containsKey(characterName) && codex[characterName]!.unlockCount > 0;
+  }
+  
+  /// Nombre total de personnages différents obtenus
+  int get totalCharactersUnlocked {
+    return codex.values.where((entry) => entry.unlockCount > 0).length;
+  }
+  
+  /// Calcule le pourcentage de complétion du codex
+  double codexCompletion(int totalCharacters) {
+    if (totalCharacters == 0) return 0.0;
+    return (totalCharactersUnlocked / totalCharacters) * 100;
+  }
+
   // Copier avec modifications
   Player copyWith({
     String? displayName,
@@ -240,7 +363,7 @@ bool spendGold(int amount) {
     int? gold,
     int? gems,
     int? summonTokens,
-    int? storyChapter,
+    double? storyChapter,
     int? arenaRank,
     int? highestRiftFloor,
     DateTime? lastDailyReward,
@@ -262,6 +385,8 @@ bool spendGold(int amount) {
       storyChapter: storyChapter ?? this.storyChapter,
       arenaRank: arenaRank ?? this.arenaRank,
       highestRiftFloor: highestRiftFloor ?? this.highestRiftFloor,
+      bestiary: bestiary,
+      codex: codex,
       lastDailyReward: lastDailyReward ?? this.lastDailyReward,
       loginStreak: loginStreak ?? this.loginStreak,
       soundEnabled: soundEnabled ?? this.soundEnabled,

@@ -41,6 +41,10 @@ dependencies:
   cloud_firestore: ^5.5.2
   firebase_auth: ^5.3.3
   google_sign_in: ^6.2.2
+  audioplayers: ^6.1.0
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -63,12 +67,17 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
+  generate: true
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/welcome.jpeg
+  
     - assets/logo/
+  
+    - assets/musics/
+  
     - assets/characters/Envia/
     - assets/characters/Elio/
     - assets/characters/Ragor/
@@ -76,6 +85,36 @@ flutter:
     - assets/characters/MCM/
     - assets/characters/MCS/
     - assets/characters/MCC/
+  
+    - assets/skills/cleric/
+    - assets/skills/general/
+    - assets/skills/mage/
+    - assets/skills/origin/
+    - assets/skills/race/
+    - assets/skills/rogue/
+    - assets/skills/ultimate/
+    - assets/skills/warrior/
+
+    - assets/weapons/axes/
+    - assets/weapons/books/
+    - assets/weapons/bows/
+    - assets/weapons/daggers/
+    - assets/weapons/rods/
+    - assets/weapons/spears/
+    - assets/weapons/special/
+    - assets/weapons/staffs/
+    - assets/weapons/swords/
+
+    - assets/equipments/accessories/amulets/
+    - assets/equipments/accessories/belts/
+    - assets/equipments/accessories/boots/
+    - assets/equipments/accessories/rings/
+    - assets/equipments/accessories/special/
+    - assets/equipments/armors/heavyarmors/
+    - assets/equipments/armors/legendaryarmors/
+    - assets/equipments/armors/lightarmors/
+    - assets/equipments/armors/magicalarmors/
+    - assets/equipments/armors/mediumarmors/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

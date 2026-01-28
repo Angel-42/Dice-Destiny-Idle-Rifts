@@ -1,0 +1,289 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "Dice Destiny: Idle Rifts",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "welcome": "Welcome",
+  "welcomeMessage": "Welcome! Use the navigation bar below to explore.",
+  "diceDestiny": "DICE DESTINY",
+  "idleRifts": "IDLE RIFTS",
+
+  "navHome": "Home",
+  "navBattle": "Battle",
+  "navAllies": "Allies",
+  "navSummon": "Summon",
+  "navShop": "Shop",
+  "navMisc": "Misc.",
+
+  "editTeam": "EDIT TEAM",
+  "allHeroes": "ALL HEROES",
+  "slot": "Slot",
+  "cancel": "Cancel",
+  "error": "Error: {message}",
+  "@error": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "level": "Lv.",
+  "hp": "HP",
+  "atk": "Atk",
+  "mag": "Mag",
+  "spd": "Spd",
+  "def": "Def",
+  "lck": "Lck",
+  "res": "Res",
+
+  "rarityCommon": "Common",
+  "rarityRare": "Rare",
+  "rarityEpic": "Epic",
+  "rarityLegendary": "Legendary",
+
+  "equipmentWeapon": "Weapon",
+  "equipmentArmor": "Armor",
+  "equipmentAccessory": "Accessory",
+  "equipmentSkill": "Skill",
+
+  "warrior": "Warrior",
+  "mage": "Mage",
+  "rogue": "Rogue",
+  "cleric": "Cleric",
+
+  "ironSword": "Iron Sword",
+  "woodenStaff": "Wooden Staff",
+  "ironDagger": "Iron Dagger",
+  "healingRod": "Healing Rod",
+
+  "noPlayerData": "No player data",
+  "loading": "Loading...",
+
+  "gold": "Gold",
+  "gems": "Gems",
+  "summonTokens": "Summon Tokens",
+
+  "idleIncomeOnline": "+{amount} gold (idle income)",
+  "@idleIncomeOnline": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "idleIncomeOffline": "Offline income: +{amount} gold ({hours}h absence)",
+  "@idleIncomeOffline": {
+    "placeholders": {
+      "amount": {"type": "int"},
+      "hours": {"type": "String"}
+    }
+  },
+  "firstConnection": "First connection, no offline income",
+  "noOfflineIncome": "No offline income (last connection: {seconds}s)",
+  "@noOfflineIncome": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+
+  "stamina": "Stamina",
+
+  "battleTitle": "BATTLE",
+  "battleSystem": "Battle System",
+  "campaignMode": "Campaign Mode",
+  "rifts": "Rifts",
+  "dungeons": "Dungeons",
+  "arena": "Arena",
+  "needCharacterFirst": "You must create a character first!",
+  "cannotOpenCampaign": "Cannot open campaign",
+
+  "miscTitle": "MISC.",
+  "settings": "Settings",
+  "gifts": "Gifts",
+  "events": "Events",
+  "logout": "Logout",
+  "rankings": "Rankings",
+  "news": "News",
+  "help": "Help",
+  "friends": "Friends",
+  "logoutConfirm": "Are you sure you want to logout?",
+  "confirm": "Confirm",
+
+  "epicUniverseTagline": "Dive into an epic universe",
+  "epicUniverseDescription": "where destiny is ruled by cosmic dice.\nFace the Rifts and save the worlds!",
+  "initializingPortal": "Initializing portal...",
+  "startAdventure": "Start the adventure",
+  "versionInfo": "Version 1.0.0 • Made with Flutter",
+  "connectionError": "Connection error",
+
+  "stepYourName": "YOUR NAME",
+  "stepYourRace": "YOUR RACE",
+  "stepYourRegion": "YOUR REGION",
+  "stepYourOrigin": "YOUR ORIGIN",
+  "stepYourClass": "YOUR CLASS",
+  "stepConfirmation": "CONFIRMATION",
+  "choicesShapeDestiny": "Your choices will shape your destiny",
+  "lowercaseOnly": "Lowercase only: max 11 characters",
+  "uppercaseOnly": "Uppercase only: max 8 characters",
+  "mixedCase": "Mixed: max {max} characters",
+  "@mixedCase": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "nameInLegends": "How are you known in legends?",
+  "yourNameHint": "Your name",
+  "minimumCharacters": "Minimum 3 characters",
+  "whatIsYourNature": "What is your nature?",
+  "whereAreYouFrom": "Where are you from?",
+  "whatIsYourStory": "What is your story?",
+  "whatPathDoYouTake": "What path do you take?",
+  "legendReady": "Your legend is ready to be written",
+  "nameSummary": "Name",
+  "raceSummary": "Race",
+  "regionSummary": "Region",
+  "originSummary": "Origin",
+  "classSummary": "Class",
+  "choicesFinal": "These choices are final and will influence your journey through the Rifts",
+  "back": "Back",
+  "forgeDestiny": "Forge my destiny",
+  "continueButton": "Continue",
+
+  "cinematicTitle1": "IN THE BEGINNING",
+  "cinematicText1": "There was the Void.\nAn infinite emptiness where nothing existed.",
+  "cinematicSubtitle1": "Then the Cosmic Dice appeared...",
+  "cinematicTitle2": "THE DICE OF FATE",
+  "cinematicText2": "These divine artifacts shaped\nreality itself.",
+  "cinematicSubtitle2": "Each face, each roll created worlds.",
+  "cinematicTitle3": "BROKEN BALANCE",
+  "cinematicText3": "For eons, balance reigned.",
+  "cinematicSubtitle3": "But a dark force coveted their power.\nThe Rifts opened.",
+  "cinematicTitle4": "THE RIFTS",
+  "cinematicText4": "Cracks in reality,\ndevouring everything in their path.",
+  "cinematicSubtitle4": "Worlds collapse. Civilizations are dying.",
+  "cinematicTitle5": "A LAST HOPE",
+  "cinematicText5": "The Cosmic Dice seek\nChampions.",
+  "cinematicSubtitle5": "Souls capable of wielding their power.",
+  "cinematicTitle6": "WHO ARE YOU?",
+  "cinematicText6": "Destiny calls you.\nThe power of the Dice flows through you.",
+  "cinematicSubtitle6": "Your story begins now...",
+  "skipCinematic": "Skip",
+  "nextScene": "Next",
+  "loginTitle": "Login",
+  "chooseYourMode": "Choose your method",
+  "emailAndPassword": "Email & Password",
+  "permanentAccount": "Permanent account",
+  "or": "OR",
+  "google": "Google",
+  "continueWithoutAccount": "Continue without account",
+  "connectingInProgress": "Connecting...",
+  "linkAccountLater": "You can link your account later in settings",
+  "createAccount": "CREATE AN ACCOUNT",
+  "emailLogin": "EMAIL LOGIN",
+  "email": "Email",
+  "emailRequired": "Email required",
+  "invalidEmail": "Invalid email",
+  "password": "Password",
+  "passwordRequired": "Password required",
+  "minimumSixCharacters": "Minimum 6 characters",
+  "createAccountButton": "Create account",
+  "signIn": "Sign in",
+  "alreadyHaveAccount": "Already have an account? Sign in",
+  "noAccount": "No account? Sign up",
+  "backToOptions": "← Back to options",
+  "connectionError": "Connection error: {error}",
+  "@connectionError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "settingsAudio": "Audio",
+  "settingsMusic": "Music",
+  "settingsMusicSubtitle": "Enable background music",
+  "settingsMusicVolume": "Music Volume",
+  "settingsSfx": "Sound Effects",
+  "settingsSfxSubtitle": "Enable game sound effects",
+  "settingsSfxVolume": "SFX Volume",
+  "settingsLanguage": "Language",
+  "settingsLanguageTitle": "Language",
+  "settingsSelectLanguage": "Select Language",
+  "settingsResetDefaults": "Reset to Defaults",
+  "settingsResetTitle": "Reset Settings?",
+  "settingsResetMessage": "This will reset all settings to their default values.",
+  "settingsResetSuccess": "Settings reset to defaults",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Account",
+  "settingsLinkEmail": "Link Email",
+  "settingsLinkEmailSubtitle": "Add email authentication",
+  "settingsLinkGoogle": "Link Google",
+  "settingsLinkGoogleSubtitle": "Add Google authentication",
+  "settingsDeleteAccount": "Delete Account",
+  "settingsDeleteAccountTitle": "Delete Account?",
+  "settingsDeleteAccountMessage": "This will permanently delete your account and all associated data. This action cannot be undone.",
+  "settingsDeleteAccountSuccess": "Account deleted successfully",
+  "settingsLinkSuccess": "Account linked successfully",
+  "settingsAlreadyLinked": "Already linked",
+  "settingsAnonymous": "Anonymous Account",
+
+  "close": "CLOSE",
+  "attack": "ATTACK",
+  "targetOutOfRange": "Target out of range! (Distance: {distance}, Range: {range})",
+  "@targetOutOfRange": {
+    "placeholders": {
+      "distance": {"type": "int"},
+      "range": {"type": "int"}
+    }
+  },
+  "chooseAttack": "Choose an attack",
+  "basicAttack": "Basic attack",
+  "damage": "Damage",
+  "victory": "🎉 VICTORY!",
+  "allEnemiesDefeated": "You have defeated all enemies!",
+  "returnButton": "RETURN",
+  "defeat": "💀 DEFEAT",
+  "allCharactersDefeated": "All your characters have been defeated...",
+  "turnEnded": "Turn ended!",
+  "endTurn": "END TURN",
+  "combatLog": "COMBAT LOG",
+  "combatFinished": "COMBAT FINISHED",
+  "combatVictorious": "Combat victorious!",
+  "enemyDefeated": "{name} defeated!",
+  "@enemyDefeated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "forgeMyDestiny": "Forge my destiny",
+  "tapToContinue": "Tap to continue",
+  "soundSettings": "🎵 Sound Settings",
+  "music": "Music",
+  "sfx": "SFX",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "expMax": "EXP MAX",
+  "exp": "EXP {current}/{max}",
+  "@exp": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "emptySlot": "Empty slot",
+  "noBonus": "No bonus",
+  "notLoggedIn": "Not logged in",
+  "summonError": "Error during summoning: {error}",
+  "@summonError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "slot": "Slot"
+}
+

@@ -2,6 +2,11 @@ import '../models/persona.dart';
 import '../models/equipment.dart';
 import '../models/skill.dart';
 import '../models/weapon_mastery.dart';
+import '../models/class_tree.dart';
+import '../models/character_inventory.dart';
+import '../models/dice.dart';
+import '../models/animation_state.dart';
+import 'package:flutter/foundation.dart';
 
 class Character {     // est un personnage jouable (pas le player)
   final String id;
@@ -22,14 +27,23 @@ class Character {     // est un personnage jouable (pas le player)
 
   // équipement
   Equipment? weapon;
-  Equipment? armor;
-  Equipment? accessory;
+  Equipment? armorOrAccessory; // Armure OU accessoire (mutuellement exclusif)
 
-  // compétences équipées (max 5)
+  // compétences équipées (max 4: 1 active + 3 passives)
   List<Skill> equippedSkills;
   
   // maîtrises d'armes
   List<WeaponMastery> weaponMasteries;
+
+  // --- Nouveau: Inventaire personnel du personnage
+  CharacterInventory inventory;
+
+  // --- Nouveau: système de classes (ids référencés depuis ClassTree)
+  // Ensemble d'ids de classes possédées par le personnage
+  Set<String> ownedClassIds;
+
+  // Id de la classe active (peut être l'un des ownedClassIds)
+  String? activeClassId;
 
   // méta-data
   CharacterRarity basedRarity;
@@ -49,20 +63,26 @@ class Character {     // est un personnage jouable (pas le player)
     this.x = 0,
     this.y = 0,
     this.weapon,
-    this.armor,
-    this.accessory,
-    List<Skill>? equippedSkills,
-    List<WeaponMastery>? weaponMasteries,
+    this.armorOrAccessory,
+  List<Skill>? equippedSkills,
+  List<WeaponMastery>? weaponMasteries,
+  Set<String>? initialOwnedClassIds,
+  this.activeClassId,
     this.basedRarity = CharacterRarity.common,
     this.currentRarity = CharacterRarity.common,
     this.isInTeam = false,
     this.teamPosition = 0,
     DateTime? obtainedAt,
+    CharacterInventory? inventory,
   })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         currentHp = stats.maxHp,
         equippedSkills = equippedSkills ?? [],
         weaponMasteries = weaponMasteries ?? [],
-        obtainedAt = obtainedAt ?? DateTime.now() {
+  ownedClassIds = initialOwnedClassIds ?? {},
+        obtainedAt = obtainedAt ?? DateTime.now(),
+        inventory = inventory ?? CharacterInventory.createDefault(persona.characterClass.name) {
+    // ⚠️ IMPORTANT: Si un inventory custom était fourni, ne pas le remplacer
+    // Le ?? ci-dessus garantit qu'on garde le custom si fourni
     // Si pas d'arme, ajouter l'arme de départ
     weapon ??= DefaultWeapons.getForClass(persona.characterClass.name);
     
@@ -78,6 +98,30 @@ class Character {     // est un personnage jouable (pas le player)
     // Si pas de maîtrises, ajouter les maîtrises de départ
     if (this.weaponMasteries.isEmpty) {
       this.weaponMasteries = DefaultWeaponMasteries.getForClass(persona.characterClass);
+    }
+
+  // --- Initialisation du système de classes
+  // Si aucune classe fournie, assigner la classe novice correspondant au persona.
+    if (this.ownedClassIds.isEmpty) {
+  final tree = ClassTree.instance;
+      final noviceId = persona.characterClass.noviceId;
+
+      // Par défaut, tout le monde commence avec la classe novice
+      this.ownedClassIds.add(noviceId);
+
+      // Sauf si c'est un héros épique: on lui donne aussi une classe avancée (choisie par défaut)
+      if (basedRarity == CharacterRarity.epic) {
+        final noviceNode = tree.get(noviceId);
+        if (noviceNode != null && noviceNode.children.isNotEmpty) {
+          final advId = noviceNode.children.first;
+          this.ownedClassIds.add(advId);
+          // définir la classe active sur l'advanced
+          activeClassId ??= advId;
+        }
+      }
+
+      // Si activeClassId toujours null, mettre la novice
+      activeClassId ??= noviceId;
     }
   }
 
@@ -99,18 +143,50 @@ class Character {     // est un personnage jouable (pas le player)
         'xp': xp,
         'x': x,
         'y': y,
-        'currentHp': currentHp,
+        // ⚠️ currentHp n'est PAS sauvegardé - toujours réinitialisé à maxHp au chargement
         'weapon': weapon?.toJson(),
-        'armor': armor?.toJson(),
-        'accessory': accessory?.toJson(),
+        'armorOrAccessory': armorOrAccessory?.toJson(),
         'equippedSkills': equippedSkills.map((s) => s.toJson()).toList(),
-        'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
+  'weaponMasteries': weaponMasteries.map((w) => w.toJson()).toList(),
+  // Sauvegarde de l'inventaire
+  'inventory': inventory.toJson(),
+  // Sauvegarde du système de classes
+  'ownedClassIds': ownedClassIds.toList(),
+  'activeClassId': activeClassId,
         'basedRarity': basedRarity.name,
         'currentRarity': currentRarity.name,
         'isInTeam': isInTeam,
         'teamPosition': teamPosition,
         'obtainedAt': obtainedAt.toIso8601String(),
       };
+
+  /// Tente de récupérer l'inventaire custom depuis CharacterDatabase pour les personnages preset
+  static CharacterInventory? _tryRecoverCustomInventory(String? characterId, Persona persona) {
+    if (characterId == null) return null;
+    
+    // Import dynamique pour éviter la dépendance circulaire
+    try {
+      // Utiliser l'import conditionnel via une fonction helper
+      return _getCustomInventoryFromDatabase(characterId, persona);
+    } catch (e) {
+      debugPrint('⚠️ Erreur récupération inventaire custom: $e');
+      return null;
+    }
+  }
+  
+  /// Helper pour récupérer l'inventaire custom sans créer de dépendance circulaire au niveau du fichier
+  static CharacterInventory? _getCustomInventoryFromDatabase(String characterId, Persona persona) {
+    // Import dynamique - cette méthode sera appelée à runtime
+    // Les IDs des presets: 'chrom_001', 'envia_001', 'elio_001', 'mca_001', 'ragor_001'
+    
+    // Mapping des IDs vers les inventaires customs
+    // Note: On ne peut pas importer CharacterDatabase ici sans créer une dépendance circulaire
+    // Donc on va vérifier si l'inventaire existe dans le JSON et sinon créer un défaut
+    
+    // Si pas d'inventaire dans le JSON, on va créer un inventaire par défaut amélioré
+    // basé sur la classe du personnage
+    return CharacterInventory.createDefault(persona.characterClass.name);
+  }
   
   factory Character.fromJson(Map<String, dynamic> json) {
     final persona = Persona.fromJson(json['persona']);
@@ -139,14 +215,20 @@ class Character {     // est un personnage jouable (pas le player)
       x: json['x'] ?? 0,
       y: json['y'] ?? 0,
       weapon: json['weapon'] != null ? Equipment.fromJson(json['weapon']) : null,
-      armor: json['armor'] != null ? Equipment.fromJson(json['armor']) : null,
-      accessory: json['accessory'] != null ? Equipment.fromJson(json['accessory']) : null,
+      armorOrAccessory: json['armorOrAccessory'] != null 
+          ? Equipment.fromJson(json['armorOrAccessory']) 
+          : (json['armor'] != null ? Equipment.fromJson(json['armor']) : null), // Rétrocompatibilité
       equippedSkills: (json['equippedSkills'] as List?)
           ?.map((s) => Skill.fromJson(s))
           .toList(),
       weaponMasteries: (json['weaponMasteries'] as List?)
           ?.map((w) => WeaponMastery.fromJson(w))
           .toList(),
+      inventory: json['inventory'] != null 
+          ? CharacterInventory.fromJson(json['inventory'])
+          : _tryRecoverCustomInventory(json['id'], persona), // Tente de récupérer l'inventaire custom
+      initialOwnedClassIds: ((json['ownedClassIds'] as List?) ?? []).map((e) => e.toString()).toSet(),
+      activeClassId: json['activeClassId'],
       basedRarity: CharacterRarity.values.firstWhere(
         (r) => r.name == json['basedRarity'],
         orElse: () => CharacterRarity.common,
@@ -160,7 +242,7 @@ class Character {     // est un personnage jouable (pas le player)
       obtainedAt: json['obtainedAt'] != null
           ? DateTime.parse(json['obtainedAt'])
           : DateTime.now(),
-    )..currentHp = json['currentHp'] ?? 100;
+    ); // currentHp est automatiquement initialisé à stats.maxHp dans le constructeur
   }
 
   String get displayName => '$name (${persona.displayName})';
@@ -186,14 +268,9 @@ class Character {     // est un personnage jouable (pas le player)
       bonus += weapon!.bonuses[statKey]!;
     }
     
-    // Bonus de l'armure
-    if (armor != null && armor!.bonuses.containsKey(statKey)) {
-      bonus += armor!.bonuses[statKey]!;
-    }
-    
-    // Bonus de l'accessoire
-    if (accessory != null && accessory!.bonuses.containsKey(statKey)) {
-      bonus += accessory!.bonuses[statKey]!;
+    // Bonus de l'armure ou accessoire
+    if (armorOrAccessory != null && armorOrAccessory!.bonuses.containsKey(statKey)) {
+      bonus += armorOrAccessory!.bonuses[statKey]!;
     }
     
     return bonus;
@@ -208,7 +285,17 @@ class Character {     // est un personnage jouable (pas le player)
         multiplier += skill.statBonuses[statKey]!;
       }
     }
-    
+
+    // Ajouter les boosts passifs provenant des classes (ClassTree)
+    try {
+  final classBoosts = ClassTree.instance.aggregatePassiveBoostsFor(ownedClassIds);
+      if (classBoosts.containsKey(statKey)) {
+        multiplier += classBoosts[statKey]!;
+      }
+    } catch (_) {
+      // Defensive: si ClassTree n'est pas disponible ou autre, ignorer
+    }
+
     return multiplier;
   }
 
@@ -267,9 +354,13 @@ class Character {     // est un personnage jouable (pas le player)
   // SYSTÈME DE COMBAT
   // ============================================================================
 
-  /// Calcule les dégâts physiques infligés à un adversaire
+  /// Calcule les dégâts physiques infligés à un adversaire (avec critique possible)
   /// Formule: (Attaque * Maîtrise d'arme * Skill multiplicateur) - (Défense adversaire * 0.5)
-  int calculatePhysicalDamage(Character target, {Skill? activeSkill}) {
+  /// Retourne un tuple (dégâts, isCritical)
+  (int damage, bool isCritical) calculatePhysicalDamageWithCrit(Character target, {Skill? activeSkill}) {
+    // Vérifier si c'est un critique (RNG caché influencé par Luck)
+    final isCritical = DiceService.rollCriticalHit(totalLuck);
+    
     // Attaque de base (avec équipement et passives)
     double damage = totalAttack.toDouble();
     
@@ -283,10 +374,51 @@ class Character {     // est un personnage jouable (pas le player)
       // +5% par niveau de maîtrise (E=0%, D=5%, C=10%, B=15%, A=20%, S=25%)
       damage *= (1.0 + (mastery.level * 0.05));
     }
+
+    // Appliquer les boosts de maîtrise spécifiques d'une classe (ex: 'sword', 'unarmed')
+    try {
+      final classBoosts = ClassTree.instance.aggregatePassiveBoostsFor(ownedClassIds);
+      if (weapon != null) {
+        final wt = _getWeaponType(weapon!);
+        switch (wt) {
+          case WeaponType.sword:
+            if (classBoosts.containsKey('sword')) damage *= (1.0 + classBoosts['sword']!);
+            break;
+          case WeaponType.staff:
+            if (classBoosts.containsKey('staff')) damage *= (1.0 + classBoosts['staff']!);
+            break;
+          case WeaponType.dagger:
+            if (classBoosts.containsKey('dagger')) damage *= (1.0 + classBoosts['dagger']!);
+            break;
+          case WeaponType.rod:
+            if (classBoosts.containsKey('rod')) damage *= (1.0 + classBoosts['rod']!);
+            break;
+          default:
+            break;
+        }
+      } else {
+        // Pas d'arme => appliquer boost 'unarmed' si présent
+        if (classBoosts.containsKey('unarmed')) damage *= (1.0 + classBoosts['unarmed']!);
+      }
+    } catch (_) {
+      // ignore errors
+    }
     
-    // Bonus de compétence active utilisée
+    // Bonus de compétence active utilisée + autres passifs liés aux multiplicateurs de dégâts
     if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
-      damage *= (1.0 + activeSkill.statBonuses['damageMultiplier']!);
+      final skillMult = 1.0 + activeSkill.statBonuses['damageMultiplier']!;
+      // Inclure passifs / classes qui affectent damageMultiplier
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= skillMult * passiveDamageMult;
+    } else {
+      // Même si aucune compétence active, appliquer les passifs qui modifient damageMultiplier
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= passiveDamageMult;
+    }
+    
+    // CRITIQUE : ×2.5 dégâts
+    if (isCritical) {
+      damage *= 2.5;
     }
     
     // Réduction selon la défense de la cible
@@ -294,26 +426,70 @@ class Character {     // est un personnage jouable (pas le player)
     damage -= defense;
     
     // Dégâts minimum de 1
-    return damage.round().clamp(1, 9999);
+    return (damage.round().clamp(1, 9999), isCritical);
   }
 
-  /// Calcule les dégâts magiques infligés à un adversaire
+  /// Version legacy pour compatibilité (appelle la nouvelle avec critique)
+  int calculatePhysicalDamage(Character target, {Skill? activeSkill}) {
+    final (damage, _) = calculatePhysicalDamageWithCrit(target, activeSkill: activeSkill);
+    return damage;
+  }
+
+  /// Calcule les dégâts magiques infligés à un adversaire (avec critique possible)
   /// Formule: (Magie * Skill multiplicateur) - (Résistance adversaire * 0.3)
-  int calculateMagicDamage(Character target, {Skill? activeSkill}) {
+  /// Retourne un tuple (dégâts, isCritical)
+  (int damage, bool isCritical) calculateMagicDamageWithCrit(Character target, {Skill? activeSkill}) {
+    // Vérifier si c'est un critique (RNG caché influencé par Luck)
+    final isCritical = DiceService.rollCriticalHit(totalLuck);
+    
     // Magie de base (avec équipement et passives)
     double damage = totalMagic.toDouble();
     
-    // Bonus de compétence active
     if (activeSkill != null && activeSkill.statBonuses.containsKey('damageMultiplier')) {
-      damage *= (1.0 + activeSkill.statBonuses['damageMultiplier']!);
+      final skillMult = 1.0 + activeSkill.statBonuses['damageMultiplier']!;
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= skillMult * passiveDamageMult;
+    } else {
+      final passiveDamageMult = _getSkillBonusMultiplier('damageMultiplier');
+      damage *= passiveDamageMult;
+    }
+    
+    // CRITIQUE : ×2.5 dégâts
+    if (isCritical) {
+      damage *= 2.5;
     }
     
     // Réduction selon la résistance magique de la cible
     final resistance = target.totalMagic * 0.3;
     damage -= resistance;
     
-    // Dégâts minimum de 1
-    return damage.round().clamp(1, 9999);
+    return (damage.round().clamp(1, 9999), isCritical);
+  }
+
+  /// Version legacy pour compatibilité
+  int calculateMagicDamage(Character target, {Skill? activeSkill}) {
+    final (damage, _) = calculateMagicDamageWithCrit(target, activeSkill: activeSkill);
+    return damage;
+  }
+
+  /// Calcule la quantité de soin fournie par une compétence (activeSkill)
+  /// Retourne la valeur de HP restaurée (sans appliquer au target ici)
+  /// Formule de base : target.maxHp * healMultiplier * passifs
+  int calculateHealAmount(Character target, {Skill? activeSkill}) {
+    if (activeSkill == null) return 0;
+    if (!activeSkill.statBonuses.containsKey('healMultiplier')) return 0;
+
+    final baseMult = activeSkill.statBonuses['healMultiplier']!; // ex: 0.30 = 30% HP
+
+    // Passifs / classes qui impactent le multiplicateur de soin
+    final passiveHealMult = _getSkillBonusMultiplier('healMultiplier');
+
+    double amount = target.totalMaxHp * baseMult;
+    amount *= passiveHealMult;
+
+    // Ne pas dépasser le HP manquant
+    final missing = (target.totalMaxHp - target.currentHp).clamp(0, target.totalMaxHp);
+    return amount.round().clamp(0, missing);
   }
 
   /// Détermine le type d'arme équipée
@@ -375,7 +551,7 @@ class Character {     // est un personnage jouable (pas le player)
         stats.attack += (1 * rarityMultiplier).round();
         stats.maxHp += (5 * rarityMultiplier).round();
         break;
-      case PersonaClass.rogue:
+      case PersonaClass.peasant:
         stats.speed += (3 * rarityMultiplier).round();
         stats.attack += (2 * rarityMultiplier).round();
         stats.luck += (1 * rarityMultiplier).round();
@@ -435,6 +611,7 @@ class CharacterStats {
   int range;
   int luck;
   int gold;
+  int movement; // Portée de déplacement sur la carte tactique
   
   CharacterStats({
     required this.maxHp,
@@ -445,6 +622,7 @@ class CharacterStats {
     required this.range,
     required this.luck,
     this.gold = 100,
+    this.movement = 4, // Valeur par défaut
   });
   
   Map<String, dynamic> toJson() => {
@@ -456,6 +634,7 @@ class CharacterStats {
     'range': range,
     'luck': luck,
     'gold': gold,
+    'movement': movement,
   };
   
   factory CharacterStats.fromJson(Map<String, dynamic> json) => CharacterStats(
@@ -467,6 +646,7 @@ class CharacterStats {
     range: json['range'],
     luck: json['luck'],
     gold: json['gold'] ?? 100,
+    movement: json['movement'] ?? 4,
   );
 }
 
@@ -478,6 +658,9 @@ class CharacterAppearance {
   final String? pixel;        // Spritesheet pour les combats (optionnel)
   final String? fullsize;     // Image plein écran (optionnel)
   
+  // Animations de combat (optionnel - utilise AnimationSet)
+  final AnimationSet? combatAnimations;
+  
   // Autres propriétés d'apparence
   final int colorValue;
   final String description;
@@ -487,6 +670,7 @@ class CharacterAppearance {
     this.lheadshot,
     this.pixel,
     this.fullsize,
+    this.combatAnimations,
     required this.colorValue,
     required this.description,
   });

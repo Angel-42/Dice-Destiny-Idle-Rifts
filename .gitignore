@@ -71,3 +71,5 @@ build/
 # Native
 android/.gradle/
 ios/Pods/
+
+fe.dart

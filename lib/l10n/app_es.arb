@@ -1,0 +1,266 @@
+{
+    "@@locale": "es",
+    
+    "appTitle": "Dice Destiny: Idle Rifts",
+    "@appTitle": {
+        "description": "El título de la aplicación"
+    },
+
+    "welcome": "Bienvenido",
+    "welcomeMessage": "¡Bienvenido! Use la barra de navegación a continuación para explorar.",
+    "diceDestiny": "DICE DESTINY",
+    "idleRifts": "IDLE RIFTS",
+
+    "navHome": "Inicio",
+    "navBattle": "Batalla",
+    "navAllies": "Aliados",
+    "navSummon": "Invocar",
+    "navShop": "Tienda",
+    "navMisc": "Misc.",
+
+    "editTeam": "EDITAR EQUIPO",
+    "allHeroes": "TODOS LOS HÉROES",
+    "slot": "Ranura",
+    "cancel": "Cancelar",
+    "error": "Error: {message}",
+    "@error": {
+        "placeholders": {
+            "message": {"type": "String"}
+        }
+    },
+
+    "level": "Nv.",
+    "hp": "PV",
+    "atk": "Atq",
+    "mag": "Mag",
+    "spd": "Vel",
+    "def": "Def",
+    "lck": "Sue",
+    "res": "Res",
+
+    "rarityCommon": "Común",
+    "rarityRare": "Raro",
+    "rarityEpic": "Épico",
+    "rarityLegendary": "Legendario",
+
+    "equipmentWeapon": "Arma",
+    "equipmentArmor": "Armadura",
+    "equipmentAccessory": "Accesorio",
+    "equipmentSkill": "Habilidad",
+
+    "warrior": "Guerrero",
+    "mage": "Mago",
+    "rogue": "Pícaro",
+    "cleric": "Clérigo",
+
+    "ironSword": "Espada de Hierro",
+    "woodenStaff": "Bastón de Madera",
+    "ironDagger": "Daga de Hierro",
+    "healingRod": "Vara de Curación",
+
+    "noPlayerData": "Sin datos de jugador",
+    "loading": "Cargando...",
+
+    "gold": "Oro",
+    "gems": "Gemas",
+    "summonTokens": "Fichas de Invocación",
+
+    "idleIncomeOnline": "+{amount} oro (ingreso pasivo)",
+    "@idleIncomeOnline": {
+        "placeholders": {
+            "amount": {"type": "int"}
+        }
+    },
+    "idleIncomeOffline": "Ingreso sin conexión: +{amount} oro ({hours}h de ausencia)",
+    "@idleIncomeOffline": {
+        "placeholders": {
+            "amount": {"type": "int"},
+            "hours": {"type": "String"}
+        }
+    },
+    "firstConnection": "Primera conexión, sin ingreso sin conexión",
+    "noOfflineIncome": "Sin ingreso sin conexión (última conexión: {seconds}s)",
+    "@noOfflineIncome": {
+        "placeholders": {
+            "seconds": {"type": "int"}
+        }
+    },
+
+    "stamina": "Resistencia",
+
+    "battleTitle": "BATALLA",
+    "battleSystem": "Sistema de Batalla",
+    "campaignMode": "Modo Campaña",
+    "rifts": "Fisuras",
+    "dungeons": "Mazmorras",
+    "arena": "Arena",
+    "needCharacterFirst": "¡Primero debes crear un personaje!",
+    "cannotOpenCampaign": "No se puede abrir la campaña",
+
+    "miscTitle": "MISC.",
+    "settings": "Configuración",
+    "gifts": "Regalos",
+    "events": "Eventos",
+    "logout": "Cerrar sesión",
+    "rankings": "Clasificaciones",
+    "news": "Noticias",
+    "help": "Ayuda",
+    "friends": "Amigos",
+    "logoutConfirm": "¿Está seguro de que desea cerrar sesión?",
+    "confirm": "Confirmar",
+
+    "epicUniverseTagline": "Sumérgete en un universo épico",
+    "epicUniverseDescription": "donde el destino está gobernado por dados cósmicos.\n¡Enfrenta las Fisuras y salva los mundos!",
+    "initializingPortal": "Inicializando portal...",
+    "startAdventure": "Comenzar la aventura",
+    "versionInfo": "Versión 1.0.0 • Hecho con Flutter",
+    "connectionError": "Error de conexión",
+
+    "stepYourName": "TU NOMBRE",
+    "stepYourRace": "TU RAZA",
+    "stepYourRegion": "TU REGIÓN",
+    "stepYourOrigin": "TU ORIGEN",
+    "stepYourClass": "TU CLASE",
+    "stepConfirmation": "CONFIRMACIÓN",
+    "choicesShapeDestiny": "Tus elecciones darán forma a tu destino",
+    "lowercaseOnly": "Solo minúsculas: máx. 11 caracteres",
+    "uppercaseOnly": "Solo mayúsculas: máx. 8 caracteres",
+    "mixedCase": "Mixto: máx. {max} caracteres",
+    "@mixedCase": {
+        "placeholders": {
+            "max": {"type": "int"}
+        }
+    },
+    "nameInLegends": "¿Cómo eres conocido en las leyendas?",
+    "yourNameHint": "Tu nombre",
+    "minimumCharacters": "Mínimo 3 caracteres",
+    "whatIsYourNature": "¿Cuál es tu naturaleza?",
+    "whereAreYouFrom": "¿De dónde eres?",
+    "whatIsYourStory": "¿Cuál es tu historia?",
+    "whatPathDoYouTake": "¿Qué camino tomas?",
+    "legendReady": "Tu leyenda está lista para ser escrita",
+    "nameSummary": "Nombre",
+    "raceSummary": "Raza",
+    "regionSummary": "Región",
+    "originSummary": "Origen",
+    "classSummary": "Clase",
+    "choicesFinal": "Estas elecciones son definitivas e influirán en tu viaje a través de las Fisuras",
+    "back": "Atrás",
+    "forgeDestiny": "Forjar mi destino",
+    "continueButton": "Continuar",
+
+    "cinematicTitle1": "EN EL PRINCIPIO",
+    "cinematicText1": "Existía el Vacío.\nUn vacío infinito donde nada existía.",
+    "cinematicSubtitle1": "Entonces aparecieron los Dados Cósmicos...",
+    "cinematicTitle2": "LOS DADOS DEL DESTINO",
+    "cinematicText2": "Estos artefactos divinos moldearon\nla realidad misma.",
+    "cinematicSubtitle2": "Cada cara, cada tirada creó mundos.",
+    "cinematicTitle3": "EQUILIBRIO ROTO",
+    "cinematicText3": "Durante eones, reinó el equilibrio.",
+    "cinematicSubtitle3": "Pero una fuerza oscura codició su poder.\nLas Fisuras se abrieron.",
+    "cinematicTitle4": "LAS FISURAS",
+    "cinematicText4": "Grietas en la realidad,\ndevorando todo a su paso.",
+    "cinematicSubtitle4": "Los mundos colapsan. Las civilizaciones mueren.",
+    "cinematicTitle5": "UNA ÚLTIMA ESPERANZA",
+    "cinematicText5": "Los Dados Cósmicos buscan\nCampeones.",
+    "cinematicSubtitle5": "Almas capaces de empuñar su poder.",
+    "cinematicTitle6": "¿QUIÉN ERES TÚ?",
+    "cinematicText6": "El destino te llama.\nEl poder de los Dados fluye a través de ti.",
+    "cinematicSubtitle6": "Tu historia comienza ahora...",
+    "skipCinematic": "Saltar",
+    "nextScene": "Siguiente",
+    "loginTitle": "Iniciar sesión",
+    "chooseYourMode": "Elige tu método",
+    "emailAndPassword": "Correo y Contraseña",
+    "permanentAccount": "Cuenta permanente",
+    "or": "O",
+    "google": "Google",
+    "continueWithoutAccount": "Continuar sin cuenta",
+    "connectingInProgress": "Conectando...",
+    "linkAccountLater": "Puedes vincular tu cuenta más tarde en la configuración",
+    "createAccount": "CREAR UNA CUENTA",
+    "emailLogin": "INICIO CON CORREO",
+    "email": "Correo electrónico",
+    "emailRequired": "Correo requerido",
+    "invalidEmail": "Correo inválido",
+    "password": "Contraseña",
+    "passwordRequired": "Contraseña requerida",
+    "minimumSixCharacters": "Mínimo 6 caracteres",
+    "createAccountButton": "Crear cuenta",
+    "signIn": "Iniciar sesión",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta? Iniciar sesión",
+    "noAccount": "¿Sin cuenta? Registrarse",
+    "backToOptions": "← Volver a opciones",
+    "connectionError": "Error de conexión: {error}",
+    "@connectionError": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+
+    "settingsAudio": "Audio",
+    "settingsMusic": "Música",
+    "settingsMusicSubtitle": "Activar música de fondo",
+    "settingsMusicVolume": "Volumen Música",
+    "settingsSfx": "Efectos de Sonido",
+    "settingsSfxSubtitle": "Activar efectos de sonido del juego",
+    "settingsSfxVolume": "Volumen Efectos",
+    "settingsLanguage": "Idioma",
+    "settingsLanguageTitle": "Idioma",
+    "settingsSelectLanguage": "Seleccionar Idioma",
+    "settingsResetDefaults": "Restaurar Valores",
+    "settingsResetTitle": "¿Restablecer Configuración?",
+    "settingsResetMessage": "Esto restablecerá todas las configuraciones a sus valores predeterminados.",
+    "settingsResetSuccess": "Configuración restablecida",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languageSpanish": "Español",
+  "languageGerman": "Deutsch",
+
+  "settingsAccount": "Cuenta",
+  "settingsLinkEmail": "Vincular Email",
+  "settingsLinkEmailSubtitle": "Agregar autenticación por email",
+  "settingsLinkGoogle": "Vincular Google",
+  "settingsLinkGoogleSubtitle": "Agregar autenticación de Google",
+  "settingsDeleteAccount": "Eliminar cuenta",
+  "settingsDeleteAccountTitle": "¿Eliminar cuenta?",
+  "settingsDeleteAccountMessage": "Esto eliminará permanentemente su cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+  "settingsDeleteAccountSuccess": "Cuenta eliminada con éxito",
+  "settingsLinkSuccess": "Cuenta vinculada con éxito",
+  "settingsAlreadyLinked": "Ya vinculado",
+  "settingsAnonymous": "Cuenta anónima",
+
+  "close": "CERRAR",
+  "attack": "ATACAR",
+  "targetOutOfRange": "¡Objetivo fuera de alcance! (Distancia: {distance}, Alcance: {range})",
+  "chooseAttack": "Elegir un ataque",
+  "basicAttack": "Ataque básico",
+  "damage": "Daño",
+  "victory": "🎉 ¡VICTORIA!",
+  "allEnemiesDefeated": "¡Has derrotado a todos los enemigos!",
+  "returnButton": "REGRESAR",
+  "defeat": "💀 DERROTA",
+  "allCharactersDefeated": "Todos tus personajes han sido derrotados...",
+  "turnEnded": "¡Turno terminado!",
+  "endTurn": "FIN DEL TURNO",
+  "combatLog": "REGISTRO DE COMBATE",
+  "combatFinished": "COMBATE TERMINADO",
+  "combatVictorious": "¡Combate victorioso!",
+  "enemyDefeated": "¡{name} derrotado!",
+  "forgeMyDestiny": "Forjar mi destino",
+  "tapToContinue": "Toca para continuar",
+  "soundSettings": "🎵 Configuración de Sonido",
+  "music": "Música",
+  "sfx": "Efectos de Sonido",
+  "emailLabel": "Correo electrónico",
+  "passwordLabel": "Contraseña",
+  "expMax": "EXP MÁX",
+  "exp": "EXP {current}/{max}",
+  "emptySlot": "Ranura vacía",
+  "noBonus": "Sin bonificación",
+  "notLoggedIn": "No conectado",
+  "summonError": "Error durante la invocación: {error}",
+  "slot": "Ranura"
+}

@@ -191,6 +191,89 @@ class AuthService {
     }
   }
 
+  // ========== LINK PROVIDERS ADDITIONNELS ==========
+  
+  /// Lier un provider Email à un compte existant (Google ou autre)
+  static Future<UserCredential> linkWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      if (currentUser == null) {
+        throw Exception('Aucun utilisateur connecté');
+      }
+      
+      debugPrint('🔗 Liaison du compte avec email: $email');
+      
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+      
+      final userCredential = await currentUser!.linkWithCredential(credential);
+      debugPrint('✅ Email lié avec succès');
+      
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('❌ Erreur liaison email: ${e.code} - ${e.message}');
+      throw _handleAuthException(e);
+    }
+  }
+  
+  /// Lier un provider Google à un compte existant (Email ou autre)
+  static Future<UserCredential> linkWithGoogle() async {
+    try {
+      if (currentUser == null) {
+        throw Exception('Aucun utilisateur connecté');
+      }
+      
+      debugPrint('🔗 Liaison du compte avec Google...');
+      
+      // Obtenir les credentials Google
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        throw Exception('Connexion Google annulée');
+      }
+      
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      
+      final userCredential = await currentUser!.linkWithCredential(credential);
+      debugPrint('✅ Google lié avec succès');
+      
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('❌ Erreur liaison Google: ${e.code} - ${e.message}');
+      throw _handleAuthException(e);
+    }
+  }
+
+  // ========== SUPPRESSION DE COMPTE ==========
+  
+  /// Supprimer le compte de l'utilisateur actuel
+  static Future<void> deleteAccount() async {
+    try {
+      if (currentUser == null) {
+        throw Exception('Aucun utilisateur connecté');
+      }
+      
+      debugPrint('🗑️ Suppression du compte: ${currentUser!.uid}');
+      await currentUser!.delete();
+      debugPrint('✅ Compte supprimé avec succès');
+    } on FirebaseAuthException catch (e) {
+      debugPrint('❌ Erreur suppression compte: ${e.code} - ${e.message}');
+      if (e.code == 'requires-recent-login') {
+        throw Exception('Pour des raisons de sécurité, vous devez vous reconnecter avant de supprimer votre compte');
+      }
+      throw _handleAuthException(e);
+    }
+  }
+
   // ========== DÉCONNEXION ==========
   
   /// Se déconnecter

@@ -1,8 +1,10 @@
 import 'package:dice_destiny_idle_rifts/src/services/auth_service.dart';
 import 'package:dice_destiny_idle_rifts/src/services/game_data_service.dart';
+import 'package:dice_destiny_idle_rifts/src/services/sound_manager.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/game_navbar.dart';
 import 'package:dice_destiny_idle_rifts/src/widgets/login_dialog.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'cinematic_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -21,6 +23,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    _resetSettingsIfNoPlayer();
+    
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -43,6 +47,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     ));
 
     _controller.forward();
+  }
+
+  /// Réinitialise les settings si aucun joueur n'est connecté
+  Future<void> _resetSettingsIfNoPlayer() async {
+    if (!AuthService.isSignedIn) {
+      debugPrint('🔄 Aucun joueur connecté, réinitialisation des settings...');
+      await SoundManager().loadSettingsIfSaveExists(hasSave: false);
+    }
   }
 
   @override
@@ -151,9 +163,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   Colors.amber.shade300,
                                 ],
                               ).createShader(bounds),
-                              child: const Text(
-                                'Dice Destiny',
-                                style: TextStyle(
+                              child: Text(
+                                S.of(context)!.diceDestiny,
+                                style: const TextStyle(
                                   fontSize: 48,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -191,7 +203,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 ],
                               ),
                               child: Text(
-                                'I D L E  R I F T S',
+                                S.of(context)!.idleRifts,
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.deepPurple.shade100,
@@ -224,11 +236,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                         size: 18,
                                       ),
                                       const SizedBox(width: 8),
-                                      const Flexible(
+                                      Flexible(
                                         child: Text(
-                                          'Plongez dans un univers épique',
+                                          S.of(context)!.epicUniverseTagline,
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 15,
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,
@@ -245,7 +257,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'où le destin est dicté par les dés cosmiques.\nAffrontez les Rifts et sauvez les mondes !',
+                                    S.of(context)!.epicUniverseDescription,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 13,
@@ -266,9 +278,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                       color: Colors.black.withOpacity(0.6),
                                       borderRadius: BorderRadius.circular(30),
                                     ),
-                                    child: const Column(
+                                    child: Column(
                                       children: [
-                                        SizedBox(
+                                        const SizedBox(
                                           width: 40,
                                           height: 40,
                                           child: CircularProgressIndicator(
@@ -276,10 +288,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                             strokeWidth: 3,
                                           ),
                                         ),
-                                        SizedBox(height: 16),
+                                        const SizedBox(height: 16),
                                         Text(
-                                          'Initialisation du portail...',
-                                          style: TextStyle(
+                                          S.of(context)!.initializingPortal,
+                                          style: const TextStyle(
                                             color: Colors.white70,
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -331,11 +343,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                                 size: 28,
                                               ),
                                               const SizedBox(width: 8),
-                                              const Flexible(
+                                              Flexible(
                                                 child: Text(
-                                                  'Commencer l\'aventure',
+                                                  S.of(context)!.startAdventure,
                                                   textAlign: TextAlign.center,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.w800,
                                                     color: Colors.deepPurple,
@@ -361,20 +373,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 color: Colors.black.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.code,
                                     color: Colors.white54,
                                     size: 16,
                                   ),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      'Version 1.0.0 • Made with Flutter',
+                                      S.of(context)!.versionInfo,
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white54,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
@@ -494,17 +506,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Erreur de connexion',
-                      style: TextStyle(
+                    Text(
+                      S.of(context)!.connectionError(e.toString()),
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$e',
-                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),

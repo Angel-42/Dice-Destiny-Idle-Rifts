@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import 'persona_creation_screen.dart';
+import '../../l10n/app_localizations.dart';
+import '../widgets/widgets.dart';
 
 class CinematicScreen extends StatefulWidget {
   const CinematicScreen({super.key});
@@ -19,59 +21,9 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
   int _currentScene = 0;
   bool _canSkip = true;
   Timer? _sceneTimer;
+  bool _isInitialized = false;
   
-  // Les scènes du lore (texte + durée)
-  final List<Map<String, dynamic>> _scenes = [
-    {
-      'title': 'AU COMMENCEMENT',
-      'text': 'Il y avait le Néant.\nUn vide infini où rien n\'existait.',
-      'subtitle': 'Puis les Dés Cosmiques apparurent...',
-      'duration': 4,
-      'color': const Color(0xFF1a0f2e),
-      'particles': 20,
-    },
-    {
-      'title': 'LES DÉS DU DESTIN',
-      'text': 'Ces artefacts divins façonnèrent\nla réalité elle-même.',
-      'subtitle': 'Chaque face, chaque lancer créait des mondes.',
-      'duration': 5,
-      'color': const Color(0xFF4a3a7a),
-      'particles': 30,
-    },
-    {
-      'title': 'L\'ÉQUILIBRE BRISÉ',
-      'text': 'Pendant des éons, l\'équilibre régna.',
-      'subtitle': 'Mais une force obscure convoita leur pouvoir.\nLes Rifts s\'ouvrirent.',
-      'duration': 5,
-      'color': const Color(0xFF8B0000),
-      'particles': 40,
-    },
-    {
-      'title': 'LES RIFTS',
-      'text': 'Des fissures dans la réalité,\ndévorant tout sur leur passage.',
-      'subtitle': 'Les mondes s\'effondrent. Les civilisations agonisent.',
-      'duration': 5,
-      'color': const Color(0xFF2d1b4e),
-      'particles': 50,
-    },
-    {
-      'title': 'UN DERNIER ESPOIR',
-      'text': 'Les Dés Cosmiques recherchent\ndes Champions.',
-      'subtitle': 'Des âmes capables de manier leur pouvoir.',
-      'duration': 5,
-      'color': const Color(0xFF7c5fa8),
-      'particles': 35,
-    },
-    {
-      'title': 'QUI ÊTES-VOUS ?',
-      'text': 'Le destin vous appelle.\nLe pouvoir des Dés coule en vous.',
-      'subtitle': 'Votre histoire commence maintenant...',
-      'duration': 6,
-      'color': const Color(0xFFFFD700),
-      'particles': 60,
-      'isFinal': true,
-    },
-  ];
+  late List<Map<String, dynamic>> _scenes;
 
   @override
   void initState() {
@@ -102,8 +54,70 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
       parent: _slideController,
       curve: Curves.easeOutCubic,
     ));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     
-    _startScene();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      
+      // Initialiser les scènes avec les traductions
+      _scenes = [
+        {
+          'title': S.of(context)!.cinematicTitle1,
+          'text': S.of(context)!.cinematicText1,
+          'subtitle': S.of(context)!.cinematicSubtitle1,
+          'duration': 4,
+          'color': const Color(0xFF1a0f2e),
+          'particles': 20,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle2,
+          'text': S.of(context)!.cinematicText2,
+          'subtitle': S.of(context)!.cinematicSubtitle2,
+          'duration': 5,
+          'color': const Color(0xFF4a3a7a),
+          'particles': 30,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle3,
+          'text': S.of(context)!.cinematicText3,
+          'subtitle': S.of(context)!.cinematicSubtitle3,
+          'duration': 5,
+          'color': const Color(0xFF8B0000),
+          'particles': 40,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle4,
+          'text': S.of(context)!.cinematicText4,
+          'subtitle': S.of(context)!.cinematicSubtitle4,
+          'duration': 5,
+          'color': const Color(0xFF2d1b4e),
+          'particles': 50,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle5,
+          'text': S.of(context)!.cinematicText5,
+          'subtitle': S.of(context)!.cinematicSubtitle5,
+          'duration': 5,
+          'color': const Color(0xFF7c5fa8),
+          'particles': 35,
+        },
+        {
+          'title': S.of(context)!.cinematicTitle6,
+          'text': S.of(context)!.cinematicText6,
+          'subtitle': S.of(context)!.cinematicSubtitle6,
+          'duration': 6,
+          'color': const Color(0xFFFFD700),
+          'particles': 60,
+          'isFinal': true,
+        },
+      ];
+      
+      _startScene();
+    }
   }
 
   @override
@@ -174,6 +188,37 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
     _goToPersonaCreation();
   }
 
+  // Demo: start a dialogue sequence from the cinematic screen
+  void _startCinematicDialogue() async {
+    final lines = [
+      DialogueLine(speaker: 'Narrateur', text: 'Les cieux grondent et les dés roulent...', portrait: '📜'),
+      DialogueLine(speaker: 'Voix', text: 'Un héros se lève.', portrait: '🛡️'),
+      DialogueLine(
+        speaker: 'Choix',
+        text: 'Prendrez-vous le chemin périlleux ?',
+        portrait: '❓',
+        choices: [
+          DialogueChoice(id: 'yes', label: 'Oui'),
+          DialogueChoice(id: 'no', label: 'Non'),
+        ],
+      ),
+    ];
+
+    final results = await DialogueManager.showSequence(
+      context,
+      lines,
+      alignment: Alignment.center,
+      charDuration: const Duration(milliseconds: 28),
+      autoAdvance: false,
+      barrierDismissible: false,
+    );
+
+    if (results.isNotEmpty && mounted) {
+      final choice = results.values.first;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Choix: $choice')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scene = _scenes[_currentScene];
@@ -234,23 +279,32 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                     children: [
                       // Bouton Skip en haut à droite
                       if (_canSkip && !isFinalScene)
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: TextButton.icon(
-                            onPressed: _skipCinematic,
-                            icon: const Icon(
-                              Icons.fast_forward,
-                              color: Colors.white54,
-                              size: 20,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Demo dialogue button on the left
+                            IconButton(
+                              tooltip: 'Demo Dialogue',
+                              onPressed: _startCinematicDialogue,
+                              icon: const Icon(Icons.chat_bubble_outline, color: Colors.white54),
                             ),
-                            label: const Text(
-                              'Passer',
-                              style: TextStyle(
+                            // Skip on the right
+                            TextButton.icon(
+                              onPressed: _skipCinematic,
+                              icon: const Icon(
+                                Icons.fast_forward,
                                 color: Colors.white54,
-                                fontSize: 14,
+                                size: 20,
+                              ),
+                              label: Text(
+                                S.of(context)!.skipCinematic,
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       
                       // Contenu centré
@@ -427,12 +481,12 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
-                                          children: const [
-                                            Icon(Icons.auto_awesome, size: 24),
-                                            SizedBox(width: 12),
+                                          children: [
+                                            const Icon(Icons.auto_awesome, size: 24),
+                                            const SizedBox(width: 12),
                                             Text(
-                                              'Forger mon destin',
-                                              style: TextStyle(
+                                              S.of(context)!.forgeMyDestiny,
+                                              style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
                                                 letterSpacing: 1,
@@ -482,7 +536,7 @@ class _CinematicScreenState extends State<CinematicScreen> with TickerProviderSt
                       // Instruction
                       if (!isFinalScene)
                         Text(
-                          'Appuyez pour continuer',
+                          S.of(context)!.tapToContinue,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.4),
                             fontSize: 13,
